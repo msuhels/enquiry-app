@@ -1,4 +1,4 @@
-import { createClient } from './supabase/server';
+import { createClient } from '@/lib/supabase/adapters/client';
 import { Program, Enquiry, User, ProgramFormData, EnquiryFormData } from './types';
 
 export class DatabaseService {

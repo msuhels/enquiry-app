@@ -4,10 +4,10 @@ import { getProgramById, updateProgram, deleteProgram } from "@/lib/supabase/pro
 // GET - Fetch single program by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     console.log("LOGGING : API received program fetch request for ID:", id);
 
@@ -38,10 +38,10 @@ export async function GET(
 // PATCH - Update a program
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     console.log("LOGGING : API received program update request for ID:", id);
@@ -74,10 +74,10 @@ export async function PATCH(
 // DELETE - Delete a program
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     console.log("LOGGING : API received program deletion request for ID:", id);
 
