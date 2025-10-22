@@ -1,200 +1,358 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, UploadIcon, FileIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
-import Link from 'next/link';
-import { BulkUploadService } from '@/lib/bulk-upload';
-import { ProgramFormData } from '@/lib/types';
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeftIcon,
+  UploadIcon,
+  FileIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  XCircleIcon,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  FileDown,
+  Info,
+} from "lucide-react";
+import Link from "next/link";
+import { BulkUploadService } from "@/lib/bulk-upload";
+import { ProgramFormData } from "@/lib/types";
+import { useModal } from "@/components/ui/modal";
+import FileFormatInstructions from "@/components/modals/fileInstructionModal";
+import Breadcrumbs from "@/components/ui/breadCrumbs";
+
+interface ValidationError {
+  row: number;
+  field: string;
+  message: string;
+  value: any;
+}
+
+interface ValidationResponse {
+  valid: boolean;
+  totalPrograms: number;
+  validPrograms: number;
+  invalidPrograms: number;
+  errors: ValidationError[];
+}
+
+interface UploadResult {
+  success: boolean;
+  total: number;
+  successful: number;
+  failed: number;
+  errors?: Array<{ row: number; error: string }>;
+}
+
+const ITEMS_PER_PAGE = 10;
 
 export default function BulkUploadPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [parsing, setParsing] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
-    parsedData?: ProgramFormData[];
-  }>({ type: null, message: '' });
+  const [parsedData, setParsedData] = useState<ProgramFormData[] | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [error, setError] = useState<string>("");
 
   const bulkUploadService = new BulkUploadService();
+  const { openModal } = useModal();
+
+  // Pagination calculations
+  const totalPages = parsedData ? Math.ceil(parsedData.length / ITEMS_PER_PAGE) : 0;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = parsedData ? parsedData.slice(startIndex, endIndex) : [];
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (bulkUploadService.validateFileType(file)) {
         setSelectedFile(file);
-        setUploadStatus({ type: null, message: '' });
+        setParsedData(null);
+        setValidationErrors([]);
+        setUploadResult(null);
+        setError("");
+        setCurrentPage(1);
       } else {
-        setUploadStatus({
-          type: 'error',
-          message: 'Invalid file type. Please select a CSV, Excel (.xls, .xlsx), or XML file.'
-        });
+        setError("Invalid file type. Please select a CSV, Excel (.xls, .xlsx), or XML file.");
+        setSelectedFile(null);
       }
     }
   };
 
-  const handleUpload = async () => {
+  const handleParseFile = async () => {
     if (!selectedFile) return;
 
-    setUploading(true);
-    setUploadStatus({ type: null, message: '' });
+    setParsing(true);
+    setError("");
+    setParsedData(null);
+    setValidationErrors([]);
+    setCurrentPage(1);
 
     try {
       const fileExtension = bulkUploadService.getFileExtension(selectedFile.name);
-      let parsedData: ProgramFormData[] = [];
+      let data: ProgramFormData[] = [];
 
-      // Parse the file based on its type
       switch (fileExtension) {
-        case 'csv':
-          parsedData = await bulkUploadService.parseCSV(selectedFile);
+        case "csv":
+          data = await bulkUploadService.parseCSV(selectedFile);
           break;
-        case 'xls':
-        case 'xlsx':
-          parsedData = await bulkUploadService.parseExcel(selectedFile);
+        case "xls":
+        case "xlsx":
+          data = await bulkUploadService.parseExcel(selectedFile);
           break;
-        case 'xml':
-          parsedData = await bulkUploadService.parseXML(selectedFile);
+        case "xml":
+          data = await bulkUploadService.parseXML(selectedFile);
           break;
         default:
-          throw new Error('Unsupported file type');
+          throw new Error("Unsupported file type");
       }
 
-      if (parsedData.length === 0) {
-        throw new Error('No valid data found in the file');
+      if (data.length === 0) {
+        throw new Error("No valid data found in the file");
       }
 
-      // In a real app, you would save the data to the database here
-      console.log('Parsed data:', parsedData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      setParsedData(data);
+      console.log(`Successfully parsed ${data.length} programs`);
+    } catch (err) {
+      console.error("Parse error:", err);
+      setError(err instanceof Error ? err.message : "Failed to parse file");
+    } finally {
+      setParsing(false);
+    }
+  };
 
-      setUploadStatus({
-        type: 'success',
-        message: `Successfully parsed ${parsedData.length} programs from ${selectedFile.name}`,
-        parsedData
+  const handleValidate = async () => {
+    if (!parsedData) return;
+
+    setValidating(true);
+    setValidationErrors([]);
+    setError("");
+
+    try {
+      // FIX: Correct API path without /admin
+      const response = await fetch("/api/admin/programs/validate-bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ programs: parsedData }),
       });
 
-      // Clear the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          error: `Server error: ${response.status} ${response.statusText}`
+        }));
+        throw new Error(errorData.error || "Validation request failed");
       }
-      setSelectedFile(null);
 
-    } catch (error) {
-      console.error('Upload error:', error);
-      setUploadStatus({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'An error occurred during upload'
+      const result: ValidationResponse = await response.json();
+
+      if (!result.valid && result.errors && result.errors.length > 0) {
+        setValidationErrors(result.errors);
+        console.warn(`Found ${result.errors.length} validation errors`);
+      } else {
+        setValidationErrors([]);
+        console.log("All programs validated successfully");
+      }
+    } catch (err) {
+      console.error("Validation error:", err);
+      setError(err instanceof Error ? err.message : "Failed to validate programs");
+      setValidationErrors([]);
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleSaveToDatabase = async () => {
+    if (!parsedData || !selectedFile) return;
+
+    // Warn if there are validation errors
+    if (validationErrors.length > 0) {
+      const confirmed = window.confirm(
+        `There are ${validationErrors.length} validation errors. Some programs may fail to upload. Do you want to continue?`
+      );
+      if (!confirmed) return;
+    }
+
+    setUploading(true);
+    setUploadResult(null);
+    setError("");
+
+    try {
+      // FIX: Correct API path without /admin
+      const response = await fetch("/api/admin/programs/bulk-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          programs: parsedData,
+          filename: selectedFile.name,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          error: `Server error: ${response.status} ${response.statusText}`
+        }));
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const result: UploadResult = await response.json();
+      setUploadResult(result);
+
+      if (result.success && result.failed === 0) {
+        // Clear form on complete success after 3 seconds
+        setTimeout(() => {
+          setSelectedFile(null);
+          setParsedData(null);
+          setValidationErrors([]);
+          setCurrentPage(1);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError(err instanceof Error ? err.message : "Failed to upload programs");
     } finally {
       setUploading(false);
     }
   };
 
   const downloadTemplate = () => {
-    // Create a sample CSV template
     const headers = [
-      'UNIVERSITY',
-      'PROGRAMME Name',
-      'University Ranking',
-      'Study Level',
-      'Study Area',
-      'Campus',
-      'Duration',
-      'Open Intake',
-      'Open Call',
-      'Application Deadline',
-      'Entry REQUIREMENTS',
-      'PERCENTAGE Required',
-      'MOI',
-      'Ielts Score',
-      'No band less than',
-      'Toefl Score',
-      'No ban less than',
-      'PTE Score',
-      'PTE No band less than',
-      'DET Score',
-      'DET No band less than',
-      'TOLC Score',
-      'SAT Score',
-      'GRE Score',
-      'GMAT Score',
-      'CENTS Score',
-      'TIL Score',
-      'ARCHED Test',
-      'Application Fees',
-      'Additional Requirement',
-      'Remarks'
+      "Sr.No.",
+      "UNIVERSITY",
+      "University Ranking",
+      "Study Level",
+      "Study Area",
+      "PROGRAMME Name",
+      "Campus",
+      "Duration",
+      "Open Intake",
+      "Open Call",
+      "Application Deadline",
+      "Entry REQUIREMENTS",
+      "PERCENTAGE Required",
+      "MOI",
+      "Ielts Score",
+      "No band less than",
+      "Toefl Score",
+      "No ban less than",
+      "PTE Score",
+      "No band less than",
+      "DET Score",
+      "No band less than",
+      "TOLC Score",
+      "SAT Score",
+      "GRE Score",
+      "GMAT Score",
+      "CENTS Score",
+      "TIL Score",
+      "ARCHED Test",
+      "Application Fees",
+      "Additional Requirement",
+      "Remarks",
     ];
 
     const sampleData = [
-      'University of Example',
-      'Computer Science',
-      '100',
-      'Bachelor',
-      'Computer Science',
-      'Main Campus',
-      '4 years',
-      'Fall 2024',
-      'Open',
-      '2024-03-15',
-      'High school diploma',
-      '80',
-      'English',
-      '6.5',
-      '6.0',
-      '90',
-      '20',
-      '65',
-      '60',
-      '120',
-      '100',
-      '25',
-      '1200',
-      '320',
-      '650',
-      '85',
-      '75',
-      'Pass',
-      '100',
-      'Portfolio required',
-      'Popular program'
+      "1",
+      "University of Example",
+      "100",
+      "Bachelor",
+      "Computer Science",
+      "Computer Science",
+      "Main Campus",
+      "4 years",
+      "Fall 2024",
+      "Open",
+      "2024-03-15",
+      "High school diploma",
+      "80",
+      "English",
+      "6.5",
+      "6.0",
+      "90",
+      "20",
+      "65",
+      "60",
+      "120",
+      "100",
+      "25",
+      "1200",
+      "320",
+      "650",
+      "85",
+      "75",
+      "Pass",
+      "100",
+      "Portfolio required",
+      "Popular program",
     ];
 
-    const csvContent = [headers.join(','), sampleData.join(',')].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'program_template.csv';
+    a.download = "program_template.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const handleOpenInstructions = () => {
+    openModal(<FileFormatInstructions />, {
+      size: "md",
+      closeOnOverlayClick: true,
+      showCloseButton: true,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <Link
-            href="/admin"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Link>
+          <Breadcrumbs/>
           <h1 className="text-3xl font-bold text-gray-900">Bulk Upload Programs</h1>
-          <p className="mt-2 text-gray-600">Upload multiple university programs using CSV, Excel, or XML files</p>
+          <p className="mt-2 text-gray-600">
+            Upload multiple university programs using CSV, Excel, or XML files
+          </p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-8">
+        <div className="bg-white shadow rounded-lg p-8 mb-6">
           {/* File Upload Section */}
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload File</h2>
-            
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-900">Upload File</h2>
+                <Info
+                  onClick={handleOpenInstructions}
+                  className="h-4 w-4 text-gray-600 cursor-pointer"
+                />
+              </div>
+
+              {/* Template Download */}
+              <div className="mb-8 flex items-center gap-2 justify-center">
+                <h3 className="text-md font-medium text-gray-900">Need a template?</h3>
+                <button
+                  onClick={downloadTemplate}
+                  className="inline-flex items-center p-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <FileDown className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
               <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <div className="space-y-4">
                 <div>
@@ -214,13 +372,14 @@ export default function BulkUploadPage() {
                     accept=".csv,.xls,.xlsx,.xml"
                     className="sr-only"
                     onChange={handleFileSelect}
+                    disabled={parsing || validating || uploading}
                   />
                 </div>
-                
+
                 {selectedFile && (
                   <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                    <FileIcon className="h-4 w-4" />
-                    <span>{selectedFile.name}</span>
+                    <FileIcon className="h-4 w-4 text-blue-500" />
+                    <span className="font-medium">{selectedFile.name}</span>
                     <span className="text-gray-400">
                       ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                     </span>
@@ -228,102 +387,363 @@ export default function BulkUploadPage() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Template Download */}
-          <div className="mb-8">
-            <h3 className="text-md font-medium text-gray-900 mb-2">Need a template?</h3>
-            <button
-              onClick={downloadTemplate}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <FileIcon className="h-4 w-4 mr-2" />
-              Download CSV Template
-            </button>
-          </div>
-
-          {/* Upload Button */}
-          <div className="mb-8">
-            <button
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-              className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {uploading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <UploadIcon className="h-4 w-4 mr-2" />
-                  Upload and Process File
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Status Messages */}
-          {uploadStatus.type && (
-            <div className={`rounded-md p-4 ${
-              uploadStatus.type === 'success' 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-red-50 border border-red-200'
-            }`}>
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {uploadStatus.type === 'success' ? (
-                    <CheckCircleIcon className="h-5 w-5 text-green-400" />
+            {selectedFile && !parsedData && (
+              <div className="mt-4">
+                <button
+                  onClick={handleParseFile}
+                  disabled={parsing}
+                  className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {parsing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Parsing file...
+                    </>
                   ) : (
-                    <AlertCircleIcon className="h-5 w-5 text-red-400" />
+                    "Parse File"
                   )}
-                </div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-8 bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
                 <div className="ml-3">
-                  <p className={`text-sm font-medium ${
-                    uploadStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    {uploadStatus.message}
-                  </p>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
                 </div>
               </div>
             </div>
           )}
+        </div>
 
-          {/* File Format Instructions */}
-          <div className="mt-8 bg-gray-50 rounded-lg p-6">
-            <h3 className="text-md font-medium text-gray-900 mb-4">File Format Instructions</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">CSV Files:</h4>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                  <li>Use comma-separated values</li>
-                  <li>First row should contain column headers</li>
-                  <li>Required columns: UNIVERSITY, PROGRAMME Name</li>
-                  <li>Date format: YYYY-MM-DD</li>
-                </ul>
+        {/* Parsed Data Section */}
+        {parsedData && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Review Parsed Data
+              </h2>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-blue-800">
+                      Successfully parsed {parsedData.length} programs from file
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Excel Files (.xls, .xlsx):</h4>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                  <li>First sheet will be processed</li>
-                  <li>First row should contain column headers</li>
-                  <li>Same column requirements as CSV</li>
-                </ul>
-              </div>
+              {/* Validate Button */}
+              {!validating && validationErrors.length === 0 && !uploadResult && (
+                <button
+                  onClick={handleValidate}
+                  className="mb-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                >
+                  Validate Data
+                </button>
+              )}
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">XML Files:</h4>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                  <li>Root element should contain program elements</li>
-                  <li>Each program should have child elements matching column names</li>
-                  <li>Required elements: university, programme_name</li>
-                </ul>
+              {validating && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-blue-500 mr-2" />
+                  <span className="text-sm text-gray-600">Validating programs...</span>
+                </div>
+              )}
+
+              {validationErrors.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                  <div className="flex">
+                    <AlertCircleIcon className="h-5 w-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-medium text-yellow-800 mb-2">
+                        Found {validationErrors.length} validation errors
+                      </h3>
+                      <div className="max-h-48 overflow-y-auto">
+                        <ul className="text-sm text-yellow-700 space-y-1">
+                          {validationErrors.slice(0, 10).map((error, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="font-medium mr-2">Row {error.row}:</span>
+                              <span>
+                                {error.field} - {error.message}
+                              </span>
+                            </li>
+                          ))}
+                          {validationErrors.length > 10 && (
+                            <li className="text-yellow-600 italic">
+                              ... and {validationErrors.length - 10} more errors
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!validating && validationErrors.length === 0 && parsedData && (
+                <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                  <div className="flex">
+                    <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-green-800">
+                        Data validated successfully - Ready to upload
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Data Table */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      University
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Programme
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Study Level
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Study Area
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Duration
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IELTS
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Application Fee
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentItems.map((program, idx) => (
+                    <tr key={startIndex + idx} className="hover:bg-gray-50">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {startIndex + idx + 1}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {program.university || "-"}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-gray-900">
+                        {program.programme_name || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.study_level || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.study_area || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.duration || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.ielts_score || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.application_fees || "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+                <div className="text-sm text-gray-700">
+                  Showing {startIndex + 1} to {Math.min(endIndex, parsedData.length)} of{" "}
+                  {parsedData.length} programs
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </button>
+
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => goToPage(pageNum)}
+                          className={`px-3 py-1 rounded-md text-sm font-medium ${
+                            currentPage === pageNum
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-700 hover:bg-gray-50 border border-gray-300"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Save to Database Section */}
+        {parsedData && !uploading && !uploadResult && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Step 3: Save to Database
+            </h2>
+
+            <button
+              onClick={handleSaveToDatabase}
+              disabled={uploading}
+              className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Saving to database...
+                </>
+              ) : (
+                <>
+                  <UploadIcon className="h-5 w-5 mr-2" />
+                  Save {parsedData.length} Programs to Database
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Upload Progress */}
+        {uploading && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                Uploading programs to database...
+              </p>
+              <p className="text-sm text-gray-500">
+                This may take a few moments. Please don't close this page.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Result */}
+        {uploadResult && (
+          <div className="bg-white shadow rounded-lg p-8">
+            <div
+              className={`rounded-md p-6 ${
+                uploadResult.success
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-yellow-50 border border-yellow-200"
+              }`}
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  {uploadResult.success ? (
+                    <CheckCircleIcon className="h-8 w-8 text-green-400" />
+                  ) : (
+                    <AlertCircleIcon className="h-8 w-8 text-yellow-400" />
+                  )}
+                </div>
+                <div className="ml-4 flex-1">
+                  <h3
+                    className={`text-lg font-medium mb-3 ${
+                      uploadResult.success ? "text-green-800" : "text-yellow-800"
+                    }`}
+                  >
+                    Upload Complete
+                  </h3>
+                  <div
+                    className={`text-sm space-y-1 mb-4 ${
+                      uploadResult.success ? "text-green-700" : "text-yellow-700"
+                    }`}
+                  >
+                    <p className="font-medium">Total programs: {uploadResult.total}</p>
+                    <p className="font-medium">
+                      Successfully uploaded: {uploadResult.successful}
+                    </p>
+                    {uploadResult.failed > 0 && (
+                      <p className="font-medium text-red-600">
+                        Failed: {uploadResult.failed}
+                      </p>
+                    )}
+                  </div>
+
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-semibold text-red-800 mb-2">
+                        Error Details:
+                      </h4>
+                      <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
+                        <ul className="text-sm text-red-700 space-y-2">
+                          {uploadResult.errors.map((err, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="font-medium mr-2 flex-shrink-0">
+                                Row {err.row}:
+                              </span>
+                              <span>{err.error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadResult.success && (
+                    <div className="mt-4">
+                      <Link
+                        href="/admin"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                      >
+                        Go to Dashboard
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

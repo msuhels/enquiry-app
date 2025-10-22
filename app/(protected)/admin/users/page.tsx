@@ -1,20 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { PlusIcon, EditIcon, TrashIcon, SearchIcon, UserPlusIcon } from 'lucide-react';
-import { User } from '@/lib/types';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { User } from "@/lib/types";
+import { UserPlusIcon } from "lucide-react";
+import Link from "next/link";
+import Table from "@/components/table/globalTable";
+import Breadcrumbs from "@/components/ui/breadCrumbs";
 
 export default function UsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    role: 'user' as 'admin' | 'user'
-  });
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false)
 
   useEffect(() => {
     fetchUsers();
@@ -22,112 +21,120 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      // In a real app, you would fetch from your API
+      setLoading(true);
+      // In real app: await fetch('/api/admin/users')
       const mockUsers: User[] = [
         {
-          id: '1',
-          email: 'admin@example.com',
-          name: 'System Administrator',
-          role: 'admin',
-          phone: '+1-555-0100',
+          id: "1",
+          email: "admin@example.com",
+          name: "System Administrator",
+          role: "admin",
+          phone: "+1-555-0100",
           is_active: true,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
         {
-          id: '2',
-          email: 'counselor1@example.com',
-          name: 'Sarah Johnson',
-          role: 'user',
-          phone: '+1-555-0101',
+          id: "2",
+          email: "sarah@example.com",
+          name: "Sarah Johnson",
+          role: "user",
+          phone: "+1-555-0101",
           is_active: true,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
         {
-          id: '3',
-          email: 'counselor2@example.com',
-          name: 'Mike Chen',
-          role: 'user',
-          phone: '+1-555-0102',
-          is_active: true,
+          id: "3",
+          email: "mike@example.com",
+          name: "Mike Chen",
+          role: "user",
+          phone: "+1-555-0102",
+          is_active: false,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
+          updated_at: new Date().toISOString(),
+        },
       ];
       setUsers(mockUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleEdit = (user: User) => {
+    router.push(`/admin/users/${user.id}`);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // In a real app, you would call your API here
-      console.log('Creating user:', formData);
-      
-      const newUser: User = {
-        id: Date.now().toString(),
-        ...formData,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      setUsers(prev => [...prev, newUser]);
-      setShowAddForm(false);
-      setFormData({ name: '', email: '', phone: '', role: 'user' });
-    } catch (error) {
-      console.error('Error creating user:', error);
-      alert('Error creating user. Please try again.');
-    }
-  };
-
-  const handleToggleActive = async (userId: string, currentStatus: boolean) => {
-    try {
-      // In a real app, you would call your API here
-      console.log('Toggling user status:', userId, !currentStatus);
-      
-      setUsers(prev => prev.map(user => 
-        user.id === userId 
-          ? { ...user, is_active: !currentStatus, updated_at: new Date().toISOString() }
-          : user
-      ));
-    } catch (error) {
-      console.error('Error updating user:', error);
-      alert('Error updating user. Please try again.');
-    }
-  };
-
-  const handleDelete = async (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+  const handleDelete = async (user: User) => {
+    if (confirm(`Are you sure you want to delete ${user.name}?`)) {
       try {
-        // In a real app, you would call your API here
-        console.log('Deleting user:', userId);
-        setUsers(prev => prev.filter(user => user.id !== userId));
+        console.log("Deleting user:", user.id);
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
       } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Error deleting user. Please try again.');
+        console.error("Error deleting user:", error);
       }
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleToggleActive = (user: User) => {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === user.id ? { ...u, is_active: !u.is_active } : u
+      )
+    );
+  };
+
+  const columns = [
+    {
+      key: "name",
+      label: "Name",
+      render: (row: User) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900">{row.name}</div>
+          <div className="text-sm text-gray-500">{row.email}</div>
+        </div>
+      ),
+    },
+    {
+      key: "role",
+      label: "Role",
+      render: (row: User) => (
+        <span
+          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+            row.role === "admin"
+              ? "bg-red-100 text-red-800"
+              : "bg-blue-100 text-blue-800"
+          }`}
+        >
+          {row.role}
+        </span>
+      ),
+    },
+    { key: "phone", label: "Phone" },
+    {
+      key: "is_active",
+      label: "Status",
+      render: (row: User) => (
+        <button
+          onClick={() => handleToggleActive(row)}
+          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+            row.is_active
+              ? "bg-green-100 text-green-800 hover:bg-green-200"
+              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+          }`}
+        >
+          {row.is_active ? "Active" : "Inactive"}
+        </button>
+      ),
+    },
+    {
+      key: "created_at",
+      label: "Created",
+      render: (row: User) => new Date(row.created_at).toLocaleDateString(),
+    },
+  ];
 
   if (loading) {
     return (
@@ -138,134 +145,45 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-            <p className="mt-2 text-gray-600">Manage staff and counselor accounts</p>
-          </div>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            <UserPlusIcon className="h-4 w-4 mr-2" />
-            Add User
-          </button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search users by name, email, or role..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Users Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    {searchTerm ? 'No users found matching your search.' : 'No users available.'}
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.role === 'admin' 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.phone || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleToggleActive(user.id, user.is_active)}
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.is_active 
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                        }`}
-                      >
-                        {user.is_active ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900">
-                          <EditIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Add User Modal */}
-      {showAddForm && (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Table
+          title="Users"
+          columns={columns}
+          data={users}
+          searchKeys={["name", "email", "role"]}
+          searchPlaceholder="Search users by name, email, or role..."
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          emptyMessage="No users found."
+          filterTabs={[
+            {
+              key: "all",
+              label: "All",
+              count: users.length,
+              filter: () => true,
+            },
+            {
+              key: "active",
+              label: "Active",
+              count: users.filter((u) => u.is_active).length,
+              filter: (u) => u.is_active,
+            },
+            {
+              key: "inactive",
+              label: "Inactive",
+              count: users.filter((u) => !u.is_active).length,
+              filter: (u) => !u.is_active,
+            },
+            {
+              key: "admin",
+              label: "Admins",
+              count: users.filter((u) => u.role === "admin").length,
+              filter: (u) => u.role === "admin",
+            },
+          ]}
+        />
+        {/* {showAddForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
@@ -351,32 +269,7 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Stats */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{users.length}</div>
-            <div className="text-sm text-gray-500">Total Users</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {users.filter(u => u.is_active).length}
-            </div>
-            <div className="text-sm text-gray-500">Active Users</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {users.filter(u => u.role === 'user').length}
-            </div>
-            <div className="text-sm text-gray-500">Counselors</div>
-          </div>
-        </div>
+      )} */}
       </div>
     </div>
   );

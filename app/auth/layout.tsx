@@ -19,7 +19,7 @@ export default function AuthLayout({
 
     useEffect(() => {
         if (isAuthenticated) {
-            router.push('/dashboard');
+            router.push('/admin');
         }
     }, [isAuthenticated, router]);
 
@@ -48,9 +48,8 @@ export default function AuthLayout({
                         <CardTitle>Welcome Back!</CardTitle>
                     </CardHeader>
                     <CardContent className="text-center">
-                        <p className="mb-6">You are already authenticated.</p>
                         <p className="text-sm text-muted-foreground">
-                            Redirecting you to the protected area...
+                            Redirecting ...
                         </p>
                     </CardContent>
                 </Card>

@@ -3,6 +3,9 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { ModalProvider } from "@/components/ui/modal";
+import { SWRConfig } from "swr";
+import { SWRProvider } from "@/providers/swrProvider";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -30,11 +33,13 @@ export default function RootLayout({
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ModalProvider>
+            <SWRProvider>{children}</SWRProvider>
+          </ModalProvider>
           <Toaster />
         </ThemeProvider>
       </body>

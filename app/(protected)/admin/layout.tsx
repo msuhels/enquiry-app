@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AdminSidebar from '@/components/admin-sidebar';
+import { useAuth } from '@/hooks/auth-modules';
 
 export default function AdminLayout({
   children,
@@ -12,7 +13,7 @@ export default function AdminLayout({
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [loading, setLoading] = useState(true);
-console.log("loading", loading);
+  const {logout} = useAuth()
 
   useEffect(() => {
     // Check authentication
@@ -26,9 +27,7 @@ console.log("loading", loading);
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('adminEmail');
-    router.push('/admin/login');
+    logout()
   };
 
   // if (loading || isAuthenticated) {
@@ -40,9 +39,9 @@ console.log("loading", loading);
   // }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 overflow-hidden flex">
       {isAuthenticated && <AdminSidebar onLogout={handleLogout} />}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 max-h-svh overflow-auto">
         {children}
       </main>
     </div>

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useLoginForm } from "@/hooks/auth-modules";
 import { useAuthConfig } from "@/config/auth-config";
 import type { AuthModuleConfig } from "@/types/auth-config.types";
+import React from "react";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
   config?: Partial<AuthModuleConfig>;

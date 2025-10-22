@@ -123,9 +123,9 @@ export default function EnquiryPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">University Program Enquiry</h1>
-          <p className="text-lg text-gray-600">
+          {/* <p className="text-lg text-gray-600">
             Tell us about your preferences and we'll suggest the best university programs for you
-          </p>
+          </p> */}
         </div>
 
         {!showSuggestions ? (

@@ -1,28 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
-import Link from 'next/link';
-import { ProgramFormData } from '@/lib/types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeftIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react";
+import Link from "next/link";
+import { ProgramFormData } from "@/lib/types";
+import Breadcrumbs from "@/components/ui/breadCrumbs";
+import FormInput from "@/components/form/formInput";
 
 export default function NewProgramPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [dynamicAcademicRequirements, setDynamicAcademicRequirements] =
+    useState<{ field: string; comparison: string; value: number | "" }[]>([
+      { field: "", comparison: ">", value: "" },
+    ]);
+  const comparisonOptions = [
+    { value: ">", label: "Greater than" },
+    { value: ">=", label: "Greater than or equal to" },
+    { value: "=", label: "Equal to" },
+    { value: "<=", label: "Less than or equal to" },
+    { value: "<", label: "Less than" },
+  ];
+
   const [formData, setFormData] = useState<ProgramFormData>({
-    university: '',
-    programme_name: '',
+    university: "",
+    programme_name: "",
     university_ranking: undefined,
-    study_level: '',
-    study_area: '',
-    campus: '',
-    duration: '',
-    open_intake: '',
-    open_call: '',
-    application_deadline: '',
-    entry_requirements: '',
+    study_level: "",
+    study_area: "",
+    campus: "",
+    duration: "",
+    open_intake: "",
+    open_call: "",
+    application_deadline: "",
+    entry_requirements: "",
     percentage_required: undefined,
-    moi: '',
+    moi: "",
     ielts_score: undefined,
     ielts_no_band_less_than: undefined,
     toefl_score: undefined,
@@ -37,18 +51,56 @@ export default function NewProgramPage() {
     gmat_score: undefined,
     cents_score: undefined,
     til_score: undefined,
-    arched_test: '',
+    arched_test: "",
     application_fees: undefined,
-    additional_requirements: '',
-    remarks: ''
+    additional_requirements: "",
+    remarks: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value === '' ? undefined : (name.includes('score') || name.includes('ranking') || name.includes('required') || name.includes('fees') ? parseFloat(value) : value)
+      [name]:
+        value === ""
+          ? undefined
+          : name.includes("score") ||
+            name.includes("ranking") ||
+            name.includes("required") ||
+            name.includes("fees")
+          ? parseFloat(value)
+          : value,
     }));
+  };
+
+  const handleDynamicRequirementChange = (
+    index: number,
+    key: "field" | "comparison" | "value",
+    value: string | number
+  ) => {
+    setDynamicAcademicRequirements((prev) => {
+      const updated = [...prev];
+      updated[index][key] =
+        key === "value" ? (value === "" ? "" : Number(value)) : value;
+      return updated;
+    });
+  };
+
+  const addDynamicRequirement = () => {
+    setDynamicAcademicRequirements((prev) => [
+      ...prev,
+      { field: "", comparison: ">", value: "" },
+    ]);
+  };
+
+  const removeDynamicRequirement = (index: number) => {
+    setDynamicAcademicRequirements((prev) =>
+      prev.filter((_, i) => i !== index)
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,388 +108,322 @@ export default function NewProgramPage() {
     setLoading(true);
 
     try {
-      // In a real app, you would call your API here
-      console.log('Creating program:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      router.push('/admin/programs');
+      const payload = {
+        ...formData,
+        dynamic_academic_requirements: dynamicAcademicRequirements.filter(
+          (r) => r.field && r.value !== ""
+        ),
+      };
+
+      const response = await fetch("/api/admin/programs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        alert("Error creating program. Please try again.");
+        return;
+      }
+
+      router.push("/admin/programs");
     } catch (error) {
-      console.error('Error creating program:', error);
-      alert('Error creating program. Please try again.');
+      alert("Error creating program. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const basicInfoFields = [
+    { label: "University", name: "university", required: true },
+    { label: "Programme Name", name: "programme_name", required: true },
+    { label: "University Ranking", name: "university_ranking", type: "number" },
+    {
+      label: "Study Level",
+      name: "study_level",
+      select: [
+        { value: "Bachelor", label: "Bachelor" },
+        { value: "Master", label: "Master" },
+        { value: "PhD", label: "PhD" },
+        { value: "Diploma", label: "Diploma" },
+        { value: "Certificate", label: "Certificate" },
+      ],
+    },
+    { label: "Study Area", name: "study_area", required: true },
+    { label: "Campus", name: "campus", required: true },
+    { label: "Duration", name: "duration", type: "number", required: true },
+    {
+      label: "Application Deadline",
+      name: "application_deadline",
+      type: "date",
+    },
+  ];
+
+  const academicRequirementsFields = [
+    {
+      label: "Percentage Required",
+      name: "percentage_required",
+      type: "number",
+      step: 0.01,
+      min: 0,
+      max: 100,
+    },
+    { label: "Medium of Instruction", name: "moi" },
+    { label: "Entry Requirements", name: "entry_requirements", textarea: true },
+  ];
+
+  const englishRequirementsFields = [
+    {
+      label: "IELTS Score",
+      name: "ielts_score",
+      type: "number",
+      step: 0.5,
+      min: 0,
+      max: 9,
+    },
+    {
+      label: "IELTS No Band Less Than",
+      name: "ielts_no_band_less_than",
+      type: "number",
+      step: 0.5,
+      min: 0,
+      max: 9,
+    },
+    {
+      label: "TOEFL Score",
+      name: "toefl_score",
+      type: "number",
+      min: 0,
+      max: 120,
+    },
+    {
+      label: "TOEFL No Band Less Than",
+      name: "toefl_no_band_less_than",
+      type: "number",
+      min: 0,
+      max: 30,
+    },
+    { label: "PTE Score", name: "pte_score", type: "number", min: 0, max: 90 },
+    {
+      label: "PTE No Band Less Than",
+      name: "pte_no_band_less_than",
+      type: "number",
+      min: 0,
+      max: 90,
+    },
+    { label: "DET Score", name: "det_score", type: "number", min: 0, max: 120 },
+    {
+      label: "DET No Band Less Than",
+      name: "det_no_band_less_than",
+      type: "number",
+      min: 0,
+      max: 30,
+    },
+  ];
+
+  const testScoresFields = [
+    {
+      label: "GRE Score",
+      name: "gre_score",
+      type: "number",
+      min: 260,
+      max: 340,
+    },
+    {
+      label: "GMAT Score",
+      name: "gmat_score",
+      type: "number",
+      min: 200,
+      max: 800,
+    },
+    {
+      label: "SAT Score",
+      name: "sat_score",
+      type: "number",
+      min: 400,
+      max: 1600,
+    },
+    {
+      label: "Application Fees",
+      name: "application_fees",
+      type: "number",
+      step: 0.01,
+      min: 0,
+    },
+  ];
+
+  const additionalTestFields = [
+    { label: "Open Intake", name: "open_intake" },
+    { label: "Open Call", name: "open_call" },
+    { label: "TOLC Score", name: "tolc_score", type: "number" },
+    { label: "CENTS Score", name: "cents_score", type: "number" },
+    { label: "TIL Score", name: "til_score", type: "number" },
+    { label: "ARCHED Test", name: "arched_test" },
+  ];
+
+  const additionalInfoFields = [
+    {
+      label: "Additional Requirements",
+      name: "additional_requirements",
+      textarea: true,
+    },
+    { label: "Remarks", name: "remarks", textarea: true },
+  ];
+
+  const renderFields = (fields: any[]) =>
+    fields.map((field) => (
+      <FormInput
+        key={field.name}
+        label={field.label}
+        name={field.name}
+        type={field.type}
+        value={formData[field.name]}
+        onChange={handleInputChange}
+        required={field.required}
+        select={field.select}
+        step={field.step}
+        min={field.min}
+        max={field.max}
+        textarea={field.textarea}
+      />
+    ));
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <Link
-            href="/admin"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Link>
+          <Breadcrumbs />
           <h1 className="text-3xl font-bold text-gray-900">Add New Program</h1>
-          <p className="mt-2 text-gray-600">Enter the details for the new university program</p>
+          <p className="mt-2 text-gray-600">
+            Enter the details for the new university program
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Basic Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="university" className="block text-sm font-medium text-gray-700 mb-2">
-                  University *
-                </label>
-                <input
-                  type="text"
-                  id="university"
-                  name="university"
-                  required
-                  value={formData.university}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {renderFields(basicInfoFields)}
+            </div>
+          </div>
 
-              <div>
-                <label htmlFor="programme_name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Programme Name *
-                </label>
-                <input
-                  type="text"
-                  id="programme_name"
-                  name="programme_name"
-                  required
-                  value={formData.programme_name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="university_ranking" className="block text-sm font-medium text-gray-700 mb-2">
-                  University Ranking
-                </label>
-                <input
-                  type="number"
-                  id="university_ranking"
-                  name="university_ranking"
-                  value={formData.university_ranking || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="study_level" className="block text-sm font-medium text-gray-700 mb-2">
-                  Study Level
-                </label>
-                <select
-                  id="study_level"
-                  name="study_level"
-                  value={formData.study_level}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Academic Requirements
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderFields(academicRequirementsFields.slice(0, 2))}
+            </div>
+            <div className="grid grid-cols-1 mt-6">
+              {renderFields(academicRequirementsFields.slice(2))}
+            </div>
+          </div>
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Custom Academic Requirements
+            </h2>
+            <div className="space-y-4">
+              {dynamicAcademicRequirements.map((req, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
                 >
-                  <option value="">Select Study Level</option>
-                  <option value="Bachelor">Bachelor</option>
-                  <option value="Master">Master</option>
-                  <option value="PhD">PhD</option>
-                  <option value="Diploma">Diploma</option>
-                  <option value="Certificate">Certificate</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="study_area" className="block text-sm font-medium text-gray-700 mb-2">
-                  Study Area
-                </label>
-                <input
-                  type="text"
-                  id="study_area"
-                  name="study_area"
-                  value={formData.study_area || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="campus" className="block text-sm font-medium text-gray-700 mb-2">
-                  Campus
-                </label>
-                <input
-                  type="text"
-                  id="campus"
-                  name="campus"
-                  value={formData.campus || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-                  Duration
-                </label>
-                <input
-                  type="text"
-                  id="duration"
-                  name="duration"
-                  value={formData.duration || ''}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 2 years, 18 months"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="application_deadline" className="block text-sm font-medium text-gray-700 mb-2">
-                  Application Deadline
-                </label>
-                <input
-                  type="date"
-                  id="application_deadline"
-                  name="application_deadline"
-                  value={formData.application_deadline || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                  <FormInput
+                    label="Field"
+                    name={`field-${index}`}
+                    value={req.field}
+                    onChange={(e) =>
+                      handleDynamicRequirementChange(
+                        index,
+                        "field",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <FormInput
+                    label="Comparison"
+                    name={`comparison-${index}`}
+                    select={comparisonOptions}
+                    value={req.comparison}
+                    onChange={(e) =>
+                      handleDynamicRequirementChange(
+                        index,
+                        "comparison",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <FormInput
+                    label="Value"
+                    name={`value-${index}`}
+                    type="number"
+                    value={req.value}
+                    onChange={(e) =>
+                      handleDynamicRequirementChange(
+                        index,
+                        "value",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <div className="h-full flex justify-center items-center">
+                    <button
+                      type="button"
+                      onClick={() => removeDynamicRequirement(index)}
+                      className="text-red-500 flex items-center mt-1"
+                    >
+                      <Trash2Icon className="h-5 w-5 mr-1" /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
+            <button
+              type="button"
+              onClick={addDynamicRequirement}
+              className="mt-4 inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            >
+              <PlusIcon className="h-4 w-4 mr-1" /> Add Requirement
+            </button>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Academic Requirements</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              English Language Requirements
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="percentage_required" className="block text-sm font-medium text-gray-700 mb-2">
-                  Percentage Required
-                </label>
-                <input
-                  type="number"
-                  id="percentage_required"
-                  name="percentage_required"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  value={formData.percentage_required || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="moi" className="block text-sm font-medium text-gray-700 mb-2">
-                  Medium of Instruction
-                </label>
-                <input
-                  type="text"
-                  id="moi"
-                  name="moi"
-                  value={formData.moi || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label htmlFor="entry_requirements" className="block text-sm font-medium text-gray-700 mb-2">
-                  Entry Requirements
-                </label>
-                <textarea
-                  id="entry_requirements"
-                  name="entry_requirements"
-                  rows={3}
-                  value={formData.entry_requirements || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {renderFields(englishRequirementsFields)}
             </div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">English Language Requirements</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Test Scores
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="ielts_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  IELTS Score
-                </label>
-                <input
-                  type="number"
-                  id="ielts_score"
-                  name="ielts_score"
-                  step="0.5"
-                  min="0"
-                  max="9"
-                  value={formData.ielts_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="ielts_no_band_less_than" className="block text-sm font-medium text-gray-700 mb-2">
-                  IELTS No Band Less Than
-                </label>
-                <input
-                  type="number"
-                  id="ielts_no_band_less_than"
-                  name="ielts_no_band_less_than"
-                  step="0.5"
-                  min="0"
-                  max="9"
-                  value={formData.ielts_no_band_less_than || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="toefl_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  TOEFL Score
-                </label>
-                <input
-                  type="number"
-                  id="toefl_score"
-                  name="toefl_score"
-                  min="0"
-                  max="120"
-                  value={formData.toefl_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="pte_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  PTE Score
-                </label>
-                <input
-                  type="number"
-                  id="pte_score"
-                  name="pte_score"
-                  min="0"
-                  max="90"
-                  value={formData.pte_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {renderFields(testScoresFields)}
             </div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Test Scores</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Additional Test & Intake Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="gre_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  GRE Score
-                </label>
-                <input
-                  type="number"
-                  id="gre_score"
-                  name="gre_score"
-                  min="260"
-                  max="340"
-                  value={formData.gre_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="gmat_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  GMAT Score
-                </label>
-                <input
-                  type="number"
-                  id="gmat_score"
-                  name="gmat_score"
-                  min="200"
-                  max="800"
-                  value={formData.gmat_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="sat_score" className="block text-sm font-medium text-gray-700 mb-2">
-                  SAT Score
-                </label>
-                <input
-                  type="number"
-                  id="sat_score"
-                  name="sat_score"
-                  min="400"
-                  max="1600"
-                  value={formData.sat_score || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="application_fees" className="block text-sm font-medium text-gray-700 mb-2">
-                  Application Fees
-                </label>
-                <input
-                  type="number"
-                  id="application_fees"
-                  name="application_fees"
-                  step="0.01"
-                  min="0"
-                  value={formData.application_fees || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {renderFields(additionalTestFields)}
             </div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Additional Information
+            </h2>
             <div className="space-y-6">
-              <div>
-                <label htmlFor="additional_requirements" className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Requirements
-                </label>
-                <textarea
-                  id="additional_requirements"
-                  name="additional_requirements"
-                  rows={3}
-                  value={formData.additional_requirements || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-2">
-                  Remarks
-                </label>
-                <textarea
-                  id="remarks"
-                  name="remarks"
-                  rows={3}
-                  value={formData.remarks || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {renderFields(additionalInfoFields)}
             </div>
           </div>
 
@@ -458,7 +444,7 @@ export default function NewProgramPage() {
               ) : (
                 <SaveIcon className="h-4 w-4 mr-2" />
               )}
-              {loading ? 'Creating...' : 'Create Program'}
+              {loading ? "Creating..." : "Create Program"}
             </button>
           </div>
         </form>
