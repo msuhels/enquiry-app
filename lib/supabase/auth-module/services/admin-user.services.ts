@@ -1,123 +1,115 @@
-"use server"
+// server/create-user.ts
+"use server";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
+import { encryptPlaintext } from "@/lib/utils/encrytion/encryption";
+import crypto from "crypto";
 import type { UserProfile, UserServiceResult } from "./user.services";
 
-/**
- * Admin User Service - Uses service role to bypass RLS
- * This should only be used in server-side contexts for administrative operations
- */
-
-/**
- * Create a new user in the users table using service role (bypasses RLS)
- * This is called during the signup process after auth user is created
- */
-export async function createUser(authUserId: string, email: string): Promise<UserServiceResult<UserProfile>> {
+export async function createUser({user, email}: {user: UserProfile, email: string}): Promise<UserServiceResult<{ user: UserProfile; password: string }>> {
   try {
-    const supabase = createServiceRoleClient();
+    const supabaseAdmin = createServiceRoleClient();
 
+    // 1️⃣ Generate a random password
+    const generatedPassword = crypto.randomBytes(12).toString("base64").slice(0, 16);
+
+    // 2️⃣ Create the user in Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: generatedPassword,
+      email_confirm: true,
+    });
+
+    if (authError) {
+      console.error("Supabase Auth creation failed:", authError);
+      return { success: false, error: authError.message };
+    }
+
+    // 3️⃣ Encrypt the password for storage in your custom table
+    const enc = encryptPlaintext(generatedPassword);
+
+    // 4️⃣ Insert user record into custom 'users' table
     const userRecord = {
-      id: authUserId,
+      id: authData.user.id, // Use Supabase Auth user id
       email: email,
-      email_verified: false,
-      role: 'user',
-      status: 'active',
+      full_name: user.full_name,
+      phone_number: user.phone_number,
+      email_verified: authData.user.email_confirmed_at ? true : false,
+      password: enc.ciphertext,
+      password_iv: enc.iv,
+      password_tag: enc.tag,
+      password_algo: enc.algo,
+      role: "user",
+      status: "active",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-
-    const { data, error } = await supabase
-      .from('users')
+    const { data: tableData, error: tableError } = await supabaseAdmin
+      .from("users")
       .insert([userRecord])
       .select()
       .single();
 
-
-    if (error) {
-      console.error("Admin user creation error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
+    if (tableError) {
+      console.error("Custom user table insertion failed:", tableError);
+      return { success: false, error: tableError.message };
     }
 
+    // 5️⃣ Return both the user data and plaintext password for admin display
     return {
       success: true,
-      data: data,
+      data: {
+        user: tableData,
+        password: generatedPassword,
+      },
     };
   } catch (error) {
-    console.error("Admin user creation unexpected error:", error);
+    console.error("Unexpected error in createUser:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }
 
-/**
- * Update user email verification status using service role
- */
-export async function updateEmailVerification(userId: string, verified: boolean): Promise<UserServiceResult> {
+// admin-user.services.ts
+export async function getUser(identifier: string): Promise<UserServiceResult<UserProfile>> {
   try {
     const supabase = createServiceRoleClient();
-    const { error } = await supabase
-      .from('users')
-      .update({
-        email_verified: verified,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
+
+    // Fetch from your custom table
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .or(`id.eq.${identifier},email.eq.${identifier}`)
+      .single();
 
     if (error) {
-      console.error("Admin email verification update error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
+      return { success: false, error: error.message };
     }
 
-    return {
-      success: true,
-    };
+    return { success: true, data };
   } catch (error) {
-    console.error("Admin email verification update unexpected error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
-    };
+    return { success: false, error: error instanceof Error ? error.message : "Unexpected error" };
   }
 }
 
-/**
- * Update user role using service role (administrative operation)
- */
-export async function updateUserRole(userId: string, role: string): Promise<UserServiceResult> {
+
+export async function getUsers(): Promise<UserServiceResult<UserProfile[]>> {
   try {
     const supabase = createServiceRoleClient();
-    const { error } = await supabase
-      .from('users')
-      .update({
-        role: role,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: false }); // optional: order by creation date
 
     if (error) {
-      console.error("Admin role update error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
+      return { success: false, error: error.message };
     }
 
-    return {
-      success: true,
-    };
+    return { success: true, data };
   } catch (error) {
-    console.error("Admin role update unexpected error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
-    };
+    return { success: false, error: error instanceof Error ? error.message : "Unexpected error" };
   }
 }

@@ -1,3 +1,4 @@
+import { UserProfile } from './supabase/auth-module/services/user.services';
 export interface Program {
   id: string;
   sr_no?: number;
@@ -41,8 +42,7 @@ export interface Enquiry {
   student_name: string;
   email: string;
   phone?: string;
-  study_level?: string;
-  study_area?: string;
+  program_interest?: string;
   preferred_university?: string;
   preferred_country?: string;
   budget_range?: string;
@@ -69,6 +69,7 @@ export interface User {
   name: string;
   role: 'admin' | 'user';
   phone?: string;
+  password?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -112,8 +113,12 @@ export interface EnquiryFormData {
   student_name: string;
   email: string;
   phone?: string;
-  study_level?: string;
-  study_area?: string;
+  academics?:{
+    study_level?: string;
+    study_area?: string;
+    duration?: string;
+    completion_date?: string;
+  };
   preferred_university?: string;
   preferred_country?: string;
   budget_range?: string;
@@ -149,3 +154,26 @@ export interface BulkUploadResult {
   }>;
   data?: Program[];
 }
+
+export interface BulkUserInput {
+  full_name: string;
+  email: string;
+  phone_number?: string; // Optional
+}
+
+export interface BulkUserUploadResult {
+  success: boolean;
+  total: number;
+  successful: number;
+  failed: number;
+  errors: Array<{
+    row: number;
+    user: BulkUserInput;
+    error: string;
+  }>;
+  data?: Array<{
+    user: UserProfile;
+    password: string;
+  }>;
+}
+

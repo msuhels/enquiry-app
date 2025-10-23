@@ -7,6 +7,7 @@ import { UserPlusIcon } from "lucide-react";
 import Link from "next/link";
 import Table from "@/components/table/globalTable";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
+import { useApi } from "@/hooks/auth-modules/useFetch";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -14,54 +15,20 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false)
+  const {data, error, isLoading}= useApi("/api/admin/users")
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      // In real app: await fetch('/api/admin/users')
-      const mockUsers: User[] = [
-        {
-          id: "1",
-          email: "admin@example.com",
-          name: "System Administrator",
-          role: "admin",
-          phone: "+1-555-0100",
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          email: "sarah@example.com",
-          name: "Sarah Johnson",
-          role: "user",
-          phone: "+1-555-0101",
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "3",
-          email: "mike@example.com",
-          name: "Mike Chen",
-          role: "user",
-          phone: "+1-555-0102",
-          is_active: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ];
-      setUsers(mockUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
+    console.log("data" , data)
+    if(data?.data){
+      if(data.success){
+        setUsers(data?.data);
+      }else{
+        console.error("Error fetching users:", data.error);
+        return;
+      }
     }
-  };
+  }, [data]);
+
 
   const handleEdit = (user: User) => {
     router.push(`/admin/users/${user.id}`);
@@ -156,6 +123,8 @@ export default function UsersPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           emptyMessage="No users found."
+          addBulkHeref="/admin/users/bulkUpload"
+          addHref="/admin/users/addUser"
           filterTabs={[
             {
               key: "all",

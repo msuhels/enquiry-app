@@ -24,6 +24,7 @@ export interface UserServiceResult<T = any> {
   success: boolean;
   data?: T;
   error?: string;
+  tempPassword?: string;
 }
 
 export class UserService {

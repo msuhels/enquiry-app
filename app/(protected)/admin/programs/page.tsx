@@ -136,7 +136,7 @@ export default function ProgramsPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           emptyMessage="No programs available."
-          addHref="/admin/programs/new"
+          addHref="/admin/programs/addProgram"
           addBulkHeref="/admin/programs/upload" 
         />
       </div>

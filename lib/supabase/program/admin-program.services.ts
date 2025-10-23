@@ -278,7 +278,7 @@ export async function bulkCreateProgramsWithValidation(
   programs: Program[]
 ): Promise<BulkUploadResult> {
   const supabase = createServiceRoleClient();
-  const batchSize = 100; // Process 100 programs at a time
+  const batchSize = 100;
   const results: BulkUploadResult = {
     success: true,
     total: programs.length,

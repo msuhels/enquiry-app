@@ -15,6 +15,7 @@ interface FormInputProps {
   max?: number;
   textarea?: boolean;
   select?: { value: string; label: string }[];
+  checkbox?: boolean
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -29,7 +30,8 @@ const FormInput: React.FC<FormInputProps> = ({
   min,
   max,
   textarea = false,
-  select
+  select,
+  checkbox= false,
 }) => {
   if (textarea) {
     return (
@@ -70,6 +72,26 @@ const FormInput: React.FC<FormInputProps> = ({
             </option>
           ))}
         </select>
+      </div>
+    );
+  }
+
+  console.log("checkbox", checkbox);
+
+  if(checkbox){
+    return (
+      <div>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+        </label>
+        <input
+          type="checkbox"
+          id={name}
+          name={name}
+          value={value || ''}
+          onChange={onChange}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus:ring-indigo-600 h-4 w-4 cursor-pointer checked:bg-indigo-600"
+        />
       </div>
     );
   }

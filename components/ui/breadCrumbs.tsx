@@ -16,9 +16,6 @@ export default function Breadcrumbs() {
   const routeLabels: Record<string, string> = {
     admin: 'Dashboard',
     programs: 'Programs',
-    upload: 'Bulk Upload',
-    new: 'Add Program',
-    edit: 'Edit Program',
     users: 'Users',
     enquiries: 'Enquiries',
     settings: 'Settings'

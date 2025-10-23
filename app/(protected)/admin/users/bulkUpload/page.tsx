@@ -16,11 +16,20 @@ import {
   Info,
 } from "lucide-react";
 import Link from "next/link";
-import { BulkUploadService } from "@/lib/bulk-upload";
-import { ProgramFormData } from "@/lib/types";
+// Assuming you create a new service for user bulk upload
+// You'll need to create this file: "@/lib/user-bulk-upload"
+import { BulkUploadUserService as BulkUploadService } from "@/lib/user-bulk-upload-service";
 import { useModal } from "@/components/ui/modal";
 import FileFormatInstructions from "@/components/modals/fileInstructionModal";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
+import GeneratePasswordModal from "@/components/modals/generatePasswordModal";
+
+export interface UserFormData {
+  email: string;
+  name: string;
+  role: "admin" | "user";
+  phone?: string;
+}
 
 interface ValidationError {
   row: number;
@@ -31,9 +40,9 @@ interface ValidationError {
 
 interface ValidationResponse {
   valid: boolean;
-  totalPrograms: number;
-  validPrograms: number;
-  invalidPrograms: number;
+  totalUsers: number;
+  validUsers: number;
+  invalidUsers: number;
   errors: ValidationError[];
 }
 
@@ -47,14 +56,14 @@ interface UploadResult {
 
 const ITEMS_PER_PAGE = 10;
 
-export default function BulkUploadPage() {
+export default function BulkUploadUsersPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
   const [validating, setValidating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [parsedData, setParsedData] = useState<ProgramFormData[] | null>(null);
+  const [parsedData, setParsedData] = useState<UserFormData[] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     []
@@ -63,9 +72,8 @@ export default function BulkUploadPage() {
   const [error, setError] = useState<string>("");
 
   const bulkUploadService = new BulkUploadService();
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
 
-  // Pagination calculations
   const totalPages = parsedData
     ? Math.ceil(parsedData.length / ITEMS_PER_PAGE)
     : 0;
@@ -105,10 +113,11 @@ export default function BulkUploadPage() {
       const fileExtension = bulkUploadService.getFileExtension(
         selectedFile.name
       );
-      let data: ProgramFormData[] = [];
+      let data: UserFormData[] = [];
 
       switch (fileExtension) {
         case "csv":
+          // The service method must be updated to map CSV/Excel columns to UserFormData
           data = await bulkUploadService.parseCSV(selectedFile);
           break;
         case "xls":
@@ -127,7 +136,7 @@ export default function BulkUploadPage() {
       }
 
       setParsedData(data);
-      console.log(`Successfully parsed ${data.length} programs`);
+      console.log(`Successfully parsed ${data.length} users`);
     } catch (err) {
       console.error("Parse error:", err);
       setError(err instanceof Error ? err.message : "Failed to parse file");
@@ -136,47 +145,6 @@ export default function BulkUploadPage() {
     }
   };
 
-  const handleValidate = async () => {
-    if (!parsedData) return;
-
-    setValidating(true);
-    setValidationErrors([]);
-    setError("");
-
-    try {
-      // FIX: Correct API path without /admin
-      const response = await fetch("/api/admin/programs/validate-bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programs: parsedData }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          error: `Server error: ${response.status} ${response.statusText}`,
-        }));
-        throw new Error(errorData.error || "Validation request failed");
-      }
-
-      const result: ValidationResponse = await response.json();
-
-      if (!result.valid && result.errors && result.errors.length > 0) {
-        setValidationErrors(result.errors);
-        console.warn(`Found ${result.errors.length} validation errors`);
-      } else {
-        setValidationErrors([]);
-        console.log("All programs validated successfully");
-      }
-    } catch (err) {
-      console.error("Validation error:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to validate programs"
-      );
-      setValidationErrors([]);
-    } finally {
-      setValidating(false);
-    }
-  };
 
   const handleSaveToDatabase = async () => {
     if (!parsedData || !selectedFile) return;
@@ -184,7 +152,7 @@ export default function BulkUploadPage() {
     // Warn if there are validation errors
     if (validationErrors.length > 0) {
       const confirmed = window.confirm(
-        `There are ${validationErrors.length} validation errors. Some programs may fail to upload. Do you want to continue?`
+        `There are ${validationErrors.length} validation errors. Some users may fail to upload. Do you want to continue?`
       );
       if (!confirmed) return;
     }
@@ -194,12 +162,18 @@ export default function BulkUploadPage() {
     setError("");
 
     try {
-      // FIX: Correct API path without /admin
-      const response = await fetch("/api/admin/programs/bulk-upload", {
+      const modifiedData: any = parsedData.map((user) => ({
+        full_name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+      }));
+      // 4. API Path Modification for Upload
+      const response = await fetch("/api/admin/users/bulk-upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          programs: parsedData,
+          users: modifiedData,
           filename: selectedFile.name,
         }),
       });
@@ -228,83 +202,22 @@ export default function BulkUploadPage() {
       }
     } catch (err) {
       console.error("Upload error:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to upload programs"
-      );
+      setError(err instanceof Error ? err.message : "Failed to upload users");
     } finally {
       setUploading(false);
     }
   };
 
   const downloadTemplate = () => {
-    const headers = [
-      "Sr.No.",
-      "UNIVERSITY",
-      "University Ranking",
-      "Study Level",
-      "Study Area",
-      "PROGRAMME Name",
-      "Campus",
-      "Duration",
-      "Open Intake",
-      "Open Call",
-      "Application Deadline",
-      "Entry REQUIREMENTS",
-      "PERCENTAGE Required",
-      "MOI",
-      "Ielts Score",
-      "No band less than",
-      "Toefl Score",
-      "No ban less than",
-      "PTE Score",
-      "No band less than",
-      "DET Score",
-      "No band less than",
-      "TOLC Score",
-      "SAT Score",
-      "GRE Score",
-      "GMAT Score",
-      "CENTS Score",
-      "TIL Score",
-      "ARCHED Test",
-      "Application Fees",
-      "Additional Requirement",
-      "Remarks",
-    ];
+    // 5. Template Headers and Data Modified for Users
+    const headers = ["Sr.No.", "Name", "Email", "Phone", "Role"];
 
     const sampleData = [
       "1",
-      "University of Example",
-      "100",
-      "Bachelor",
-      "Computer Science",
-      "Computer Science",
-      "Main Campus",
-      "4 years",
-      "Fall 2024",
-      "Open",
-      "2024-03-15",
-      "High school diploma",
-      "80",
-      "English",
-      "6.5",
-      "6.0",
-      "90",
-      "20",
-      "65",
-      "60",
-      "120",
-      "100",
-      "25",
-      "1200",
-      "320",
-      "650",
-      "85",
-      "75",
-      "Pass",
-      "100",
-      "Portfolio required",
-      "Popular program",
+      "Alice Smith",
+      "alice.smith@example.com",
+      "123-456-7890",
+      "user",
     ];
 
     const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
@@ -312,7 +225,7 @@ export default function BulkUploadPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "program_template.csv";
+    a.download = "user_template.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -329,131 +242,127 @@ export default function BulkUploadPage() {
     });
   };
 
-  const handleUploadAnotherFile = () => {
-    setSelectedFile(null);
-    setParsedData(null);
-    setValidationErrors([]);
-    setCurrentPage(1);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleOpenGeneratePasswordModal = () => {
+    const modalId = openModal(
+      <GeneratePasswordModal
+        handleConfirmation={() => {
+          console.log("done done done");
+          closeModal(modalId);
+        }}
+      />,
+      { size: "md", closeOnOverlayClick: true, showCloseButton: true }
+    );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!parsedData && (
-          <>
-            <div className="mb-8">
-              <Breadcrumbs />
-              <h1 className="text-3xl font-bold text-gray-900">
-                Bulk Upload Programs
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Upload multiple university programs using CSV, Excel, or XML
-                files
-              </p>
+        <div className="mb-8">
+          <Breadcrumbs />
+          <h1 className="text-3xl font-bold text-gray-900">
+            Bulk Upload Users
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Upload multiple users using CSV, Excel, or XML files
+          </p>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-8 mb-6">
+          {/* File Upload Section */}
+          <div className="mb-8">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Upload File
+                </h2>
+                <Info
+                  onClick={handleOpenInstructions}
+                  className="h-4 w-4 text-gray-600 cursor-pointer"
+                />
+              </div>
+
+              {/* Template Download */}
+              <div className="mb-8 flex items-center gap-2 justify-center">
+                <h3 className="text-md font-medium text-gray-900">
+                  Need a template?
+                </h3>
+                <button
+                  onClick={downloadTemplate}
+                  className="inline-flex items-center p-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <FileDown className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            <div className="bg-white shadow rounded-lg p-8 mb-6">
-              {/* File Upload Section */}
-              <div className="mb-8">
-                <div className="flex justify-between">
-                  <div className="flex items-center justify-center gap-2">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Upload File
-                    </h2>
-                    <Info
-                      onClick={handleOpenInstructions}
-                      className="h-4 w-4 text-gray-600 cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Template Download */}
-                  <div className="mb-8 flex items-center gap-2 justify-center">
-                    <h3 className="text-md font-medium text-gray-900">
-                      Need a template?
-                    </h3>
-                    <button
-                      onClick={downloadTemplate}
-                      className="inline-flex items-center p-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <FileDown className="h-4 w-4" />
-                    </button>
-                  </div>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+              <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <span className="mt-2 block text-sm font-medium text-gray-900">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="mt-1 block text-sm text-gray-500">
+                      CSV, Excel (.xls, .xlsx), or XML files up to 10MB
+                    </span>
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    accept=".csv,.xls,.xlsx,.xml"
+                    className="sr-only"
+                    onChange={handleFileSelect}
+                    disabled={parsing || validating || uploading}
+                  />
                 </div>
 
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                  <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-gray-900">
-                          Click to upload or drag and drop
-                        </span>
-                        <span className="mt-1 block text-sm text-gray-500">
-                          CSV, Excel (.xls, .xlsx), or XML files up to 10MB
-                        </span>
-                      </label>
-                      <input
-                        ref={fileInputRef}
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        accept=".csv,.xls,.xlsx,.xml"
-                        className="sr-only"
-                        onChange={handleFileSelect}
-                        disabled={parsing || validating || uploading}
-                      />
-                    </div>
-
-                    {selectedFile && (
-                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                        <FileIcon className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">{selectedFile.name}</span>
-                        <span className="text-gray-400">
-                          ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {selectedFile && !parsedData && (
-                  <div className="mt-4 w-full flex justify-end items-center">
-                    <button
-                      onClick={handleParseFile}
-                      disabled={parsing}
-                      className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {parsing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        </>
-                      ) : (
-                        "Parse File"
-                      )}
-                    </button>
+                {selectedFile && (
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                    <FileIcon className="h-4 w-4 text-blue-500" />
+                    <span className="font-medium">{selectedFile.name}</span>
+                    <span className="text-gray-400">
+                      ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
                   </div>
                 )}
               </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-8 bg-red-50 border border-red-200 rounded-md p-4">
-                  <div className="flex">
-                    <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">
-                        {error}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-          </>
-        )}
 
-        {/* Parsed Data Section */}
+            {selectedFile && !parsedData && (
+              <div className="mt-4 w-full flex justify-end items-center">
+                <button
+                  onClick={handleParseFile}
+                  disabled={parsing}
+                  className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {parsing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    </>
+                  ) : (
+                    "Parse File"
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-8 bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {parsedData && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
@@ -462,10 +371,10 @@ export default function BulkUploadPage() {
                   Review Parsed Data
                 </h2>
                 <button
-                  className="inline-flex items-center p-1 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors"
-                  onClick={handleUploadAnotherFile}
+                  onClick={handleOpenGeneratePasswordModal}
+                  className="inline-flex items-center p-1 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                 >
-                  Upload another file
+                  Generate Passwords
                 </button>
               </div>
 
@@ -474,7 +383,7 @@ export default function BulkUploadPage() {
                   <CheckCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-blue-800">
-                      Successfully parsed {parsedData.length} programs from file
+                      Successfully parsed {parsedData.length} users from file
                     </p>
                   </div>
                 </div>
@@ -490,54 +399,36 @@ export default function BulkUploadPage() {
                       #
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      University
+                      Name
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Programme
+                      Email
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Study Level
+                      Phone
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Study Area
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IELTS
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Application Fee
+                      Role
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((program, idx) => (
+                  {currentItems.map((user, idx) => (
                     <tr key={startIndex + idx} className="hover:bg-gray-50">
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {startIndex + idx + 1}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {program.university || "-"}
+                        {user.name || "-"}
                       </td>
                       <td className="px-3 py-4 text-sm text-gray-900">
-                        {program.programme_name || "-"}
+                        {user.email || "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.study_level || "-"}
+                        {user.phone || "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.study_area || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.duration || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.ielts_score || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.application_fees || "-"}
+                        {user.role || "-"}
                       </td>
                     </tr>
                   ))}
@@ -545,13 +436,13 @@ export default function BulkUploadPage() {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination remains the same */}
             {totalPages > 1 && (
               <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                 <div className="text-sm text-gray-700">
                   Showing {startIndex + 1} to{" "}
                   {Math.min(endIndex, parsedData.length)} of {parsedData.length}{" "}
-                  programs
+                  users
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -622,7 +513,7 @@ export default function BulkUploadPage() {
               ) : (
                 <>
                   <UploadIcon className="h-5 w-5 mr-2" />
-                  Save {parsedData.length} Programs to Database
+                  Save {parsedData.length} Users to Database
                 </>
               )}
             </button>
@@ -635,7 +526,7 @@ export default function BulkUploadPage() {
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
               <p className="text-lg font-medium text-gray-900 mb-2">
-                Uploading programs to database...
+                Uploading users to database...
               </p>
               <p className="text-sm text-gray-500">
                 This may take a few moments. Please don't close this page.
@@ -680,7 +571,7 @@ export default function BulkUploadPage() {
                     }`}
                   >
                     <p className="font-medium">
-                      Total programs: {uploadResult.total}
+                      Total users: {uploadResult.total}
                     </p>
                     <p className="font-medium">
                       Successfully uploaded: {uploadResult.successful}

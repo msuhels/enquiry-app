@@ -511,7 +511,7 @@ export default function EnquiryPage() {
                 ) : (
                   <SearchIcon className="h-5 w-5 mr-2" />
                 )}
-                {loading ? 'Finding Programs...' : 'Find My Programs'}
+                {loading ? 'Finding Programs...' : 'Find Programs'}
               </button>
             </div>
           </form>

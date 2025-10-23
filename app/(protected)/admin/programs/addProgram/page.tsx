@@ -137,8 +137,8 @@ export default function NewProgramPage() {
   };
 
   const basicInfoFields = [
-    { label: "University", name: "university", required: true },
-    { label: "Programme Name", name: "programme_name", required: true },
+    { label: "University", name: "university" },
+    { label: "Programme Name", name: "programme_name" },
     { label: "University Ranking", name: "university_ranking", type: "number" },
     {
       label: "Study Level",
@@ -151,9 +151,9 @@ export default function NewProgramPage() {
         { value: "Certificate", label: "Certificate" },
       ],
     },
-    { label: "Study Area", name: "study_area", required: true },
-    { label: "Campus", name: "campus", required: true },
-    { label: "Duration", name: "duration", type: "number", required: true },
+    { label: "Study Area", name: "study_area" },
+    { label: "Campus", name: "campus" },
+    { label: "Duration", name: "duration", type: "number" },
     {
       label: "Application Deadline",
       name: "application_deadline",
