@@ -14,7 +14,6 @@ interface User {
 
 interface Props {
   params: { id: string };
-  initialUser: User;
 }
 
 export default function UserUpdatePage({ params }: Props) {
