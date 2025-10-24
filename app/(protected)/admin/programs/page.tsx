@@ -25,20 +25,19 @@ export default function ProgramsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const totalItems = 15;
-  const {data, error, isLoading}= useApi("/api/admin/programs")
-  console.log("data" , data)
+  const { data, error, isLoading } = useApi("/api/admin/programs");
+  console.log("data", data);
   useEffect(() => {
-    if(data?.data){
-      if(data.success){
+    if (data?.data) {
+      if (data.success) {
         setPrograms(data?.data);
-      }else{
+      } else {
         console.error("Error fetching programs:", data.error);
         return;
       }
     }
   }, [data]);
 
-  
   const fetchPrograms = async () => {
     try {
       const response = await fetch("/api/admin/programs");
@@ -80,7 +79,7 @@ export default function ProgramsPage() {
       program.study_area?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const paginatedPrograms = filteredPrograms.slice(0, itemsPerPage); // Always showing 5 for this mock UI
+  const paginatedPrograms = filteredPrograms.slice(0, itemsPerPage);
 
   const columns = [
     {
@@ -88,7 +87,12 @@ export default function ProgramsPage() {
       label: "University",
       render: (row: Program) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">
+          <div
+            onClick={() => {
+              router.push(`/admin/programs/view/${row.id}`);
+            }}
+            className="text-sm underline cursor-pointer font-medium text-gray-900"
+          >
             {row.university}
           </div>
           {row.campus && (
@@ -101,15 +105,33 @@ export default function ProgramsPage() {
       key: "programme_name",
       label: "Program",
       render: (row: Program) => (
-        <div>
-          <div className="text-sm text-gray-900">{row.programme_name}</div>
+        <div className="max-w-[220px] truncate">
+          <div className="text-sm text-gray-900 font-medium truncate">
+            {row.programme_name}
+          </div>
           {row.study_area && (
-            <div className="text-sm text-gray-500">{row.study_area}</div>
+            <div className="text-sm text-gray-500 truncate">
+              {row.study_area}
+            </div>
           )}
         </div>
       ),
     },
-    { key: "study_level", label: "Study Level" },
+    {
+      key: "study_level",
+      label: "Study Level",
+      render: (row: Program) => (
+        <div className="max-w-[220px] truncate">
+          <div className="text-sm text-gray-900 font-medium truncate">
+            {row.study_level}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "duration",
+      label: "Duration",
+    },
     {
       key: "university_ranking",
       label: "Ranking",
@@ -137,7 +159,7 @@ export default function ProgramsPage() {
           onDelete={handleDelete}
           emptyMessage="No programs available."
           addHref="/admin/programs/addProgram"
-          addBulkHeref="/admin/programs/upload" 
+          addBulkHeref="/admin/programs/upload"
         />
       </div>
     </div>

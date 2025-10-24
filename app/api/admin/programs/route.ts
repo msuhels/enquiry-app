@@ -61,7 +61,23 @@ export async function POST(request: NextRequest) {
 
     console.log("LOGGING : API received program creation request");
 
-    const { custom_fields, ...rest } = body;
+    const { custom_fields = [], ...rest } = body;
+
+    // Check if at least one field has a non-empty value
+    const hasProgramData =
+      Object.values(rest).some(
+        (value) => value !== null && value !== undefined && value.toString().trim() !== ""
+      ) || 
+      custom_fields.some(
+        (field: CustomFieldEntry) => field.value !== null && field.value !== undefined && field.value.toString().trim() !== ""
+      );
+
+    if (!hasProgramData) {
+      return NextResponse.json(
+        { error: "At least one field is required" },
+        { status: 400 }
+      );
+    }
 
     const programData = {
       ...rest,
@@ -78,23 +94,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    const customFields = custom_fields.map((field: CustomFieldEntry) => ({
-      field_name: field.field,
-      field_value: field.value.toString(),
-      program_id: result.data?.id,
-    }));
+    if (custom_fields.length > 0) {
+      const customFields = custom_fields.map((field: CustomFieldEntry) => ({
+        field_name: field.field,
+        field_value: field.value?.toString() || "",
+        program_id: result.data?.id,
+      }));
 
-    const savedCustomFields = await createCustomFields(customFields);
+      const savedCustomFields = await createCustomFields(customFields);
 
-    if (!savedCustomFields.success) {
-      console.error(
-        "LOGGING : Failed to save custom fields:",
-        savedCustomFields.error
-      );
-      return NextResponse.json(
-        { error: savedCustomFields.error },
-        { status: 500 }
-      );
+      if (!savedCustomFields.success) {
+        console.error(
+          "LOGGING : Failed to save custom fields:",
+          savedCustomFields.error
+        );
+        return NextResponse.json(
+          { error: savedCustomFields.error },
+          { status: 500 }
+        );
+      }
     }
 
     console.log("LOGGING : Program created successfully via API");
