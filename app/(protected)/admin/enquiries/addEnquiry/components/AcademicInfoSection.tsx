@@ -27,19 +27,16 @@ const academicFields = [
       { value: "Diploma", label: "Diploma" },
       { value: "Certificate", label: "Certificate" },
     ],
-    
   },
   {
     name: "study_area",
     label: "Area of Study",
     type: "text",
-    
   },
   {
     name: "discipline_area",
     label: "Discipline Area/Stream", // New field
     type: "text",
-    
   },
   {
     name: "what_to_pursue",
@@ -54,25 +51,22 @@ const academicFields = [
     step: 0.01,
     min: 0,
     max: 100,
-    
   },
   {
     name: "study_year",
     label: "Study/Completion Year", // New field (renamed completion_date to study_year for flexibility)
     type: "text",
-    
   },
   {
     name: "duration",
     label: "Duration (in years)",
     type: "text",
-    
   },
   {
     name: "completion_date",
     label: "Completion Date",
     type: "date",
-    
+
     // Note: The original logic still uses completion_date, but the prompt's "study year" is more likely a textual field for the year, so study_year was added. I'll keep completion_date for now as it's used in the AcademicEntry type.
   },
 ];
@@ -80,7 +74,11 @@ const academicFields = [
 const renderFields = (
   fields: typeof academicFields,
   data: AcademicEntry,
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void
 ) =>
   fields.map((field) => (
     <FormInput
@@ -126,10 +124,7 @@ export default function AcademicInfoSection({
 
         <div className="space-y-6">
           {academicEntries.map((entry, index) => (
-            <div
-              key={index}
-              className="border border-gray-200 rounded-lg p-4"
-            >
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-medium text-gray-700">
                   Academic Entry #{index + 1}
@@ -148,7 +143,11 @@ export default function AcademicInfoSection({
                 {renderFields(
                   academicFields,
                   entry,
-                  (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+                  (
+                    e: React.ChangeEvent<
+                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                    >
+                  ) =>
                     handleAcademicChange(index, e.target.name, e.target.value)
                 )}
               </div>

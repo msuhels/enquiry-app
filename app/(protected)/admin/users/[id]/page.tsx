@@ -12,11 +12,8 @@ interface User {
   password?: string | null;
 }
 
-interface Props {
-  params: { id: string };
-}
 
-export default function UserUpdatePage({ params }: Props) {
+export default function UserUpdatePage() {
   const [user, setUser] = useState<User>({
     id: "",
     email: "",

@@ -177,3 +177,18 @@ export interface BulkUserUploadResult {
   }>;
 }
 
+export interface CustomFieldEntry {
+  field: string;
+  value: number | "";
+}
+
+export interface AcademicEntry {
+  study_level: string;
+  study_area: string;
+  duration: string;
+  discipline_area: string; // New field
+  what_to_pursue: string; // New field
+  study_year: string;
+  score ?: number;
+  completion_date: string;
+}

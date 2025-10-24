@@ -57,9 +57,9 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
     },
     {
       name: 'Settings',
-      href: '/admin/settings',
+      // href: '/admin/settings',
       icon: SettingsSidebarIcon, // Using Settings2 icon
-      current: pathname === '/admin/settings'
+      // current: pathname === '/admin/settings'
     }
   ];
 
@@ -83,7 +83,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
           return (
             <Link
               key={item.name}
-              href={item.href}
+              href={item.href ? item.href : "/admin"}
               // The active link needs a negative margin to align with the text block edge, 
               // but for simplicity and responsiveness, we'll keep the padding consistent.
               className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${linkClass}`}
