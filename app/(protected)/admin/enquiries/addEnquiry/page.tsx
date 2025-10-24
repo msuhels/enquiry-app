@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SearchIcon } from "lucide-react";
 import {
   AcademicEntry,
@@ -55,23 +55,36 @@ export default function EnquirySystem() {
   ]);
 
   const [interestInfo, setInterestInfo] = useState({
-  interested_level: "",
-  study_area: "",
-  discipline_area: "",
-  what_to_pursue: "",
-  percentage: "",
-  study_year: "",
-});
+    interested_level: "",
+    study_area: "",
+    discipline_area: "",
+    what_to_pursue: "",
+    percentage: "",
+    study_year: "",
+  });
 
+  const [availableFields, setAvailableFields] = useState<string[]>([]);
 
-  const {data} = useApi("/api/admin/fields/availableCustomFields")
+  const { data: availableFieldsData, error: fieldsError } = useApi(
+    "/api/admin/fields/availableCustomFields"
+  );
 
-  console.log("fields data", data)
+  console.log("fields data", availableFieldsData);
+  useEffect(() => {
+    if (
+      availableFieldsData?.success &&
+      Array.isArray(availableFieldsData.data)
+    ) {
+      // Map API response to array of field names
+      setAvailableFields(
+        availableFieldsData.data.map((f: any) => f.field_name)
+      );
+    }
+  }, [availableFieldsData]);
 
-const handleInterestChange = (field: string, value: string) => {
-  setInterestInfo((prev) => ({ ...prev, [field]: value }));
-};
-
+  const handleInterestChange = (field: string, value: string) => {
+    setInterestInfo((prev) => ({ ...prev, [field]: value }));
+  };
 
   const [gapInfo, setGapInfo] = useState({
     is_gap: false,
@@ -146,6 +159,20 @@ const handleInterestChange = (field: string, value: string) => {
   };
 
   const addCustomField = () => {
+    // Allow adding the first row
+    if (customFieldsData.length === 0) {
+      setCustomFieldsData([{ field: "", value: "" }]);
+      return;
+    }
+
+    const lastEntry = customFieldsData[customFieldsData.length - 1];
+
+    // Prevent adding if last entry is incomplete
+    if (!lastEntry.field || lastEntry.value === "") return;
+
+    // Prevent adding more than available fields
+    if (customFieldsData.length >= availableFields.length) return;
+
     setCustomFieldsData((prev) => [...prev, { field: "", value: "" }]);
   };
 
@@ -388,7 +415,7 @@ const handleInterestChange = (field: string, value: string) => {
                   handleInterestChange={handleInterestChange}
                 />
               </div>
-              
+
               <div className="mt-8">
                 <InterestInfoSection
                   interestInfo={interestInfo}
@@ -399,7 +426,7 @@ const handleInterestChange = (field: string, value: string) => {
               <div className="mt-8">
                 <CustomFieldsSection
                   customFieldsData={customFieldsData}
-                  customFields={customFields}
+                  customFields={availableFields}
                   handleCustomFieldChange={handleCustomFieldChange}
                   addCustomField={addCustomField}
                   removeCustomField={removeCustomField}

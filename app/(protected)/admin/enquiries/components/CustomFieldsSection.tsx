@@ -57,11 +57,19 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Field</option>
-                {customFields.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
-                ))}
+                {customFields
+                  .filter((f) => {
+                    // Keep the current selected value in this row, allow it
+                    return (
+                      f === cf.field ||
+                      !customFieldsData.some((entry) => entry.field === f)
+                    );
+                  })
+                  .map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -103,7 +111,20 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
         <button
           type="button"
           onClick={addCustomField}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium"
+          disabled={
+            customFieldsData.length >= customFields.length ||
+            (customFieldsData.length > 0 &&
+              (!customFieldsData[customFieldsData.length - 1].field ||
+                customFieldsData[customFieldsData.length - 1].value === ""))
+          }
+          className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${
+            customFieldsData.length >= customFields.length ||
+            (customFieldsData.length > 0 &&
+              (!customFieldsData[customFieldsData.length - 1].field ||
+                customFieldsData[customFieldsData.length - 1].value === ""))
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700"
+          }`}
         >
           <PlusIcon className="h-4 w-4 mr-2" /> Add Custom Field
         </button>
