@@ -7,7 +7,7 @@ interface FormInputProps {
   name: string;
   type?: string;
   value: string | number | boolean | undefined;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined | Promise<void>;
   required?: boolean;
   placeholder?: string;
   step?: string | number;

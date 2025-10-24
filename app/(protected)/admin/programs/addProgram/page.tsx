@@ -110,7 +110,7 @@ export default function NewProgramPage() {
     try {
       const payload = {
         ...formData,
-        dynamic_academic_requirements: dynamicAcademicRequirements.filter(
+        custom_fields: dynamicAcademicRequirements.filter(
           (r) => r.field && r.value !== ""
         ),
       };

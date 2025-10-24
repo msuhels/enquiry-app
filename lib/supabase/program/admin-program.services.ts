@@ -1,4 +1,6 @@
 "use server";
+
+import { CustomFieldEntry } from './../../types';
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { BulkUploadResult, Program } from "@/lib/types";
 
@@ -361,5 +363,37 @@ export async function bulkCreateProgramsWithValidation(
         },
       ],
     };
+  }
+}
+
+
+export async function createCustomFields(customFields:CustomFieldEntry[]){
+  try {
+    const supabase = createServiceRoleClient();
+
+    const { data, error } = await supabase
+      .from("custom_fields")
+      .insert(customFields)
+      .select();
+
+    if (error) {
+      console.error("Admin custom field creation error:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    console.error("Admin custom field creation unexpected error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    }
   }
 }

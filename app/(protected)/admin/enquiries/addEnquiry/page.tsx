@@ -16,6 +16,7 @@ import Breadcrumbs from "@/components/ui/breadCrumbs";
 import PersonalInfoSection from "./components/PersonalInfoSection";
 import AcademicInfoSection from "./components/AcademicInfoSection";
 import SuggestionDisplay from "./components/SuggestionDisplay";
+import InterestInfoSection from "./components/InterestInfoSection";
 
 const customFields = [
   "CGPA",
@@ -51,6 +52,20 @@ export default function EnquirySystem() {
       study_year: "", // New
     },
   ]);
+
+  const [interestInfo, setInterestInfo] = useState({
+  interested_level: "",
+  study_area: "",
+  discipline_area: "",
+  what_to_pursue: "",
+  percentage: "",
+  study_year: "",
+});
+
+const handleInterestChange = (field: string, value: string) => {
+  setInterestInfo((prev) => ({ ...prev, [field]: value }));
+};
+
 
   const [gapInfo, setGapInfo] = useState({
     is_gap: false,
@@ -326,7 +341,7 @@ export default function EnquirySystem() {
     a.href = url;
     a.download = "programs.csv";
     a.click();
-    URL.revokeObjectURL(url); // Clean up
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -363,6 +378,15 @@ export default function EnquirySystem() {
                   addAcademicEntry={addAcademicEntry}
                   removeAcademicEntry={removeAcademicEntry}
                   setGapInfo={setGapInfo}
+                  interestInfo={interestInfo}
+                  handleInterestChange={handleInterestChange}
+                />
+              </div>
+              
+              <div className="mt-8">
+                <InterestInfoSection
+                  interestInfo={interestInfo}
+                  handleInterestChange={handleInterestChange}
                 />
               </div>
 
