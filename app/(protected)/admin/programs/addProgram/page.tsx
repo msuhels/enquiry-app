@@ -16,6 +16,7 @@ export default function NewProgramPage() {
     useState<{ field: string; comparison: string; value: number | "" }[]>([
       { field: "", comparison: ">", value: "" },
     ]);
+  const [availableCustomfields, setAvailableCustomFields] = useState([]);
   const comparisonOptions = [
     { value: ">", label: "Greater than" },
     { value: ">=", label: "Greater than or equal to" },
@@ -128,7 +129,7 @@ export default function NewProgramPage() {
         toast.error(
           result.error || "Failed to create program. Please try again.",
           { position: "top-center" }
-        )
+        );
         return;
       }
 

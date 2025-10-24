@@ -1,13 +1,13 @@
 // app/api/programs/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import {
-  createCustomFields,
+  createCustomProgramFields,
   createProgram,
   getPrograms,
+  processCustomFields,
 } from "@/lib/supabase/program/admin-program.services";
 import { CustomFieldEntry } from "@/lib/types";
 
-// GET - Fetch programs with optional filters
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -58,16 +58,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
     console.log("LOGGING : API received program creation request");
 
     const { custom_fields = [], ...rest } = body;
 
-    // Check if at least one field has a non-empty value
+    // Check if any meaningful data is present
     const hasProgramData =
       Object.values(rest).some(
         (value) => value !== null && value !== undefined && value.toString().trim() !== ""
-      ) || 
+      ) ||
       custom_fields.some(
         (field: CustomFieldEntry) => field.value !== null && field.value !== undefined && field.value.toString().trim() !== ""
       );
@@ -79,52 +78,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create program first
     const programData = {
       ...rest,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-
     const result = await createProgram(programData);
-
-    console.log("LOGGING : Admin service result:", result);
 
     if (!result.success) {
       console.error("LOGGING : Failed to create program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
+    const programId = result.data?.id;
+
+    // Process custom fields if any
     if (custom_fields.length > 0) {
-      const customFields = custom_fields.map((field: CustomFieldEntry) => ({
-        field_name: field.field,
-        field_value: field.value?.toString() || "",
-        program_id: result.data?.id,
-      }));
+      const processedCustomFields = await processCustomFields(custom_fields, programId);
 
-      const savedCustomFields = await createCustomFields(customFields);
-
-      if (!savedCustomFields.success) {
-        console.error(
-          "LOGGING : Failed to save custom fields:",
-          savedCustomFields.error
-        );
-        return NextResponse.json(
-          { error: savedCustomFields.error },
-          { status: 500 }
-        );
+      if (!processedCustomFields.success) {
+        console.error("LOGGING : Failed to save custom fields:", processedCustomFields.error);
+        return NextResponse.json({ error: processedCustomFields.error }, { status: 500 });
       }
     }
 
     console.log("LOGGING : Program created successfully via API");
-    return NextResponse.json({
-      success: true,
-      data: result.data,
-    });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error("API program creation error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

@@ -6,6 +6,7 @@ import Table from "@/components/table/globalTable";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import { Enquiry } from "@/lib/types"; 
 import { FileTextIcon, MessageSquareIcon } from "lucide-react";
+import { useApi } from "@/hooks/auth-modules/useFetch";
 
 export default function EnquiriesPage() {
   const router = useRouter();

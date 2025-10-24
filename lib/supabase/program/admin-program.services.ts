@@ -367,12 +367,12 @@ export async function bulkCreateProgramsWithValidation(
 }
 
 
-export async function createCustomFields(customFields:CustomFieldEntry[]){
+export async function createCustomProgramFields(customFields:CustomFieldEntry[]){
   try {
     const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
-      .from("custom_fields")
+      .from("custom_programs_fields")
       .insert(customFields)
       .select();
 
@@ -395,5 +395,90 @@ export async function createCustomFields(customFields:CustomFieldEntry[]){
       error:
         error instanceof Error ? error.message : "An unexpected error occurred",
     }
+  }
+}
+
+
+export async function getAvailableCustomFields(){
+  try {
+    const supabase = createServiceRoleClient();
+
+    const { data, error } = await supabase
+      .from("custom_fields")
+      .select();
+
+    if (error) {
+      console.error("Admin custom field creation error:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    console.error("Admin custom field creation unexpected error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    }
+  }
+}
+
+export async function processCustomFields(customFields: CustomFieldEntry[], programId: string | undefined) {
+  try {
+    const supabase = createServiceRoleClient();
+    const customFieldEntries = [];
+
+    for (const field of customFields) {
+      const fieldName = field.field.trim().toLowerCase();
+
+      // Check if field exists
+      const { data: existingFields, error: selectError } = await supabase
+        .from("custom_fields")
+        .select("id, field_name");
+
+      if (selectError) throw selectError;
+
+      let fieldId = existingFields?.find(f => f.field_name.toLowerCase() === fieldName)?.id;
+
+      // If not exists, create it
+      if (!fieldId) {
+        const { data: newField, error: insertError } = await supabase
+          .from("custom_fields")
+          .insert({ field_name: field.field.trim() })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        fieldId = newField.id;
+      }
+
+      // Push to array for inserting into custom_programs_fields
+      customFieldEntries.push({
+        program_id: programId,
+        custom_field: fieldId,
+        field_value: field.value?.toString() || "",
+      });
+    }
+
+    // Insert all custom program fields at once
+    const { error: insertCustomError } = await supabase
+      .from("custom_programs_fields")
+      .insert(customFieldEntries);
+
+    if (insertCustomError) throw insertCustomError;
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error processing custom fields:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
   }
 }

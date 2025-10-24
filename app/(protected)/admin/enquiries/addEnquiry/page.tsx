@@ -17,6 +17,7 @@ import PersonalInfoSection from "./components/PersonalInfoSection";
 import AcademicInfoSection from "./components/AcademicInfoSection";
 import SuggestionDisplay from "./components/SuggestionDisplay";
 import InterestInfoSection from "./components/InterestInfoSection";
+import { useApi } from "@/hooks/auth-modules/useFetch";
 
 const customFields = [
   "CGPA",
@@ -61,6 +62,11 @@ export default function EnquirySystem() {
   percentage: "",
   study_year: "",
 });
+
+
+  const {data} = useApi("/api/admin/fields/availableCustomFields")
+
+  console.log("fields data", data)
 
 const handleInterestChange = (field: string, value: string) => {
   setInterestInfo((prev) => ({ ...prev, [field]: value }));

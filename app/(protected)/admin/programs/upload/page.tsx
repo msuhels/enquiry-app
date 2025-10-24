@@ -461,15 +461,39 @@ export default function BulkUploadPage() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   Review Parsed Data
                 </h2>
-                <button
-                  className="inline-flex items-center p-1 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors"
-                  onClick={handleUploadAnotherFile}
-                >
-                  Upload another file
-                </button>
+
+                <div className="flex gap-2 items-center justify-center">
+                  <button
+                    className="w-full items-center p-2 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                    onClick={handleUploadAnotherFile}
+                  >
+                    Upload another file
+                  </button>
+                  {parsedData && !uploading && !uploadResult && (
+                    <button
+                      onClick={handleSaveToDatabase}
+                      disabled={uploading}
+                      className="w-full items-center p-2 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Saving to database...
+                        </>
+                      ) : (
+                        <div className="w-full flex items-center">
+                          <UploadIcon className="h-5 w-5 mr-2" />
+                          <span className="min-w-min whitespace-nowrap">
+                            Save {parsedData.length} Programs
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4 mb-4">
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="ml-3">
@@ -603,29 +627,6 @@ export default function BulkUploadPage() {
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Save to Database Section */}
-        {parsedData && !uploading && !uploadResult && (
-          <div className="w-full flex justify-end mb-6">
-            <button
-              onClick={handleSaveToDatabase}
-              disabled={uploading}
-              className="flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Saving to database...
-                </>
-              ) : (
-                <>
-                  <UploadIcon className="h-5 w-5 mr-2" />
-                  Save {parsedData.length} Programs to Database
-                </>
-              )}
-            </button>
           </div>
         )}
 
