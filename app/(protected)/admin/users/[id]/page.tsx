@@ -8,6 +8,8 @@ import * as Switch from "@radix-ui/react-switch";
 import { usePatch } from "@/hooks/api/usePatch";
 import { usePut } from "@/hooks/api/usePut";
 import { toast } from "sonner";
+import { usePost } from "@/hooks/api/usePost";
+import { useFetch } from "@/hooks/api/useFetch";
 
 interface User {
   id: string;
@@ -45,24 +47,16 @@ export default function UserUpdatePage() {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   const userId = useParams().id;
+  const {data: userData, isLoading} = useFetch(`/api/admin/users?id=${userId}`);
   const { patch } = usePatch();
   const { put } = usePut();
+  const  { post } = usePost();
+  
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`/api/admin/users?id=${userId}`);
-        const data = await res.json();
-        if (res.ok) {
-          setUser(data.data);
-        } else {
-          alert(data.error || "Failed to fetch user");
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    };
-    fetchUser();
-  }, [userId]);
+    if (userData?.data) {
+      setUser(userData?.data);
+    }
+  }, [userData]);
 
   const fetchPassword = async () => {
     if (showPassword) return;
@@ -95,19 +89,31 @@ export default function UserUpdatePage() {
   };
 
   const sendPasswordEmail = async () => {
-    if (!user.password) return;
+    if (!user.password || !user.email) return;
+
     try {
-      // Example: call your email endpoint
-      // const res = await fetch("/api/admin/send-password-email", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ userId: user.id, password: user.password }),
-      // });
-      // if (res.ok) alert("Password sent via email!");
-      console.log("Password sent via email!", user.email, user.password);
+      const res = await post("/api/admin/send-password-email", {
+        email: user.email,
+        password: user.password,
+      })
+
+      if (res.success) {
+        toast.success("Email sent successfully!", {
+          position: "top-center",
+          richColors: true,
+        });
+      } else {
+        toast.error(res.error || "Failed to send email", {
+          position: "top-center",
+          richColors: true,
+        });
+      }
     } catch (err) {
       console.error(err);
-      alert("Error sending email");
+      toast.error("Error sending email", {
+        position: "top-center",
+        richColors: true,
+      });
     }
   };
 
