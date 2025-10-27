@@ -109,7 +109,7 @@ export default function AdminDashboard() {
       title: "Add Program",
       icon: PlusIcon,
       color: "from-purple-500 to-pink-500",
-      link: "/admin/programs/addProgram",
+      link: "/admin/programs/add",
     },
     {
       title: "Bulk Upload",

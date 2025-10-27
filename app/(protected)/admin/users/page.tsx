@@ -7,28 +7,29 @@ import { UserPlusIcon } from "lucide-react";
 import Link from "next/link";
 import Table from "@/components/table/globalTable";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
-import { useApi } from "@/hooks/auth-modules/useFetch";
+import { useFetch } from "@/hooks/api/useFetch";
+import { usePatch } from "@/hooks/api/usePatch";
 
 export default function UsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false)
-  const {data, error, isLoading}= useApi("/api/admin/users")
-
+  const [showAddForm, setShowAddForm] = useState(false);
+  const { data, error, isLoading } = useFetch("/api/admin/users");
+  const { patch } = usePatch();
+  console.log("data", isLoading);
   useEffect(() => {
-    console.log("data" , data)
-    if(data?.data){
-      if(data.success){
+    console.log("data", data);
+    if (data?.data) {
+      if (data.success) {
         setUsers(data?.data);
-      }else{
+      } else {
         console.error("Error fetching users:", data.error);
         return;
       }
     }
   }, [data]);
-
 
   const handleEdit = (user: User) => {
     router.push(`/admin/users/${user.id}`);
@@ -45,7 +46,21 @@ export default function UsersPage() {
     }
   };
 
-  const handleToggleActive = (user: User) => {
+  const handleToggleActive = async (user: User) => {
+    const newStatus = !user.is_active;
+
+    try {
+      const response = await patch(`/api/admin/users/toggle`, {
+        userId: user.id,
+        status: newStatus,
+      });
+      if (!response?.success) {
+        console.error("Error toggling user status:", response.error);
+        return;
+      }
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+    }
     setUsers((prev) =>
       prev.map((u) =>
         u.id === user.id ? { ...u, is_active: !u.is_active } : u
@@ -92,7 +107,11 @@ export default function UsersPage() {
               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
           }`}
         >
-          {row.is_active ? "Active" : "Inactive"}
+          {isLoading ? (
+            <></>
+          ) : (
+            <span>{row.is_active ? "Active" : "Inactive"}</span>
+          )}
         </button>
       ),
     },

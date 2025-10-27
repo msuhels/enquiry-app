@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Program } from "@/lib/types";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import Table from "@/components/table/globalTable";
-import { useApi } from "@/hooks/auth-modules/useFetch";
+import { useFetch } from "@/hooks/api/useFetch";
 
 export default function ProgramsPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function ProgramsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const totalItems = 15;
-  const { data, error, isLoading } = useApi("/api/admin/programs");
+  const { data, error, isLoading } = useFetch("/api/admin/programs");
   console.log("data", data);
   useEffect(() => {
     if (data?.data) {
@@ -158,7 +158,7 @@ export default function ProgramsPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           emptyMessage="No programs available."
-          addHref="/admin/programs/addProgram"
+          addHref="/admin/programs/add"
           addBulkHeref="/admin/programs/upload"
         />
       </div>

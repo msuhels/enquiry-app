@@ -5,19 +5,29 @@ import { encryptPlaintext } from "@/lib/utils/encrytion/encryption";
 import crypto from "crypto";
 import type { UserProfile, UserServiceResult } from "./user.services";
 
-export async function createUser({user, email}: {user: UserProfile, email: string}): Promise<UserServiceResult<{ user: UserProfile; password: string }>> {
+export async function createUser({
+  user,
+  email,
+}: {
+  user: UserProfile;
+  email: string;
+}): Promise<UserServiceResult<{ user: UserProfile; password: string }>> {
   try {
     const supabaseAdmin = createServiceRoleClient();
 
     // 1️⃣ Generate a random password
-    const generatedPassword = crypto.randomBytes(12).toString("base64").slice(0, 16);
+    const generatedPassword = crypto
+      .randomBytes(12)
+      .toString("base64")
+      .slice(0, 16);
 
     // 2️⃣ Create the user in Supabase Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: generatedPassword,
-      email_confirm: true,
-    });
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: generatedPassword,
+        email_confirm: true,
+      });
 
     if (authError) {
       console.error("Supabase Auth creation failed:", authError);
@@ -67,13 +77,16 @@ export async function createUser({user, email}: {user: UserProfile, email: strin
     console.error("Unexpected error in createUser:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "An unexpected error occurred",
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }
 
 // admin-user.services.ts
-export async function getUser(identifier: string): Promise<UserServiceResult<UserProfile>> {
+export async function getUser(
+  identifier: string
+): Promise<UserServiceResult<UserProfile>> {
   try {
     const supabase = createServiceRoleClient();
 
@@ -90,10 +103,12 @@ export async function getUser(identifier: string): Promise<UserServiceResult<Use
 
     return { success: true, data };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Unexpected error" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
   }
 }
-
 
 export async function getUsers(): Promise<UserServiceResult<UserProfile[]>> {
   try {
@@ -110,6 +125,74 @@ export async function getUsers(): Promise<UserServiceResult<UserProfile[]>> {
 
     return { success: true, data };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Unexpected error" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
+export async function updateUser(id: string, updates: any) {
+  try {
+    const supabaseAdmin = createServiceRoleClient();
+    const { data, error } = await supabaseAdmin
+      .from("users")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("Supabase updateUser error:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleUserStatus(
+  userId: string,
+  newStatus: "active" | "inactive"
+): Promise<UserServiceResult<UserProfile>> {
+  try {
+    const supabase = createServiceRoleClient();
+
+    // 1️⃣ Update the user's status in the custom table
+    const { data, error } = await supabase
+      .from("users")
+      .update({ is_active: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase user status update failed:", error);
+      return { success: false, error: error.message };
+    }
+
+    const authStatus = newStatus === "inactive";
+    const { error: authError } = await supabase.auth.admin.updateUserById(
+      userId,
+      {
+        banned_until: authStatus ? "2999-12-31T23:59:59Z" : null,
+      }
+    );
+
+    if (authError) {
+      console.error("Supabase Auth status update failed:", authError);
+      return { success: false, error: authError.message };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Unexpected error in toggleUserStatus:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
   }
 }

@@ -8,7 +8,9 @@ import { ProgramFormData } from "@/lib/types";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import FormInput from "@/components/form/formInput";
 import { toast } from "sonner";
-import { useApi } from "@/hooks/auth-modules/useFetch";
+import { useFetch } from "@/hooks/api/useFetch";
+import * as Switch from "@radix-ui/react-switch";
+import SearchSelect from "@/components/form/FormSearchSelect";
 
 export default function NewProgramPage() {
   const router = useRouter();
@@ -17,12 +19,24 @@ export default function NewProgramPage() {
     useState<{ field: string; comparison: string; value: number | "" }[]>([
       { field: "", comparison: ">", value: "" },
     ]);
+
+  console.log("dynamicAcademicRequirements", dynamicAcademicRequirements);
   const [availableCustomfields, setAvailableCustomFields] = useState([]);
-  const { data: custom_fields } = useApi(
+  const { data: custom_fields } = useFetch(
     "/api/admin/fields/availableCustomFields"
+  );
+  const [fieldEnabled, setFieldEnabled] = useState<{ [key: string]: boolean }>(
+    {}
   );
 
   console.log(custom_fields);
+
+  const customFieldOptions =
+    custom_fields?.data?.map((f: any) => ({
+      value: f.field_name || f.name || f,
+      label: f.field_name || f.name || f,
+    })) || [];
+
   const comparisonOptions = [
     { value: ">", label: "Greater than" },
     { value: ">=", label: "Greater than or equal to" },
@@ -98,6 +112,13 @@ export default function NewProgramPage() {
     });
   };
 
+  const handleToggleField = (name: string) => {
+    setFieldEnabled((prev) => ({
+      ...prev,
+      [name]: !(prev[name] ?? false) // Changed from true to false
+    }));
+  };
+
   const addDynamicRequirement = () => {
     setDynamicAcademicRequirements((prev) => [
       ...prev,
@@ -116,8 +137,12 @@ export default function NewProgramPage() {
     setLoading(true);
 
     try {
+      const filteredFormData = Object.fromEntries(
+        Object.entries(formData).filter(([key]) => fieldEnabled[key] ?? false) // Changed from true to false
+      );
+
       const payload = {
-        ...formData,
+        ...filteredFormData,
         custom_fields: dynamicAcademicRequirements.filter(
           (r) => r.field && r.value !== ""
         ),
@@ -130,21 +155,17 @@ export default function NewProgramPage() {
       });
 
       const result = await response.json();
-
       if (!result.success) {
-        toast.error(
-          result.error || "Failed to create program. Please try again.",
-          { position: "top-center" }
-        );
+        toast.error(result.error || "Failed to create program.", {
+          position: "top-center",
+          richColors: true,
+        });
         return;
       }
 
       router.push("/admin/programs");
-    } catch (error) {
-      toast.error(
-        error.message || "Failed to create program. Please try again.",
-        { position: "top-center" }
-      );
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -287,22 +308,56 @@ export default function NewProgramPage() {
   ];
 
   const renderFields = (fields: any[]) =>
-    fields.map((field) => (
-      <FormInput
-        key={field.name}
-        label={field.label}
-        name={field.name}
-        type={field.type}
-        value={formData[field.name]}
-        onChange={handleInputChange}
-        required={field.required}
-        select={field.select}
-        step={field.step}
-        min={field.min}
-        max={field.max}
-        textarea={field.textarea}
-      />
-    ));
+    fields.map((field) => {
+      const isExcluded = field.name === "programme_name"; // keep always on
+      const enabled = isExcluded ? true : (fieldEnabled[field.name] ?? false); // Changed default to false
+
+      return (
+        <div key={field.name} className="flex flex-col space-y-1 relative">
+          <div className="flex justify-between items-center mb-1">
+            <label className="font-medium text-gray-700">{field.label}</label>
+            {!isExcluded && (
+              <div className="flex items-center space-x-2">
+                <Switch.Root
+                  checked={enabled}
+                  onClick={(e) => e.stopPropagation()}
+                  onCheckedChange={() => handleToggleField(field.name)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    enabled ? "bg-indigo-600" : "bg-gray-300"
+                  }`}
+                >
+                  <Switch.Thumb
+                    className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      enabled ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </Switch.Root>
+                <span className="text-sm text-gray-500">
+                  {enabled ? "On" : "Off"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <FormInput
+            key={field.name}
+            label=""
+            name={field.name}
+            type={field.type}
+            value={enabled ? formData[field.name] : ""}
+            onChange={handleInputChange}
+            required={field.required}
+            select={field.select}
+            step={field.step}
+            min={field.min}
+            max={field.max}
+            textarea={field.textarea}
+            placeholder={enabled ? field.placeholder : "N/A"}
+            disabled={!enabled}
+          />
+        </div>
+      );
+    });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -325,7 +380,7 @@ export default function NewProgramPage() {
             </div>
           </div>
 
-          <div className="bg-white shadow rounded-lg p-6">
+          {/* <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Academic Requirements
             </h2>
@@ -335,7 +390,7 @@ export default function NewProgramPage() {
             <div className="grid grid-cols-1 mt-6">
               {renderFields(academicRequirementsFields.slice(2))}
             </div>
-          </div>
+          </div> */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Custom Academic Requirements
@@ -346,18 +401,19 @@ export default function NewProgramPage() {
                   key={index}
                   className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
                 >
-                  <FormInput
+                  <SearchSelect
                     label="Field"
-                    name={`field-${index}`}
+                    name="field"
                     value={req.field}
-                    onChange={(e) =>
-                      handleDynamicRequirementChange(
-                        index,
-                        "field",
-                        e.target.value
-                      )
+                    options={customFieldOptions.map((f: any) => ({
+                      value: f.value,
+                      label: f.label,
+                    }))}
+                    onChange={(val: string) =>
+                      handleDynamicRequirementChange(index, "field", val)
                     }
                   />
+
                   <FormInput
                     label="Comparison"
                     name={`comparison-${index}`}

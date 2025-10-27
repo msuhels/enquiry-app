@@ -16,6 +16,7 @@ interface FormInputProps {
   textarea?: boolean;
   select?: { value: string; label: string }[];
   checkbox?: boolean
+  disabled?: boolean
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -32,6 +33,7 @@ const FormInput: React.FC<FormInputProps> = ({
   textarea = false,
   select,
   checkbox= false,
+  disabled = false
 }) => {
   if (textarea) {
     return (
@@ -43,6 +45,7 @@ const FormInput: React.FC<FormInputProps> = ({
           id={name}
           name={name}
           rows={3}
+          disabled={disabled}
           value={value || ''}
           onChange={onChange}
           placeholder={placeholder}
@@ -62,6 +65,7 @@ const FormInput: React.FC<FormInputProps> = ({
           id={name}
           name={name}
           value={value || ''}
+          disabled={disabled}
           onChange={onChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600"
         >
@@ -85,6 +89,7 @@ const FormInput: React.FC<FormInputProps> = ({
         <input
           type="checkbox"
           id={name}
+          disabled={disabled}
           name={name}
           value={value || ''}
           onChange={onChange}
@@ -103,6 +108,7 @@ const FormInput: React.FC<FormInputProps> = ({
         type={type}
         id={name}
         name={name}
+        disabled={disabled}
         value={value || ''}
         onChange={onChange}
         placeholder={placeholder}
