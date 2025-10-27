@@ -68,8 +68,8 @@ export default function ProgramsPage() {
     }
   };
 
-  const handleEdit = (id: string) => {
-    router.push(`/admin/programs/${id}`);
+  const handleEdit = (row: Program) => {
+    router.push(`/admin/programs/edit/${row.id}`);
   };
 
   const filteredPrograms = programs.filter(

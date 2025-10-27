@@ -8,6 +8,7 @@ import { ProgramFormData } from "@/lib/types";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import FormInput from "@/components/form/formInput";
 import { toast } from "sonner";
+import { useApi } from "@/hooks/auth-modules/useFetch";
 
 export default function NewProgramPage() {
   const router = useRouter();
@@ -17,6 +18,11 @@ export default function NewProgramPage() {
       { field: "", comparison: ">", value: "" },
     ]);
   const [availableCustomfields, setAvailableCustomFields] = useState([]);
+  const { data: custom_fields } = useApi(
+    "/api/admin/fields/availableCustomFields"
+  );
+
+  console.log(custom_fields);
   const comparisonOptions = [
     { value: ">", label: "Greater than" },
     { value: ">=", label: "Greater than or equal to" },
