@@ -76,8 +76,6 @@ const FormInput: React.FC<FormInputProps> = ({
     );
   }
 
-  console.log("checkbox", checkbox);
-
   if(checkbox){
     return (
       <div>
