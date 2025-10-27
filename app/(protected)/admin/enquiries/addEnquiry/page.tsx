@@ -17,7 +17,7 @@ import PersonalInfoSection from "./components/PersonalInfoSection";
 import AcademicInfoSection from "./components/AcademicInfoSection";
 import SuggestionDisplay from "./components/SuggestionDisplay";
 import InterestInfoSection from "./components/InterestInfoSection";
-import { useApi } from "@/hooks/auth-modules/useFetch";
+import { useFetch } from "@/hooks/api/useFetch";
 
 const customFields = [
   "CGPA",
@@ -65,7 +65,7 @@ export default function EnquirySystem() {
 
   const [availableFields, setAvailableFields] = useState<string[]>([]);
 
-  const { data: availableFieldsData, error: fieldsError } = useApi(
+  const { data: availableFieldsData, error: fieldsError } = useFetch(
     "/api/admin/fields/availableCustomFields"
   );
 
