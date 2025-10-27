@@ -187,6 +187,32 @@ export class UserService {
       };
     }
   }
+  
+  async deleteUser(userId: string): Promise<UserServiceResult> {
+    try {
+      const { error } = await this.supabase
+        .from("users")
+        .delete()
+        .eq("id", userId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      const { error: authError } = await this.supabase.auth.admin.deleteUser(userId);
+      if (authError) {
+        return { success: false, error: authError.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "An unexpected error occurred",
+      };
+    }
+  }
 }
+
 
 export const userService = new UserService();
