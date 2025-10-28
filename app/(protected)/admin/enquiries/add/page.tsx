@@ -204,6 +204,7 @@ export default function EnquirySystem() {
         gap_years: gapInfo.gap_years,
         custom_fields: customFieldsData,
         academic_entries: academicEntries,
+        interestInfo: interestInfo,
       };
 
       const res = await fetch("/api/admin/enquiries", {

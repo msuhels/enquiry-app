@@ -54,6 +54,8 @@ export async function GET(
     if (programsError) throw programsError;
 
     const suggestions = programs.filter((program) => {
+      if (!custom_fields || custom_fields.length === 0) return true;
+      
       return custom_fields.every((cf: any) => {
         const matchField = program.custom_programs_fields?.find(
           (p: any) =>
@@ -80,7 +82,7 @@ export async function GET(
             case "=":
               return userVal === progVal;
             default:
-              return true;
+              return false;
           }
         }
         return (

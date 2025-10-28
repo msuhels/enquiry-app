@@ -37,11 +37,32 @@ export interface Program {
   updated_at: string;
 }
 
+// export interface AcademicEntry {
+//   id: string;
+//   enquiry_id: string;
+//   study_level?: string | null;
+//   stream?: string | null;
+//   pursue?: string | null;
+//   score?: number | null;
+//   completion_year?: number | null;
+//   duration_years?: number | null;
+//   completion_date?: string | null;
+//   course?: string | null;
+// }
+
 export interface Enquiry {
   id: string;
   student_name: string;
   email: string;
   phone?: string;
+  overall_percentage?: number | null;
+  is_gap?: boolean;
+  gap_years?: number | null;
+  custom_fields?: string | null; 
+  created_at: string;
+  createdby?: string | null;
+  updated_at?: string; 
+
   program_interest?: string;
   preferred_university?: string;
   preferred_country?: string;
@@ -57,10 +78,16 @@ export interface Enquiry {
   preferred_intake?: string;
   additional_requirements?: string;
   message?: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
   assigned_to_user_id?: string;
-  created_at: string;
-  updated_at: string;
+
+  academic_entries?: {
+    error: string | null;
+    data: AcademicEntry[];
+    count: number | null;
+    status: number;
+    statusText: string;
+  };
 }
 
 export interface User {

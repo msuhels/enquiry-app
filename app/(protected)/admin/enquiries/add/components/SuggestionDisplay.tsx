@@ -9,12 +9,6 @@ interface SuggestionDisplayProps {
   showSuggestions: boolean;
   exportCSV: () => void;
   setShowSuggestions: (show: boolean) => void;
-  cloumns: any[];
-}
-
-interface SuggestionDisplayProps {
-  customSuggestions: Program[];
-  exportCSV: () => void;
   columns: { key: string; label: string }[];
 }
 
@@ -107,11 +101,11 @@ const SuggestionTable = ({
 // const MainSuggestions = ({
 //   suggestions,
 //   setShowSuggestions,
-//   cloumns
+//   columns
 // }: {
 //   suggestions: Suggestion[];
 //   setShowSuggestions: (show: boolean) => void;
-//   cloumns: any[]
+//   columns: any[]
 // }) => (
 //   <div className="space-y-6">
 //     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -255,7 +249,7 @@ export default function SuggestionDisplay({
   showSuggestions,
   exportCSV,
   setShowSuggestions,
-  cloumns,
+  columns,
 }: SuggestionDisplayProps) {
   // if (showSuggestions) {
   //   return (
@@ -270,7 +264,7 @@ export default function SuggestionDisplay({
   if (customSuggestions.length > 0) {
     return (
       <SuggestionTable
-        columns={cloumns}
+        columns={columns}
         customSuggestions={customSuggestions}
         exportCSV={exportCSV}
       />

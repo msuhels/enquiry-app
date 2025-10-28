@@ -53,7 +53,12 @@ export default function EnquirySuggestionsPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (enquiryLoading || suggestionLoading) return <div>Loading...</div>;
+  if (enquiryLoading || suggestionLoading)
+    return (
+      <div className="w-dvw h-dvh flex items-center justify-center">
+        Loading...
+      </div>
+    );
   if (enquiryError) return <div>Error: {enquiryError.message}</div>;
   if (suggestionError) return <div>Error: {suggestionError.message}</div>;
 
@@ -137,17 +142,17 @@ export default function EnquirySuggestionsPage() {
                     {academicEntries.map((entry: any, index: number) => (
                       <tr key={index} className="border-t">
                         <td className="px-4 py-2">
-                          {entry.study_level.level_name || "-"}
+                          {entry?.study_level?.level_name || "-"}
                         </td>
                         <td className="px-4 py-2">
-                          {entry.stream.name || "-"}
+                          {entry?.stream?.name || "-"}
                         </td>
                         <td className="px-4 py-2">
-                          {entry.course.course_name || "-"}
+                          {entry?.course?.course_name || "-"}
                         </td>
-                        <td className="px-4 py-2">{entry.score ?? "-"}</td>
+                        <td className="px-4 py-2">{entry?.score ?? "-"}</td>
                         <td className="px-4 py-2">
-                          {entry.completion_year ?? "-"}
+                          {entry?.completion_year ?? "-"}
                         </td>
                       </tr>
                     ))}
@@ -182,7 +187,7 @@ export default function EnquirySuggestionsPage() {
         {/* Suggestion Table */}
         <SuggestionDisplay
           suggestions={[]}
-          cloumns={columns}
+          columns={columns}
           customSuggestions={suggestionData?.data as Program[]}
           showSuggestions={false}
           exportCSV={exportCSV}
