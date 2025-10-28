@@ -1,113 +1,69 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  // Icons used in the provided code
-  LayoutDashboard as DashboardIcon, 
-  Users2 as UsersSidebarIcon, 
-  Settings2 as SettingsSidebarIcon,
-  Upload as BulkUploadIcon, 
-  LogOut as LogoutIcon,
-  // Icons matching the image: Programs (BookOpenCheck) & Enquiries (Mail)
-  BookOpenCheck as ProgramsIcon, 
-  Mail as EnquiriesIcon,
-  // Icon for the 'N' in the logout section
-  Package as GenericBulkIcon // Using a generic icon for Bulk Upload as its icon is Package in the image context
-} from 'lucide-react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  Mail,
+  Settings,
+  LogOut,
+} from "lucide-react";
 
-interface AdminSidebarProps {
-  onLogout: () => void;
-}
-
-export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
+export default function AdminSidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    {
-      name: 'Dashboard',
-      href: '/admin',
-      icon: DashboardIcon,
-      // Check for exact match for dashboard
-      current: pathname === '/admin' || pathname === '/admin/dashboard' 
-    },
-    {
-      name: 'Programs',
-      href: '/admin/programs',
-      icon: ProgramsIcon, // Using ProgramsIcon for a better visual match
-      current: pathname.startsWith('/admin/programs')
-    },
-    // {
-    //   name: 'Bulk Upload',
-    //   href: '/admin/programs/upload',
-    //   icon: BulkUploadIcon, // Using UploadIcon
-    //   current: pathname === '/admin/programs/upload'
-    // },
-    {
-      name: 'Users',
-      href: '/admin/users',
-      icon: UsersSidebarIcon, // Using Users2 icon
-      current: pathname.startsWith('/admin/users')
-    },
-    {
-      name: 'Enquiries',
-      href: '/admin/enquiries',
-      icon: EnquiriesIcon, // Using Mail icon for Enquiries
-      current: pathname.startsWith('/admin/enquiries')
-    },
-    {
-      name: 'Settings',
-      // href: '/admin/settings',
-      icon: SettingsSidebarIcon, // Using Settings2 icon
-      // current: pathname === '/admin/settings'
-    }
+    { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { name: "Programs", icon: BookOpen, href: "/admin/programs" },
+    { name: "Users", icon: Users, href: "/admin/users" },
+    { name: "Enquiries", icon: Mail, href: "/admin/enquiries" },
+    // { name: "Settings", icon: Settings, href: "/admin/settings" },
   ];
 
   return (
-    // Outer container matching the image's structure
-    <div className="flex flex-col w-56 h-screen border-r border-gray-200 bg-white">
-      {/* Logo/Admin Panel Title */}
-      <div className="flex items-center h-16 px-4">
-        <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+    <aside className="w-64 h-screen bg-gradient-to-b from-indigo-500 to-purple-500 text-white flex flex-col justify-between">
+      <div>
+        <div className="p-6 flex items-center gap-3 border-b border-white/20">
+          <div className="h-10 w-10 bg-white/20 flex items-center justify-center rounded-lg font-bold text-lg">
+            A
+          </div>
+          <h1 className="text-lg font-bold">Admin Panel</h1>
+        </div>
+
+        <nav className="mt-6 space-y-1">
+          {menuItems.map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all ${
+                  active
+                    ? "bg-white text-indigo-500 rounded-l-full"
+                    : "hover:bg-white/20"
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 ${
+                    active ? "text-indigo-500" : "text-white"
+                  }`}
+                />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          // Conditional styling for the active state
-          const linkClass = item.current
-            ? 'bg-indigo-600 text-white shadow-lg rounded-r-full' // Active: Indigo background, white text, pill shape
-            : 'text-gray-600 hover:bg-gray-100 rounded-r-full'; // Inactive: Gray text, subtle hover
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href ? item.href : "/admin"}
-              // The active link needs a negative margin to align with the text block edge, 
-              // but for simplicity and responsiveness, we'll keep the padding consistent.
-              className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${linkClass}`}
-            >
-              <Icon className={`mr-3 h-5 w-5 ${item.current ? 'text-white' : 'text-gray-500'}`} />
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Logout Section - Matching the image's structure */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={onLogout}
-          className="flex items-center w-full text-gray-600 hover:text-indigo-600 transition-colors"
-        >
-          {/* 'N' Circle Avatar */}
-          <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-            <span className="text-sm font-semibold text-gray-700">N</span>
-          </div>
-          <span className="text-sm font-medium">Logout</span>
+      <div className="p-6 border-t border-white/20">
+        <button className="flex items-center gap-3 text-sm font-medium text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">
+          <LogOut className="h-5 w-5" />
+          Logout
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

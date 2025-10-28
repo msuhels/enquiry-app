@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users as UsersIcon,
-  BookOpen as BookOpenIcon,
   ClipboardList as ClipboardListIcon,
   CheckCircle as CheckCircleIcon,
+  FileText as FileTextIcon,
   Plus as PlusIcon,
   Upload as UploadIcon,
   Eye as EyeIcon,
@@ -14,7 +14,6 @@ import {
   Settings as SettingsIcon,
   UserPlus as UserPlusIcon,
   Bell as BellIcon,
-  FileText as FileTextIcon,
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
@@ -36,13 +35,11 @@ const RecentEnquiryItem = ({
   return (
     <div
       onClick={() => router.push(`/admin/enquiries/${id}/suggestions`)}
-      className="flex justify-between items-start border-b border-gray-100 last:border-b-0 py-3 px-6 hover:bg-gray-50 transition cursor-pointer"
+      className="px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer transition"
     >
-      <div>
-        <p className="text-sm font-semibold text-gray-800 underline">{name}</p>
-        <p className="text-xs text-gray-500">{context}</p>
-      </div>
-      <p className="text-xs text-gray-600">{course || "-"}</p>
+      <p className="text-sm font-semibold text-gray-800">{name}</p>
+      <p className="text-xs text-gray-500">{context}</p>
+      <p className="text-xs text-gray-600 mt-1">{course || "-"}</p>
     </div>
   );
 };
@@ -57,16 +54,13 @@ export default function AdminDashboard() {
   });
 
   const { data: enquiries } = useFetch("/api/admin/enquiries");
-
-  console.log("enquiries", enquiries?.data[0]?.academic_entries?.data);
-
-  const recentEnquiries = enquiries?.data?.slice(0, 5);
-
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
       enquiry?.academic_entries?.data?.length > 0 &&
       enquiry?.academic_entries?.data[0]?.course !== null
   );
+
+  console.log("enquiries", enquiries?.data[0]?.academic_entries?.data);
 
   console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
@@ -78,168 +72,126 @@ export default function AdminDashboard() {
       title: "Total Users",
       value: stats.totalUsers,
       icon: UsersIcon,
-      bg: "from-indigo-500 to-blue-500",
-      text: "text-indigo-600",
+      bg: "bg-gradient-to-r from-blue-400 to-indigo-400",
       trend: "+15% from last month",
-      trendColor: "text-green-500",
+      // textClr : "text-blue-600"
     },
     {
       title: "Total Programs",
       value: stats.totalPrograms,
       icon: FileTextIcon,
-      bg: "from-purple-500 to-pink-500",
-      text: "text-purple-600",
+      bg: "bg-gradient-to-r from-purple-400 to-pink-400",
       trend: "+5 new programs",
-      trendColor: "text-green-500",
     },
     {
       title: "Open Enquiries",
       value: stats.openEnquiries,
       icon: ClipboardListIcon,
-      bg: "from-yellow-400 to-orange-500",
-      text: "text-yellow-600",
+      bg: "bg-gradient-to-r from-orange-400 to-yellow-400",
       trend: "-5% from last week",
-      trendColor: "text-red-500",
     },
     {
       title: "Resolved Enquiries",
       value: stats.resolvedEnquiries,
       icon: CheckCircleIcon,
-      bg: "from-green-500 to-emerald-500",
-      text: "text-green-600",
+      bg: "bg-gradient-to-r from-green-400 to-emerald-400",
       trend: "+20% this month",
-      trendColor: "text-green-500",
     },
   ];
 
   const quickActions = [
-    {
-      title: "Add User",
-      icon: UserPlusIcon,
-      color: "from-indigo-500 to-blue-500",
-      link: "/admin/users/addUser",
-    },
-    {
-      title: "Add Program",
-      icon: PlusIcon,
-      color: "from-purple-500 to-pink-500",
-      link: "/admin/programs/add",
-    },
-    {
-      title: "Bulk Upload",
-      icon: UploadIcon,
-      color: "from-orange-400 to-yellow-500",
-      link: "/admin/users/bulkUpload",
-    },
-    {
-      title: "View Enquiries",
-      icon: EyeIcon,
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      title: "View Reports",
-      icon: BarChartIcon,
-      color: "from-sky-500 to-cyan-500",
-    },
-    {
-      title: "System Settings",
-      icon: SettingsIcon,
-      color: "from-gray-500 to-gray-700",
-    },
+    { title: "Add User", icon: UserPlusIcon, color: "bg-indigo-100" },
+    { title: "Add Program", icon: PlusIcon, color: "bg-purple-100" },
+    { title: "Bulk Upload", icon: UploadIcon, color: "bg-orange-100" },
+    { title: "View Enquiries", icon: EyeIcon, color: "bg-green-100" },
+    { title: "View Reports", icon: BarChartIcon, color: "bg-cyan-100" },
+    { title: "System Settings", icon: SettingsIcon, color: "bg-gray-100" },
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="flex-1 overflow-y-auto p-8">
+    <div className="min-h-screen bg-white text-gray-900">
+      <div className="p-8">
         {/* HEADER */}
-        <header className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-4xl font-extrabold text-gray-900">
-              Welcome back, <span className="text-indigo-600">Admin!</span>
+            <h1 className="text-3xl font-bold">
+              Welcome back,{" "}
+              <span className="text-purple-600 font-extrabold">Admin!</span>
             </h1>
-            <p className="mt-2 text-gray-600">
-              Here’s an overview of your institution’s performance.
+            <p className="text-gray-500 text-sm mt-1">
+              Here's an overview of your institution’s performance.
             </p>
           </div>
-          <div className="flex items-center space-x-4">
-            <BellIcon className="h-6 w-6 text-gray-500 cursor-pointer hover:text-indigo-600 transition" />
-            <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-4">
+            <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
+            <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
               A
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* STATS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {statCards.map((card, i) => (
+        {/* STATS CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {statCards.map((card, idx) => (
             <div
-              key={i}
-              className={`p-5 rounded-2xl shadow-md bg-white border border-gray-100 hover:shadow-lg transition transform hover:-translate-y-1`}
+              key={idx}
+              className={`${card.bg} text-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition`}
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm text-gray-500">{card.title}</p>
-                  <p className="text-3xl font-extrabold text-gray-900 mt-1">
-                    {card.value}
-                  </p>
+                  <p className={`text-sm ${card.textClr || "text-white"} opacity-90`}>{card.title}</p>
+                  <p className={`text-4xl ${card.textClr || "text-white"} font-bold mt-2`}>{card.value}</p>
                 </div>
-                <div className={`p-3 rounded-xl bg-gradient-to-br ${card.bg}`}>
-                  <card.icon className="h-6 w-6 text-white" />
+                <div className="bg-white/30 p-2 rounded-lg">
+                  <card.icon className={`w-6 h-6 ${card.textClr || "text-white"}`} />
                 </div>
               </div>
-              <p className={`mt-3 text-sm font-medium ${card.trendColor}`}>
-                {card.trend}
-              </p>
+              <p className="text-xs mt-3 opacity-90">{card.trend}</p>
             </div>
           ))}
         </div>
 
-        {/* QUICK ACTIONS + ENQUIRIES */}
+        {/* QUICK ACTIONS + RECENT ENQUIRIES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions */}
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              {quickActions.map((action, i) => (
-                <Link
-                  key={i}
-                  href={"#"}
-                  className={`rounded-xl bg-white shadow-sm hover:shadow-lg p-6 flex flex-col items-center justify-center transition transform hover:-translate-y-1 border border-gray-100`}
+            <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+              {quickActions.map((action, idx) => (
+                <div
+                  key={idx}
+                  className={`${action.color} rounded-xl flex flex-col items-center justify-center p-6 shadow hover:shadow-md transition cursor-pointer`}
                 >
-                  <div
-                    className={`p-3 rounded-full bg-gradient-to-br ${action.color}`}
-                  >
-                    <action.icon className="h-6 w-6 text-white" />
+                  <div className="p-3 bg-white rounded-full shadow-sm">
+                    <action.icon className="w-6 h-6 text-gray-700" />
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-gray-800 text-center">
+                  <p className="mt-3 text-sm font-semibold text-gray-800">
                     {action.title}
                   </p>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Recent Enquiries
-            </h2>
-            <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
+            <h2 className="text-lg font-bold mb-4">Recent Enquiries</h2>
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
               {filterEnquiries?.length ? (
-                filterEnquiries.map((enquiry: Enquiry, i: number) => (
-                  <RecentEnquiryItem
-                    key={enquiry.id}
-                    name={enquiry.student_name}
-                    course={
-                      enquiry.academic_entries?.data?.[0]?.course
-                        ?.course_name || "-"
-                    }
-                    context={enquiry.email}
-                    id={enquiry.id}
-                  />
-                ))
+                filterEnquiries
+                  .slice(0, 3)
+                  .map((enquiry: Enquiry, i: number) => (
+                    <RecentEnquiryItem
+                      key={enquiry.id}
+                      name={enquiry.student_name}
+                      context={enquiry.email}
+                      course={
+                        enquiry.academic_entries?.data?.[0]?.course
+                          ?.course_name || "-"
+                      }
+                      id={enquiry.id}
+                    />
+                  ))
               ) : (
-                <div className="p-4 text-gray-500 text-sm text-center">
+                <div className="p-4 text-center text-gray-500 text-sm">
                   No recent enquiries found.
                 </div>
               )}
