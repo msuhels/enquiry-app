@@ -2,20 +2,92 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 
 export async function GET(req: NextRequest) {
-  const supabase = createServiceRoleClient();
+  try {
+    const supabase = createServiceRoleClient();
+    const { searchParams } = new URL(req.url);
 
-  const { data: enquiries, error } = await supabase
-    .from("enquiries")
-    .select("*")
-    .order("created_at", { ascending: false });
+    const filters = {
+      search: searchParams.get("search") || undefined,
+      limit: searchParams.get("limit")
+        ? parseInt(searchParams.get("limit")!)
+        : 10, 
+      offset: searchParams.get("offset")
+        ? parseInt(searchParams.get("offset")!)
+        : 0, 
+    };
 
-  if (error) {
-    console.error("Error fetching enquiries:", error);
-    return NextResponse.json({ success: false, message: "Failed to fetch enquiries" }, { status: 500 });
+    console.log(
+      "LOGGING : API received enquiries fetch request with filters:",
+      filters
+    );
+
+    let query = supabase
+      .from("enquiries")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+
+    if (filters.search) {
+      query = query.or(
+        `student_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`
+      );
+    }
+
+    const from = filters.offset;
+    const to = filters.offset + filters.limit - 1;
+    query = query.range(from, to);
+
+    const { data: enquiries, error, count } = await query;
+
+    if (error) {
+      console.error("LOGGING : Error fetching enquiries:", error);
+      return NextResponse.json(
+        { success: false, message: "Failed to fetch enquiries" },
+        { status: 500 }
+      );
+    }
+
+    console.log(
+      "LOGGING : Enquiries service result:",
+      `Found ${enquiries?.length} enquiries out of ${count} total`
+    );
+
+    const response = await Promise.all(
+      enquiries.map(async (enquiry: any) => ({
+        ...enquiry,
+        academic_entries: await supabase
+          .from("academic_entries")
+          .select(
+            "*, study_level:education_levels(id,level_name), stream:streams(id,name), course:courses(id,course_name)"
+          )
+          .eq("enquiry_id", enquiry.id),
+      }))
+    );
+
+    const totalRecords = count || 0;
+    const totalPages = Math.ceil(totalRecords / filters.limit);
+    const currentPage = Math.floor(filters.offset / filters.limit) + 1;
+
+    return NextResponse.json({
+      success: true,
+      data: response,
+      pagination: {
+        total: totalRecords,
+        limit: filters.limit,
+        offset: filters.offset,
+        totalPages,
+        currentPage,
+        hasMore: filters.offset + filters.limit < totalRecords,
+      },
+    });
+  } catch (error) {
+    console.error("API enquiries fetch error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true, data: enquiries });
 }
+
 
 export async function POST(req: NextRequest) {
   const supabase = createServiceRoleClient();
