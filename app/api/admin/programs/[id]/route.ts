@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProgramById, updateProgram, deleteProgram } from "@/lib/supabase/program/admin-program.services";
 
-// GET - Fetch single program by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,7 +34,6 @@ export async function GET(
   }
 }
 
-// PATCH - Update a program
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -71,7 +69,6 @@ export async function PATCH(
   }
 }
 
-// DELETE - Delete a program
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

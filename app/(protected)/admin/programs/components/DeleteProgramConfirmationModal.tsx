@@ -1,5 +1,5 @@
-export default function DeleteUserConfirmationModal({
-  user,
+export default function DeleteProgramConfirmationModal({
+  program,
   onClose,
   onDelete,
 }) {
@@ -21,20 +21,20 @@ export default function DeleteUserConfirmationModal({
           ></path>
         </svg>
         <h3 className="text-xl font-normal text-gray-500 mt-5 mb-6">
-          Are you sure you want to delete this user?
+          Are you sure you want to delete this program?
         </h3>
         <ul className="w-full text-start mb-3">
           <li className="text-base text-gray-500">
             <span className="font-semibold text-gray-900">Name:</span>{" "}
-            {user.full_name}
+            {program.programme_name || "N/A"}
           </li>
           <li className="text-base text-gray-500">
             <span className="font-semibold text-gray-900">Email:</span>{" "}
-            {user.email}
+            {program.university}
           </li>
         </ul>
         <div
-          onClick={() => onDelete(user)}
+          onClick={() => onDelete(program)}
           className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-base inline-flex items-center px-3 py-2.5 text-center mr-2 cursor-pointer"
         >
           Yes, I'm sure

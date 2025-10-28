@@ -102,6 +102,7 @@ export default function InterestInfoSection({
         />
 
         <FormInput
+          disabled={!interestInfo.interested_level}
           label="Area of Study (Course)"
           name="study_area"
           type="select"
@@ -126,29 +127,6 @@ export default function InterestInfoSection({
           name="what_to_pursue"
           type="text"
           value={interestInfo.what_to_pursue}
-          onChange={(e) =>
-            handleInterestChange(e.target.name, e.target.value)
-          }
-        />
-
-        <FormInput
-          label="Percentage or GPA"
-          name="percentage"
-          type="number"
-          step={0.01}
-          min={0}
-          max={100}
-          value={interestInfo.percentage}
-          onChange={(e) =>
-            handleInterestChange(e.target.name, e.target.value)
-          }
-        />
-
-        <FormInput
-          label="Study Year"
-          name="study_year"
-          type="text"
-          value={interestInfo.study_year}
           onChange={(e) =>
             handleInterestChange(e.target.name, e.target.value)
           }

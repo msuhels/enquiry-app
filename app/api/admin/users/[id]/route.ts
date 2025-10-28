@@ -1,6 +1,6 @@
-import { userService } from '@/lib/supabase/auth-module/services/user.services';
 import { NextRequest, NextResponse } from "next/server";
 import { updateUser } from "@/lib/supabase/auth-module/services/admin-user.services";
+import { deleteUser } from "@/lib/supabase/auth-module/services/user.services";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -48,7 +48,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     console.log("LOGGING : API received user delete request:", id);
 
-    const result = await userService.deleteUser(id);
+    const result = await deleteUser(id);
 
     if (!result.success) {
       console.error("LOGGING : Failed to delete user:", result.error);

@@ -436,7 +436,6 @@ export default function BulkUploadUsersPage() {
               </table>
             </div>
 
-            {/* Pagination remains the same */}
             {totalPages > 1 && (
               <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                 <div className="text-sm text-gray-700">

@@ -2,35 +2,44 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "@/lib/types";
-import { UserPlusIcon } from "lucide-react";
-import Link from "next/link";
-import Table from "@/components/table/globalTable";
-import Breadcrumbs from "@/components/ui/breadCrumbs";
-import { useFetch } from "@/hooks/api/useFetch";
-import { usePatch } from "@/hooks/api/usePatch";
+import { useDebounce } from "use-debounce";
+import { toast } from "sonner";
 import { useModal } from "@/components/ui/modal";
+import { useFetch } from "@/hooks/api/useFetch";
+import { useDelete } from "@/hooks/api/useDelete";
+import { usePatch } from "@/hooks/api/usePatch";
 import DeleteUserConfirmationModal from "./components/deleteUserConfirmationModal";
+import AdvancedDataTable from "@/components/table/globalTable";
+import { User } from "@/lib/types";
 
 export default function UsersPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const { data, error, isLoading } = useFetch("/api/admin/users");
-  const { patch } = usePatch();
   const { openModal, closeModal } = useModal();
+  const { del } = useDelete();
+  const { patch } = usePatch();
 
+  const [users, setUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [sortKey, setSortKey] = useState("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [debouncedSearch] = useDebounce(search, 400);
+
+  const offset = (page - 1) * itemsPerPage;
+
+  // Build API URL dynamically for backend pagination/filtering/search
+  const apiUrl = `/api/admin/users?search=${encodeURIComponent(
+    debouncedSearch
+  )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
+
+  const { data, isLoading } = useFetch(apiUrl);
+
+  // Populate users when API returns
   useEffect(() => {
-    console.log("data", data);
-    if (data?.data) {
-      if (data.success) {
-        setUsers(data?.data);
-      } else {
-        console.error("Error fetching users:", data.error);
-        return;
-      }
+    if (data?.success) {
+      setUsers(data.data);
     }
   }, [data]);
 
@@ -38,42 +47,65 @@ export default function UsersPage() {
     router.push(`/admin/users/${user.id}`);
   };
 
-  const handleDelete = async (user: User) => {
-    openModal(<DeleteUserConfirmationModal />, {
-      size: "half",
-      closeOnOverlayClick: true,
-      showCloseButton: true,
-    });
+  const handleDelete = (user: User) => {
+    const modalId = openModal(
+      <DeleteUserConfirmationModal
+        user={user}
+        onDelete={() => handleConfirmDelete(user, modalId)}
+        onClose={() => closeModal(modalId)}
+      />,
+      { size: "half" }
+    );
+  };
+
+  const handleConfirmDelete = async (user: User, modalId: string) => {
+    try {
+      const res = await del(`/api/admin/users/${user.id}`);
+      if (res.success) {
+        toast.success("User deleted successfully!");
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      } else {
+        toast.error(res.error || "Failed to delete user");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error deleting user");
+    } finally {
+      closeModal(modalId);
+    }
   };
 
   const handleToggleActive = async (user: User) => {
     const newStatus = !user.is_active;
-
     try {
       const response = await patch(`/api/admin/users/toggle`, {
         userId: user.id,
         status: newStatus,
       });
-      if (!response?.success) {
-        console.error("Error toggling user status:", response.error);
-        return;
+      if (response?.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id ? { ...u, is_active: newStatus } : u
+          )
+        );
+        toast.success(
+          `User ${newStatus ? "activated" : "deactivated"} successfully!`
+        );
+      } else {
+        toast.error("Failed to update user status");
       }
     } catch (error) {
-      console.error("Error toggling user status:", error);
+      console.error(error);
+      toast.error("Error updating user status");
     }
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, is_active: !u.is_active } : u
-      )
-    );
   };
 
-  const handleConfirmDelete = () => {};
-
+  // Define table columns
   const columns = [
     {
       key: "name",
       label: "Name",
+      sortable: true,
       render: (row: User) => (
         <div>
           <div className="text-sm font-medium text-gray-900">{row.name}</div>
@@ -84,6 +116,7 @@ export default function UsersPage() {
     {
       key: "role",
       label: "Role",
+      sortable: true,
       render: (row: User) => (
         <span
           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -109,69 +142,52 @@ export default function UsersPage() {
               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
           }`}
         >
-          {isLoading ? (
-            <></>
-          ) : (
-            <span>{row.is_active ? "Active" : "Inactive"}</span>
-          )}
+          {row.is_active ? "Active" : "Inactive"}
         </button>
       ),
     },
     {
       key: "created_at",
       label: "Created",
+      sortable: true,
       render: (row: User) => new Date(row.created_at).toLocaleDateString(),
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Filters for tabs
+  const filterTabs = [
+    { key: "all", label: "All" },
+    // { key: "active", label: "Active" },
+    // { key: "inactive", label: "Inactive" },
+    // { key: "admin", label: "Admins" },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Table
+      <div className="max-w-7xl mx-auto p-8">
+        <AdvancedDataTable
           title="Users"
           columns={columns}
           data={users}
-          searchKeys={["name", "email", "role"]}
+          searchQuery={search}
           searchPlaceholder="Search users by name, email, or role..."
+          filterTabs={filterTabs}
+          activeFilter={filter}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          onSearchChange={setSearch}
+          onFilterChange={setFilter}
+          onSortChange={(key, dir) => {}}
+          onPageChange={setPage}
+          currentPage={page}
+          total={data?.pagination?.total || 0}
+          itemsPerPage={itemsPerPage}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          emptyMessage="No users found."
-          addBulkHeref="/admin/users/bulkUpload"
           addHref="/admin/users/addUser"
-          filterTabs={[
-            {
-              key: "all",
-              label: "All",
-              count: users.length,
-              filter: () => true,
-            },
-            {
-              key: "active",
-              label: "Active",
-              count: users.filter((u) => u.is_active).length,
-              filter: (u) => u.is_active,
-            },
-            {
-              key: "inactive",
-              label: "Inactive",
-              count: users.filter((u) => !u.is_active).length,
-              filter: (u) => !u.is_active,
-            },
-            {
-              key: "admin",
-              label: "Admins",
-              count: users.filter((u) => u.role === "admin").length,
-              filter: (u) => u.role === "admin",
-            },
-          ]}
+          addBulkHref="/admin/users/bulkUpload"
+          isLoading={isLoading}
+          emptyMessage="No users found."
         />
       </div>
     </div>
