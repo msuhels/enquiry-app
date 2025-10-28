@@ -14,6 +14,7 @@ import {
   ChevronRight,
   FileDown,
   Info,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { BulkUploadService } from "@/lib/bulk-upload";
@@ -40,27 +41,38 @@ interface ValidationResponse {
 interface UploadResult {
   success: boolean;
   total: number;
-  successful: number;
+  created: number;
   failed: number;
-  errors?: Array<{ row: number; error: string }>;
+  errors?: Array<{ index: number; programme_name: string; error: string }>;
+}
+
+interface IExtraField {
+  field: string;
+  accept: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
+
+// Comparison operator mapping
+const COMPARISON_MAP: Record<string, string> = {
+  gt: ">",
+  gte: ">=",
+  lt: "<",
+  lte: "<=",
+  eq: "=",
+};
 
 export default function BulkUploadPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
-  const [validating, setValidating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [parsedData, setParsedData] = useState<ProgramFormData[] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
-    []
-  );
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string>("");
+  const [extraFields, setExtraFields] = useState<IExtraField[]>([]);
 
   const bulkUploadService = new BulkUploadService();
   const { openModal } = useModal();
@@ -79,10 +91,10 @@ export default function BulkUploadPage() {
       if (bulkUploadService.validateFileType(file)) {
         setSelectedFile(file);
         setParsedData(null);
-        setValidationErrors([]);
         setUploadResult(null);
         setError("");
         setCurrentPage(1);
+        setExtraFields([]);
       } else {
         setError(
           "Invalid file type. Please select a CSV, Excel (.xls, .xlsx), or XML file."
@@ -92,19 +104,23 @@ export default function BulkUploadPage() {
     }
   };
 
+  type ProgramFormDataWithExtra = ProgramFormData & {
+    extraFields: Record<string, any>;
+  };
+
   const handleParseFile = async () => {
     if (!selectedFile) return;
 
     setParsing(true);
     setError("");
     setParsedData(null);
-    setValidationErrors([]);
     setCurrentPage(1);
 
     try {
       const fileExtension = bulkUploadService.getFileExtension(
         selectedFile.name
       );
+
       let data: ProgramFormData[] = [];
 
       switch (fileExtension) {
@@ -127,6 +143,15 @@ export default function BulkUploadPage() {
       }
 
       setParsedData(data);
+      const extraFields = (data[0] as ProgramFormDataWithExtra)?.extraFields;
+
+      if (extraFields) {
+        const fields = Object.keys(extraFields)
+          .filter((key) => !key.toLowerCase().startsWith("comp-"))
+          .map((key) => ({ field: key, accept: true }));
+        setExtraFields(fields);
+      }
+
       console.log(`Successfully parsed ${data.length} programs`);
     } catch (err) {
       console.error("Parse error:", err);
@@ -136,72 +161,68 @@ export default function BulkUploadPage() {
     }
   };
 
-  const handleValidate = async () => {
-    if (!parsedData) return;
+  const transformDataForAPI = () => {
+    if (!parsedData) return [];
 
-    setValidating(true);
-    setValidationErrors([]);
-    setError("");
+    const acceptedFields = extraFields
+      .filter((field) => field.accept)
+      .map((field) => field.field);
 
-    try {
-      // FIX: Correct API path without /admin
-      const response = await fetch("/api/admin/programs/validate-bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programs: parsedData }),
-      });
+    return parsedData.map((program) => {
+      const { extraFields: programExtraFields, ...restProgram } =
+        program as ProgramFormDataWithExtra;
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          error: `Server error: ${response.status} ${response.statusText}`,
-        }));
-        throw new Error(errorData.error || "Validation request failed");
+      // Build custom_fields array
+      const custom_fields: Array<{
+        field: string;
+        comparison: string;
+        value: number | string;
+      }> = [];
+
+      if (programExtraFields && acceptedFields.length > 0) {
+        acceptedFields.forEach((fieldName) => {
+          const value = programExtraFields[fieldName];
+          const comparisonKey = `Comp-${fieldName}`;
+          const comparisonOperator = programExtraFields[comparisonKey];
+
+          // Only add if value exists and is not empty
+          if (
+            value !== null &&
+            value !== undefined &&
+            value.toString().trim() !== ""
+          ) {
+            const mappedComparison =
+              COMPARISON_MAP[comparisonOperator?.toLowerCase()] || ">";
+
+            custom_fields.push({
+              field: fieldName,
+              comparison: mappedComparison,
+              value: value,
+            });
+          }
+        });
       }
 
-      const result: ValidationResponse = await response.json();
-
-      if (!result.valid && result.errors && result.errors.length > 0) {
-        setValidationErrors(result.errors);
-        console.warn(`Found ${result.errors.length} validation errors`);
-      } else {
-        setValidationErrors([]);
-        console.log("All programs validated successfully");
-      }
-    } catch (err) {
-      console.error("Validation error:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to validate programs"
-      );
-      setValidationErrors([]);
-    } finally {
-      setValidating(false);
-    }
+      return {
+        ...restProgram,
+        custom_fields,
+      };
+    });
   };
 
   const handleSaveToDatabase = async () => {
     if (!parsedData || !selectedFile) return;
-
-    // Warn if there are validation errors
-    if (validationErrors.length > 0) {
-      const confirmed = window.confirm(
-        `There are ${validationErrors.length} validation errors. Some programs may fail to upload. Do you want to continue?`
-      );
-      if (!confirmed) return;
-    }
 
     setUploading(true);
     setUploadResult(null);
     setError("");
 
     try {
-      // FIX: Correct API path without /admin
-      const response = await fetch("/api/admin/programs/bulk-upload", {
+      const transformedPrograms = transformDataForAPI();
+      const response = await fetch("/api/admin/programs/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          programs: parsedData,
-          filename: selectedFile.name,
-        }),
+        body: JSON.stringify(transformedPrograms),
       });
 
       if (!response.ok) {
@@ -215,11 +236,10 @@ export default function BulkUploadPage() {
       setUploadResult(result);
 
       if (result.success && result.failed === 0) {
-        // Clear form on complete success after 3 seconds
         setTimeout(() => {
           setSelectedFile(null);
           setParsedData(null);
-          setValidationErrors([]);
+          setExtraFields([]);
           setCurrentPage(1);
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -322,6 +342,7 @@ export default function BulkUploadPage() {
   };
 
   const handleOpenInstructions = () => {
+    // @ts-ignore
     openModal(<FileFormatInstructions />, {
       size: "md",
       closeOnOverlayClick: true,
@@ -332,9 +353,20 @@ export default function BulkUploadPage() {
   const handleUploadAnotherFile = () => {
     setSelectedFile(null);
     setParsedData(null);
-    setValidationErrors([]);
+    setExtraFields([]);
     setCurrentPage(1);
+    setUploadResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSelectExtraField = (
+    index: number,
+    isChecked: boolean
+  ) => {
+    const updated = extraFields.map((field, i) =>
+      i === index ? { ...field, accept: isChecked } : field
+    );
+    setExtraFields(updated);
   };
 
   return (
@@ -401,7 +433,7 @@ export default function BulkUploadPage() {
                         accept=".csv,.xls,.xlsx,.xml"
                         className="sr-only"
                         onChange={handleFileSelect}
-                        disabled={parsing || validating || uploading}
+                        disabled={parsing || uploading}
                       />
                     </div>
 
@@ -426,7 +458,8 @@ export default function BulkUploadPage() {
                     >
                       {parsing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
+                          Parsing...
                         </>
                       ) : (
                         "Parse File"
@@ -464,10 +497,11 @@ export default function BulkUploadPage() {
 
                 <div className="flex gap-2 items-center justify-center">
                   <button
-                    className="w-full items-center p-2 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                    className="w-full p-2 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors flex items-center"
                     onClick={handleUploadAnotherFile}
                   >
-                    Upload another file
+                   <X className="h-5 w-5 mr-2" />
+                    Cancel Upload 
                   </button>
                   {parsedData && !uploading && !uploadResult && (
                     <button
@@ -477,7 +511,7 @@ export default function BulkUploadPage() {
                     >
                       {uploading ? (
                         <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin inline" />
                           Saving to database...
                         </>
                       ) : (
@@ -503,6 +537,42 @@ export default function BulkUploadPage() {
                   </div>
                 </div>
               </div>
+
+              {extraFields.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                  <h3 className="text-sm font-semibold text-yellow-900 mb-3">
+                   Detected {extraFields.length} Custom field(s). Select
+                    which to include:
+                  </h3>
+
+                  <ul className="space-y-2">
+                    {extraFields.map((item, index) => {
+                      return (
+                        <li key={index} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id={`field-${index}`}
+                            checked={item.accept}
+                            onChange={(e) =>
+                              handleSelectExtraField(
+                                index,
+                                e.target.checked
+                              )
+                            }
+                            className="h-4 w-4 text-indigo-600 checked:bg-indigo-500 focus:ring-indigo-500 border-gray-300 rounded"
+                          />
+                          <label
+                            htmlFor={`field-${index}`}
+                            className="ml-2 text-sm text-gray-700 cursor-pointer"
+                          >
+                            {item.field}
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Data Table */}
@@ -634,7 +704,7 @@ export default function BulkUploadPage() {
         {uploading && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+              <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
               <p className="text-lg font-medium text-gray-900 mb-2">
                 Uploading programs to database...
               </p>
@@ -684,7 +754,7 @@ export default function BulkUploadPage() {
                       Total programs: {uploadResult.total}
                     </p>
                     <p className="font-medium">
-                      Successfully uploaded: {uploadResult.successful}
+                      Successfully uploaded: {uploadResult.created}
                     </p>
                     {uploadResult.failed > 0 && (
                       <p className="font-medium text-red-600">
@@ -703,7 +773,7 @@ export default function BulkUploadPage() {
                           {uploadResult.errors.map((err, idx) => (
                             <li key={idx} className="flex items-start">
                               <span className="font-medium mr-2 flex-shrink-0">
-                                Row {err.row}:
+                                Program {err.index + 1} ({err.programme_name}):
                               </span>
                               <span>{err.error}</span>
                             </li>
@@ -716,10 +786,10 @@ export default function BulkUploadPage() {
                   {uploadResult.success && (
                     <div className="mt-4">
                       <Link
-                        href="/admin"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        href="/admin/programs"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                       >
-                        Go to Dashboard
+                        Go to Programs
                       </Link>
                     </div>
                   )}
