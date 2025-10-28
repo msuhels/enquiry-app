@@ -29,12 +29,15 @@ export default function UsersPage() {
 
   const offset = (page - 1) * itemsPerPage;
 
-  // Build API URL dynamically for backend pagination/filtering/search
   const apiUrl = `/api/admin/users?search=${encodeURIComponent(
     debouncedSearch
   )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   // Populate users when API returns
   useEffect(() => {
