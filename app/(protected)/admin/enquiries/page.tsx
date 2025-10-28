@@ -8,15 +8,21 @@ import { Enquiry } from "@/lib/types";
 import { FileTextIcon, Loader2, MessageSquareIcon } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { useDebounce } from "use-debounce";
+import { useModal } from "@/components/ui/modal";
+import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
+import { useDelete } from "@/hooks/api/useDelete";
+import { toast } from "sonner";
 
 export default function EnquiriesPage() {
   const router = useRouter();
+  const { openModal, closeModal } = useModal();
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
+   const { del } = useDelete();
 
   const offset = (page - 1) * itemsPerPage;
   const apiUrl = `/api/admin/enquiries?search=${encodeURIComponent(
@@ -40,13 +46,24 @@ export default function EnquiriesPage() {
   };
 
   const handleDelete = (enquiry: Enquiry) => {
-    if (
-      confirm(
-        `Are you sure you want to delete enquiry from ${enquiry.student_name}?`
-      )
-    ) {
-      setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
+    const modalId = openModal(
+      <DeleteConfirmationModal
+        onDelete={() => handleConfirmDelete(enquiry, modalId)}
+        onClose={() => closeModal(modalId)}
+      />,
+      { size: "half" }
+    );
+  };
+
+  const handleConfirmDelete = async (enquiry: Enquiry, modalId: string) => {
+    const res = await del(`/api/admin/enquiries?id=${enquiry.id}`);
+    if (res.success) {
+      toast.success("Enquiry deleted successfully!");
+       setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
+    } else {
+      toast.error(res.error || "Failed to delete enquiry");
     }
+    closeModal(modalId);
   };
 
   const handleStatusChange = (enquiry: Enquiry) => {
@@ -69,7 +86,10 @@ export default function EnquiriesPage() {
       key: "student",
       label: "Student",
       render: (row: Enquiry) => (
-        <div>
+        <div
+          onClick={() => router.push(`/admin/enquiries/${row.id}/suggestions`)}
+          className="cursor-pointer"
+        >
           <div className="text-sm font-medium text-gray-900">
             {row.student_name}
           </div>
