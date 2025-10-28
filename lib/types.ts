@@ -180,6 +180,7 @@ export interface BulkUserUploadResult {
 export interface CustomFieldEntry {
   field: string;
   value: number | "";
+  comparison: ">" | ">=" | "<" | "<=" | "=";
 }
 
 export interface AcademicEntry {

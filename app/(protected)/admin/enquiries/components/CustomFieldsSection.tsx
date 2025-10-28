@@ -1,17 +1,17 @@
 import React from "react";
 import { SearchIcon, PlusIcon, Trash2Icon } from "lucide-react";
-
-interface CustomFieldEntry {
-  field: string;
-  value: number | "";
-}
+import FormInput from "@/components/form/formInput";
+import { CustomFieldEntry } from "@/lib/types";
 
 interface CustomFieldsSectionProps {
   customFieldsData: CustomFieldEntry[];
-  customFields: string[];
+  customFields: {
+    value: string;
+    label: string;
+  }[];
   handleCustomFieldChange: (
     index: number,
-    key: "field" | "value",
+    key: "field" | "value" | "comparison",
     value: string | number | ""
   ) => void;
   addCustomField: () => void;
@@ -25,6 +25,13 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   addCustomField,
   removeCustomField,
 }) => {
+  const comparisonOptions = [
+    { value: ">", label: "Greater than" },
+    { value: ">=", label: "Greater than or equal to" },
+    { value: "=", label: "Equal to" },
+    { value: "<=", label: "Less than or equal to" },
+    { value: "<", label: "Less than" },
+  ];
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -44,41 +51,37 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
             key={index}
             className="flex flex-col md:flex-row md:items-center md:space-x-4 border border-gray-200 rounded-lg p-4"
           >
-            {/* Select Field */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Field
-              </label>
-              <select
+              <FormInput
+                label="Field"
+                name={`field-${index}`}
+                type="select"
+                select={customFields}
                 value={cf.field}
                 onChange={(e) =>
                   handleCustomFieldChange(index, "field", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Field</option>
-                {customFields
-                  .filter((f) => {
-                    // Keep the current selected value in this row, allow it
-                    return (
-                      f === cf.field ||
-                      !customFieldsData.some((entry) => entry.field === f)
-                    );
-                  })
-                  .map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-              </select>
+              />
             </div>
 
-            {/* Value Input */}
-            <div className="flex-1 mt-4 md:mt-0">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Your Score/Value
-              </label>
-              <input
+            {/* Comparison Operator */}
+            <div className="flex-1">
+              <FormInput
+                label="Comparison"
+                name={`comparison-${index}`}
+                select={comparisonOptions}
+                value={cf.comparison}
+                onChange={(e) =>
+                  handleCustomFieldChange(index, "comparison", e.target.value)
+                }
+              />
+            </div>
+
+            {/* Input Value */}
+            <div className="flex-1">
+              <FormInput
+                label="Value"
+                name={`value-${index}`}
                 type="number"
                 value={cf.value}
                 onChange={(e) =>
@@ -88,8 +91,6 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
                     e.target.value === "" ? "" : parseFloat(e.target.value)
                   )
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your score or value"
               />
             </div>
 

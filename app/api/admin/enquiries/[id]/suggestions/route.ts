@@ -24,9 +24,9 @@ export async function GET(
       ? JSON.parse(enquiry.custom_fields)
       : [];
 
-    const { data: programs, error: programsError } = await supabase
-      .from("programs")
-      .select(`
+    const { data: programs, error: programsError } = await supabase.from(
+      "programs"
+    ).select(`
         id,
         university,
         programme_name,
@@ -53,7 +53,6 @@ export async function GET(
 
     if (programsError) throw programsError;
 
-    // 3️⃣ Filter Matches
     const suggestions = programs.filter((program) => {
       return custom_fields.every((cf: any) => {
         const matchField = program.custom_programs_fields?.find(
@@ -61,7 +60,8 @@ export async function GET(
             p.custom_field?.field_name?.toLowerCase() ===
             cf.field?.toLowerCase()
         );
-        if (!matchField) return true;
+
+        if (!matchField) return false;
 
         const progVal = parseFloat(matchField.field_value);
         const userVal = parseFloat(cf.value);
@@ -69,16 +69,24 @@ export async function GET(
 
         if (!isNaN(progVal) && !isNaN(userVal)) {
           switch (cmp) {
-            case ">": return userVal > progVal;
-            case ">=": return userVal >= progVal;
-            case "<": return userVal < progVal;
-            case "<=": return userVal <= progVal;
-            case "=": return userVal === progVal;
-            default: return true;
+            case ">":
+              return userVal > progVal;
+            case ">=":
+              return userVal >= progVal;
+            case "<":
+              return userVal < progVal;
+            case "<=":
+              return userVal <= progVal;
+            case "=":
+              return userVal === progVal;
+            default:
+              return true;
           }
         }
-        return String(cf.value).toLowerCase() ===
-               String(matchField.field_value).toLowerCase();
+        return (
+          String(cf.value).toLowerCase() ===
+          String(matchField.field_value).toLowerCase()
+        );
       });
     });
 
@@ -86,7 +94,11 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching suggestions:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch suggestions", error: error.message },
+      {
+        success: false,
+        message: "Failed to fetch suggestions",
+        error: error.message,
+      },
       { status: 500 }
     );
   }

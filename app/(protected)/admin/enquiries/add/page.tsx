@@ -157,7 +157,7 @@ export default function EnquirySystem() {
 
   const addCustomField = () => {
     if (customFieldsData.length === 0) {
-      setCustomFieldsData([{ field: "", value: "" }]);
+      setCustomFieldsData([{ field: "", value: "", comparison: ">" }]);
       return;
     }
 
@@ -167,7 +167,7 @@ export default function EnquirySystem() {
 
     if (customFieldsData.length >= availableFields.length) return;
 
-    setCustomFieldsData((prev) => [...prev, { field: "", value: "" }]);
+    setCustomFieldsData((prev) => [...prev, { field: "", value: "", comparison: ">" }]);
   };
 
   const removeCustomField = (index: number) => {
@@ -176,8 +176,8 @@ export default function EnquirySystem() {
 
   const handleCustomFieldChange = (
     index: number,
-    key: "field" | "value",
-    value: string | number | ""
+    key: "field" | "value" | "comparison",
+    value: string | number | "",
   ) => {
     setCustomFieldsData((prev) => {
       const updated = [...prev];
@@ -280,7 +280,7 @@ export default function EnquirySystem() {
               <div className="mt-8">
                 <CustomFieldsSection
                   customFieldsData={customFieldsData}
-                  customFields={availableFields}
+                  customFields={availableFields.map((f) => ({label : f, value : f}))}
                   handleCustomFieldChange={handleCustomFieldChange}
                   addCustomField={addCustomField}
                   removeCustomField={removeCustomField}
