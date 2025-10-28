@@ -4,7 +4,6 @@ import { parseString } from 'xml2js';
 import { ProgramFormData } from './types';
 
 export class BulkUploadService {
-  // Parse CSV file
   async parseCSV(file: File): Promise<ProgramFormData[]> {
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
@@ -25,7 +24,6 @@ export class BulkUploadService {
     });
   }
 
-  // Parse Excel file
   async parseExcel(file: File): Promise<ProgramFormData[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -48,7 +46,7 @@ export class BulkUploadService {
     });
   }
 
-  // Parse XML file
+  /** ---> Parse XML file It may be buggy need to check logic once */ 
   async parseXML(file: File): Promise<ProgramFormData[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -76,11 +74,46 @@ export class BulkUploadService {
     });
   }
 
-  // Map CSV data to program format
-  private mapCSVDataToPrograms(data: any[]): ProgramFormData[] {
-    return data.map((row, index) => ({
+   mappedSourceKeys = new Set([
+      'Sr.No.',
+      'UNIVERSITY', 'university',
+      'PROGRAMME Name', 'programme_name',
+      'University Ranking', 'university_ranking',
+      'Study Level', 'study_level',
+      'Study Area', 'study_area',
+      'Campus', 'campus',
+      'Duration', 'duration',
+      'Open Intake', 'open_intake',
+      'Open Call', 'open_call',
+      'Application Deadline', 'application_deadline',
+      'Entry REQUIREMENTS', 'entry_requirements',
+      'PERCENTAGE Required', 'percentage_required',
+      'MOI', 'moi',
+      'Ielts Score', 'ielts_score',
+      'Ielts No band less than', 'ielts_no_band_less_than',
+      'Toefl Score', 'toefl_score',
+      'Toefl No band less than', 'toefl_no_band_less_than',
+      'PTE Score', 'pte_score',
+      'PTE No band less than', 'pte_no_band_less_than',
+      'DET Score', 'det_score',
+      'DET No band less than', 'det_no_band_less_than',
+      'TOLC Score', 'tolc_score',
+      'SAT Score', 'sat_score',
+      'GRE Score', 'gre_score',
+      'GMAT Score', 'gmat_score',
+      'CENTS Score', 'cents_score',
+      'TIL Score', 'til_score',
+      'ARCHED Test', 'arched_test',
+      'Application Fees', 'application_fees',
+      'Additional Requirement', 'additional_requirements',
+      'Remarks', 'remarks',
+    ]);
+
+private mapCSVDataToPrograms(data: any[]): ProgramFormData[] {
+  return data.map((row) => {
+    const mappedData: ProgramFormData = {
       university: row['UNIVERSITY'] || row['university'] || '',
-      programme_name: row['PROGRAMME Name'] || row['programme_name'] || row['PROGRAMME Name'] || '',
+      programme_name: row['PROGRAMME Name'] || row['programme_name'] || '',
       university_ranking: this.parseNumber(row['University Ranking'] || row['university_ranking']),
       study_level: row['Study Level'] || row['study_level'],
       study_area: row['Study Area'] || row['study_area'],
@@ -93,9 +126,9 @@ export class BulkUploadService {
       percentage_required: this.parseNumber(row['PERCENTAGE Required'] || row['percentage_required']),
       moi: row['MOI'] || row['moi'],
       ielts_score: this.parseNumber(row['Ielts Score'] || row['ielts_score']),
-      ielts_no_band_less_than: this.parseNumber(row['No band less than'] || row['ielts_no_band_less_than']),
+      ielts_no_band_less_than: this.parseNumber(row['Ielts No band less than'] || row['ielts_no_band_less_than']),
       toefl_score: this.parseNumber(row['Toefl Score'] || row['toefl_score']),
-      toefl_no_band_less_than: this.parseNumber(row['No ban less than'] || row['toefl_no_band_less_than']),
+      toefl_no_band_less_than: this.parseNumber(row['Toefl No band less than'] || row['toefl_no_band_less_than']),
       pte_score: this.parseNumber(row['PTE Score'] || row['pte_score']),
       pte_no_band_less_than: this.parseNumber(row['PTE No band less than'] || row['pte_no_band_less_than']),
       det_score: this.parseNumber(row['DET Score'] || row['det_score']),
@@ -110,15 +143,23 @@ export class BulkUploadService {
       application_fees: this.parseNumber(row['Application Fees'] || row['application_fees']),
       additional_requirements: row['Additional Requirement'] || row['additional_requirements'],
       remarks: row['Remarks'] || row['remarks'],
-    })).filter(program => program.university && program.programme_name);
-  }
+    };
 
-  // Map Excel data to program format (same as CSV)
+    const extraFields: Record<string, any> = {};
+    Object.keys(row).forEach((key) => {
+      if (!this.mappedSourceKeys.has(key)) {
+        extraFields[key] = row[key];
+      }
+    });
+
+    return { ...mappedData, extraFields };
+  });
+}
+
   private mapExcelDataToPrograms(data: any[]): ProgramFormData[] {
     return this.mapCSVDataToPrograms(data);
   }
 
-  // Map XML data to program format
   private mapXMLDataToPrograms(xmlResult: any): ProgramFormData[] {
     const programs: ProgramFormData[] = [];
     
@@ -176,14 +217,12 @@ export class BulkUploadService {
     return programs.filter(program => program.university && program.programme_name);
   }
 
-  // Helper function to parse numbers
   private parseNumber(value: any): number | undefined {
     if (!value) return undefined;
     const parsed = parseFloat(value);
     return isNaN(parsed) ? undefined : parsed;
   }
 
-  // Helper function to parse dates
   private parseDate(value: any): string | undefined {
     if (!value) return undefined;
     try {
@@ -194,7 +233,6 @@ export class BulkUploadService {
     }
   }
 
-  // Validate file type
   validateFileType(file: File): boolean {
     const allowedTypes = [
       'text/csv',
@@ -210,7 +248,6 @@ export class BulkUploadService {
     return allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
   }
 
-  // Get file extension
   getFileExtension(filename: string): string {
     return filename.toLowerCase().substring(filename.lastIndexOf('.') + 1);
   }
