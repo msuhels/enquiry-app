@@ -290,6 +290,8 @@ export default function BulkUploadPage() {
       "Application Fees",
       "Additional Requirement",
       "Remarks",
+      "My Custom Field",
+      "Comp-My Custom Field"
     ];
 
     const sampleData = [
@@ -325,6 +327,8 @@ export default function BulkUploadPage() {
       "100",
       "Portfolio required",
       "Popular program",
+      "custom field value",
+      "gt"
     ];
 
     const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
