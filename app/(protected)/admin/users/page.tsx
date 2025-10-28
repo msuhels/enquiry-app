@@ -29,12 +29,15 @@ export default function UsersPage() {
 
   const offset = (page - 1) * itemsPerPage;
 
-  // Build API URL dynamically for backend pagination/filtering/search
   const apiUrl = `/api/admin/users?search=${encodeURIComponent(
     debouncedSearch
   )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   // Populate users when API returns
   useEffect(() => {
@@ -108,7 +111,7 @@ export default function UsersPage() {
       sortable: true,
       render: (row: User) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{row.name}</div>
+          <div className="text-sm font-medium text-gray-900">{row.full_name}</div>
           <div className="text-sm text-gray-500">{row.email}</div>
         </div>
       ),
