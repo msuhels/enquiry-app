@@ -110,21 +110,84 @@ export async function getUser(
   }
 }
 
-export async function getUsers(): Promise<UserServiceResult<UserProfile[]>> {
+interface GetUsersParams {
+  search?: string;
+  filter?: string;
+  sortKey?: string;
+  sortDir?: "asc" | "desc";
+  limit?: number;
+  offset?: number;
+}
+
+interface GetUsersResult extends UserServiceResult<UserProfile[]> {
+  total?: number;
+}
+
+export async function getUsers(
+  params?: GetUsersParams
+): Promise<GetUsersResult> {
   try {
     const supabase = createServiceRoleClient();
 
-    const { data, error } = await supabase
+    // Default values
+    const {
+      search,
+      filter,
+      sortKey = "created_at",
+      sortDir = "desc",
+      limit = 10,
+      offset = 0,
+    } = params || {};
+
+    console.log("LOGGING : getUsers service called with params:", params);
+
+    // Build query with count
+    let query = supabase
       .from("users")
-      .select("*")
-      .order("created_at", { ascending: false }); // optional: order by creation date
+      .select("*", { count: "exact" })
+      .order(sortKey, { ascending: sortDir === "asc" });
+
+    // Apply search filter
+    if (search) {
+      query = query.or(
+        `full_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`
+      );
+    }
+
+    // Apply additional filter if needed
+    if (filter) {
+      // Example: filter by role or status
+      // Adjust based on your filter requirements
+      if (filter !== "all") {
+        query = query.eq("role", filter);
+        // or query = query.eq("status", filter);
+      }
+    }
+
+    // Apply pagination
+    const from = offset;
+    const to = offset + limit - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
+      console.error("LOGGING : Error fetching users:", error);
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    console.log(
+      "LOGGING : Users fetched successfully:",
+      `${data?.length} users out of ${count} total`
+    );
+
+    return {
+      success: true,
+      data: data || [],
+      total: count || 0,
+    };
   } catch (error) {
+    console.error("LOGGING : Unexpected error in getUsers:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unexpected error",

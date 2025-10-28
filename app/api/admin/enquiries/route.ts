@@ -190,3 +190,154 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  const supabase = createServiceRoleClient();
+
+  try {
+    const body = await req.json();
+    const {
+      id,
+      student_name,
+      email,
+      phone,
+      overall_percentage,
+      is_gap,
+      gap_years,
+      custom_fields,
+      academic_entries,
+    } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Enquiry ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {};
+    
+    if (student_name !== undefined) updateData.student_name = student_name;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (overall_percentage !== undefined) updateData.overall_percentage = overall_percentage;
+    if (is_gap !== undefined) updateData.is_gap = is_gap;
+    if (gap_years !== undefined) updateData.gap_years = gap_years;
+    if (custom_fields !== undefined) {
+      updateData.custom_fields = custom_fields ? JSON.stringify(custom_fields) : null;
+    }
+
+    if (Object.keys(updateData).length === 0 && !academic_entries) {
+      return NextResponse.json(
+        { success: false, message: "No fields to update" },
+        { status: 400 }
+      );
+    }
+
+    let enquiry = null;
+    if (Object.keys(updateData).length > 0) {
+      const { data, error: enquiryError } = await supabase
+        .from("enquiries")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (enquiryError) throw enquiryError;
+      enquiry = data;
+    }
+
+    if (academic_entries !== undefined) {
+      const { error: deleteError } = await supabase
+        .from("academic_entries")
+        .delete()
+        .eq("enquiry_id", id);
+
+      if (deleteError) throw deleteError;
+
+      if (academic_entries?.length > 0) {
+        const formatted = academic_entries.map((entry: any) => ({
+          enquiry_id: id,
+          study_level: entry.study_level || null,
+          stream: entry.discipline_area || null,
+          pursue: entry.what_to_pursue || null,
+          score: entry.score || null,
+          completion_year: entry.study_year ? parseInt(entry.study_year) : null,
+          duration_years: entry.duration ? parseInt(entry.duration) : null,
+          completion_date: entry.completion_date || null,
+          course: entry.study_area || null,
+        }));
+
+        const { error: insertError } = await supabase
+          .from("academic_entries")
+          .insert(formatted);
+
+        if (insertError) throw insertError;
+      }
+    }
+
+    const { data: updatedEnquiry, error: fetchError } = await supabase
+      .from("enquiries")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { data: academicData } = await supabase
+      .from("academic_entries")
+      .select(
+        "*, study_level:education_levels(id,level_name), stream:streams(id,name), course:courses(id,course_name)"
+      )
+      .eq("enquiry_id", id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Enquiry updated successfully",
+      data: {
+        ...updatedEnquiry,
+        academic_entries: academicData || [],
+      },
+    });
+  } catch (error: any) {
+    console.error("Error updating enquiry:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const supabase = createServiceRoleClient();
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Enquiry ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const { error: enquiryError } = await supabase
+      .from("enquiries")
+      .delete()
+      .eq("id", id);
+
+    if (enquiryError) throw enquiryError;
+
+    return NextResponse.json({
+      success: true,
+      message: "Enquiry deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("Error deleting enquiry:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}
