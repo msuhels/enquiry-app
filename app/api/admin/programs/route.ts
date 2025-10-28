@@ -1,4 +1,3 @@
-// app/api/programs/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import {
   createCustomProgramFields,
@@ -13,6 +12,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     const filters = {
+      search: searchParams.get("search") || undefined,
       university: searchParams.get("university") || undefined,
       study_level: searchParams.get("study_level") || undefined,
       study_area: searchParams.get("study_area") || undefined,
@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result.data,
+      pagination : result.pagination
     });
   } catch (error) {
     console.error("API programs fetch error:", error);
@@ -54,7 +55,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new program
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -65,10 +65,16 @@ export async function POST(request: NextRequest) {
     // Check if any meaningful data is present
     const hasProgramData =
       Object.values(rest).some(
-        (value) => value !== null && value !== undefined && value.toString().trim() !== ""
+        (value) =>
+          value !== null &&
+          value !== undefined &&
+          value.toString().trim() !== ""
       ) ||
       custom_fields.some(
-        (field: CustomFieldEntry) => field.value !== null && field.value !== undefined && field.value.toString().trim() !== ""
+        (field: CustomFieldEntry) =>
+          field.value !== null &&
+          field.value !== undefined &&
+          field.value.toString().trim() !== ""
       );
 
     if (!hasProgramData) {
@@ -95,11 +101,20 @@ export async function POST(request: NextRequest) {
 
     // Process custom fields if any
     if (custom_fields.length > 0) {
-      const processedCustomFields = await processCustomFields(custom_fields, programId);
+      const processedCustomFields = await processCustomFields(
+        custom_fields,
+        programId
+      );
 
       if (!processedCustomFields.success) {
-        console.error("LOGGING : Failed to save custom fields:", processedCustomFields.error);
-        return NextResponse.json({ error: processedCustomFields.error }, { status: 500 });
+        console.error(
+          "LOGGING : Failed to save custom fields:",
+          processedCustomFields.error
+        );
+        return NextResponse.json(
+          { error: processedCustomFields.error },
+          { status: 500 }
+        );
       }
     }
 
@@ -107,7 +122,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     console.error("API program creation error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
-

@@ -13,7 +13,7 @@ import {
   type ValidationResult
 } from "@/lib/schema/auth-module";
 import { useUserStore } from "@/lib/stores/auth-module";
-import { userService } from "@/lib/supabase/auth-module/services/user.services";
+import { getUserProfile, updateLastLogin, updateUserProfile } from "@/lib/supabase/auth-module/services/user.services";
 
 export interface AuthResult {
   success: boolean;
@@ -193,7 +193,7 @@ export class AuthHandlers {
 
       // Update last login in users table
       if (data.user) {
-        await userService.updateLastLogin(data.user.id);
+        await updateLastLogin(data.user.id);
       }
 
       return {
@@ -420,7 +420,7 @@ export class AuthHandlers {
       }
 
       // Update user profile in users table
-      const result = await userService.updateUserProfile(user.id, data);
+      const result = await updateUserProfile(user.id, data);
 
       if (!result.success) {
         setError(result.error || "Failed to update profile");
@@ -465,7 +465,7 @@ export class AuthHandlers {
       }
 
       // Get user profile from users table
-      const result = await userService.getUserProfile(user.id);
+      const result = await getUserProfile(user.id);
 
       if (!result.success) {
         setError(result.error || "Failed to get profile");

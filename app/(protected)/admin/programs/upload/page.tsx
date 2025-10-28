@@ -643,7 +643,6 @@ export default function BulkUploadPage() {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                 <div className="text-sm text-gray-700">

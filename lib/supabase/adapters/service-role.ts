@@ -12,6 +12,7 @@ export function createServiceRoleClient() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
+    console.log("Missing required", { supabaseUrl, supabaseServiceKey });
     throw new Error("Missing required Supabase environment variables for service role client");
   }
 

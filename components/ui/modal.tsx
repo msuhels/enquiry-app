@@ -62,7 +62,8 @@ function ModalWrapper({ children, onClose, options }) {
     md: 'max-w-2xl',
     lg: 'max-w-4xl',
     xl: 'max-w-6xl',
-    full: 'max-w-full mx-4'
+    full: 'max-w-full mx-4',
+    half : 'max-w-[30rem] mx-4'
   };
 
   const handleOverlayClick = (e) => {

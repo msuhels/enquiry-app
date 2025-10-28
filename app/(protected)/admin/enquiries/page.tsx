@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Table from "@/components/table/globalTable";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
-import { Enquiry } from "@/lib/types"; 
+import { Enquiry } from "@/lib/types";
 import { FileTextIcon, MessageSquareIcon } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 
@@ -13,70 +13,29 @@ export default function EnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const { data: enquiriesData } = useFetch("/api/admin/enquiries");
+
   useEffect(() => {
-    fetchEnquiries();
-  }, []);
-
-  const fetchEnquiries = async () => {
-    setLoading(true);
-    try {
-      // Mock data (replace with actual fetch)
-      const mockEnquiries: Enquiry[] = [
-        {
-          id: "1",
-          student_name: "John Doe",
-          email: "john@example.com",
-          phone: "+1-555-0100",
-          program_interest: "Computer Science",
-          status: "in_progress",
-          message: "Looking for scholarship options in Canada.",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          student_name: "Priya Sharma",
-          email: "priya@example.com",
-          phone: "+91-9876543210",
-          program_interest: "MBA",
-          status: "pending",
-          message: "Need help choosing between universities in the UK.",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "3",
-          student_name: "Liam Brown",
-          email: "liam@example.com",
-          phone: "+44-7890-111222",
-          program_interest: "Data Analytics",
-          status: "completed",
-          message: "Applied already, just confirming details.",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ];
-
-      setEnquiries(mockEnquiries);
-    } catch (error) {
-      console.error("Error fetching enquiries:", error);
-    } finally {
-      setLoading(false);
+    if (enquiriesData?.success) {
+      setEnquiries(enquiriesData?.data);
     }
-  };
+  }, [enquiriesData]);
 
   const handleView = (enquiry: Enquiry) => {
     router.push(`/admin/enquiries/${enquiry.id}`);
   };
 
   const handleDelete = (enquiry: Enquiry) => {
-    if (confirm(`Are you sure you want to delete enquiry from ${enquiry.student_name}?`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete enquiry from ${enquiry.student_name}?`
+      )
+    ) {
       setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
     }
   };
 
   const handleStatusChange = (enquiry: Enquiry) => {
-    // cycle status: pending → in_progress → completed → rejected
     const nextStatus =
       enquiry.status === "pending"
         ? "in_progress"
@@ -87,9 +46,7 @@ export default function EnquiriesPage() {
         : "pending";
 
     setEnquiries((prev) =>
-      prev.map((e) =>
-        e.id === enquiry.id ? { ...e, status: nextStatus } : e
-      )
+      prev.map((e) => (e.id === enquiry.id ? { ...e, status: nextStatus } : e))
     );
   };
 
@@ -99,7 +56,9 @@ export default function EnquiriesPage() {
       label: "Student",
       render: (row: Enquiry) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{row.student_name}</div>
+          <div className="text-sm font-medium text-gray-900">
+            {row.student_name}
+          </div>
           <div className="text-sm text-gray-500">{row.email}</div>
         </div>
       ),
@@ -122,7 +81,7 @@ export default function EnquiriesPage() {
               : "bg-red-100 text-red-800 hover:bg-red-200"
           }`}
         >
-          {row.status.replace("_", " ")}
+          {row?.status?.replace("_", " ") || "-"}
         </button>
       ),
     },
@@ -152,7 +111,7 @@ export default function EnquiriesPage() {
           searchPlaceholder="Search by name, email, or program..."
           onEdit={handleView}
           onDelete={handleDelete}
-          addHref="/admin/enquiries/addEnquiry"
+          addHref="/admin/enquiries/add"
           emptyMessage="No enquiries found."
           filterTabs={[
             {
@@ -160,30 +119,6 @@ export default function EnquiriesPage() {
               label: "All",
               count: enquiries.length,
               filter: () => true,
-            },
-            {
-              key: "pending",
-              label: "Pending",
-              count: enquiries.filter((e) => e.status === "pending").length,
-              filter: (e) => e.status === "pending",
-            },
-            {
-              key: "in_progress",
-              label: "In Progress",
-              count: enquiries.filter((e) => e.status === "in_progress").length,
-              filter: (e) => e.status === "in_progress",
-            },
-            {
-              key: "completed",
-              label: "Completed",
-              count: enquiries.filter((e) => e.status === "completed").length,
-              filter: (e) => e.status === "completed",
-            },
-            {
-              key: "rejected",
-              label: "Rejected",
-              count: enquiries.filter((e) => e.status === "rejected").length,
-              filter: (e) => e.status === "rejected",
             },
           ]}
         />

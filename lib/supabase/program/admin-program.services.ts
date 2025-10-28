@@ -1,13 +1,9 @@
 "use server";
 
-import { CustomFieldEntry } from './../../types';
+import { CustomFieldEntry, Program } from './../../types';
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { BulkUploadResult, Program } from "@/lib/types";
 
-/**
- * Admin Program Service - Uses service role to bypass RLS
- * This should only be used in server-side contexts for administrative operations
- */
 
 export interface ProgramServiceResult<T = void> {
   success: boolean;
@@ -15,9 +11,7 @@ export interface ProgramServiceResult<T = void> {
   error?: string;
 }
 
-/**
- * Create a new program using service role (bypasses RLS)
- */
+
 export async function createProgram(
   programData: Program
 ): Promise<ProgramServiceResult<Program>> {
@@ -58,9 +52,7 @@ export async function createProgram(
   }
 }
 
-/**
- * Update an existing program using service role
- */
+
 export async function updateProgram(
   programId: string,
   programData: Partial<Program>
@@ -100,14 +92,19 @@ export async function updateProgram(
   }
 }
 
-/**
- * Delete a program using service role
- */
+
 export async function deleteProgram(
   programId: string
 ): Promise<ProgramServiceResult> {
   try {
     const supabase = createServiceRoleClient();
+
+    const { error: fieldError } = await supabase
+    .from("custom_programs_fields")
+    .delete()
+    .eq("program_id", programId);
+
+  if (fieldError) return { success: false, error: fieldError.message };
 
     const { error } = await supabase
       .from("programs")
@@ -135,9 +132,7 @@ export async function deleteProgram(
   }
 }
 
-/**
- * Get a single program by ID using service role
- */
+
 export async function getProgramById(
   programId: string
 ): Promise<ProgramServiceResult<Program>> {
@@ -172,67 +167,52 @@ export async function getProgramById(
   }
 }
 
-/**
- * Get all programs with optional filters using service role
- */
-export async function getPrograms(filters?: {
-  university?: string;
-  study_level?: string;
-  study_area?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<ProgramServiceResult<Program[]>> {
+
+export async function getPrograms(filters: any) {
+  const { university, study_level, study_area, search, limit = 10, offset = 0 } = filters;
+  const supabase = createServiceRoleClient();
+
   try {
-    const supabase = createServiceRoleClient();
+    // Base query
+    let query = supabase.from("programs").select("*", { count: "exact" });
 
-    let query = supabase.from("programs").select("*");
-
-    if (filters?.university) {
-      query = query.ilike("university", `%${filters.university}%`);
-    }
-    if (filters?.study_level) {
-      query = query.eq("study_level", filters.study_level);
-    }
-    if (filters?.study_area) {
-      query = query.ilike("study_area", `%${filters.study_area}%`);
-    }
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters?.offset) {
-      query = query.range(
-        filters.offset,
-        filters.offset + (filters.limit || 10) - 1
+    // Apply filters
+    if (university) query = query.ilike("university", `%${university}%`);
+    if (study_level) query = query.ilike("study_level", `%${study_level}%`);
+    if (study_area) query = query.ilike("study_area", `%${study_area}%`);
+    if (search) {
+      query = query.or(
+        `university.ilike.%${search}%,programme_name.ilike.%${search}%,study_area.ilike.%${search}%`
       );
     }
 
-    const { data, error } = await query;
+    // Pagination
+    query = query.order("created_at", { ascending: false });
+    if (limit && offset !== undefined) query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
 
     if (error) {
-      console.error("Admin programs fetch error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
+      console.error("Supabase getPrograms error:", error);
+      return { success: false, error: error.message };
     }
 
-    return {
-      success: true,
-      data: data,
+    const pagination = {
+      limit,
+      offset,
+      total: count ?? 0,
+      totalPages: Math.ceil((count ?? 0) / limit),
     };
-  } catch (error) {
-    console.error("Admin programs fetch unexpected error:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
-    };
+
+    return { success: true, data, pagination };
+  } catch (err) {
+    console.error("Unexpected getPrograms error:", err);
+    return { success: false, error: "Unexpected error fetching programs" };
   }
 }
 
-/**
- * Bulk create programs using service role (useful for CSV imports)
- */
+
+
 export async function bulkCreatePrograms(
   programs: Program[]
 ): Promise<ProgramServiceResult<Program[]>> {
@@ -272,10 +252,6 @@ export async function bulkCreatePrograms(
   }
 }
 
-/**
- * Bulk create programs with detailed error handling
- * Processes programs in batches and continues on individual failures
- */
 export async function bulkCreateProgramsWithValidation(
   programs: Program[]
 ): Promise<BulkUploadResult> {

@@ -1,4 +1,7 @@
-import { createClient } from "@/lib/supabase/adapters/client";
+'use server';
+
+import { createClient } from "@/lib/supabase/adapters/server";
+import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import type { ProfileFormData } from "@/lib/schema/auth-module";
 
 export interface UserProfile {
@@ -27,166 +30,162 @@ export interface UserServiceResult<T = any> {
   tempPassword?: string;
 }
 
-export class UserService {
-  private supabase;
+export async function createUser(
+  authUserId: string,
+  email: string
+): Promise<UserServiceResult<UserProfile>> {
+  const supabase = await createClient();
 
-  constructor() {
-    this.supabase = createClient();
-  }
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .insert([
+        {
+          id: authUserId,
+          email,
+          email_verified: false,
+          role: "user",
+          status: "active",
+        },
+      ])
+      .select()
+      .single();
 
-  async createUser(authUserId: string, email: string): Promise<UserServiceResult<UserProfile>> {
-    try {
-      const { data, error } = await this.supabase
-        .from('users')
-        .insert([
-          {
-            id: authUserId,
-            email: email,
-            email_verified: false,
-            role: 'user',
-            status: 'active',
-          }
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error(error)
-        return {
-          success: false,
-          error: error.message,
-        };
-      }
-
-      return {
-        success: true,
-        data: data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
+    if (error) {
+      console.error("Error creating user:", error);
+      return { success: false, error: error.message };
     }
-  }
 
-  async getUserProfile(userId: string): Promise<UserServiceResult<UserProfile>> {
-    try {
-      const { data, error } = await this.supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
-      }
-
-      return {
-        success: true,
-        data: data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
-    }
-  }
-
-  async updateUserProfile(userId: string, profileData: ProfileFormData): Promise<UserServiceResult<UserProfile>> {
-    try {
-      const { data, error } = await this.supabase
-        .from('users')
-        .update({
-          full_name: `${profileData.firstName} ${profileData.lastName}`.trim(),
-          // email: profileData.email,
-          phone_number: profileData.phone || null,
-          bio: profileData.bio || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId)
-        .select()
-        .single();
-
-      if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
-      }
-
-      return {
-        success: true,
-        data: data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
-    }
-  }
-
-  async updateLastLogin(userId: string, ip?: string): Promise<UserServiceResult> {
-    try {
-      const { error } = await this.supabase
-        .from('users')
-        .update({
-          last_login_at: new Date().toISOString(),
-          last_login_ip: ip || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-
-      if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
-      }
-
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
-    }
-  }
-
-  async updateEmailVerification(userId: string, verified: boolean): Promise<UserServiceResult> {
-    try {
-      const { error } = await this.supabase
-        .from('users')
-        .update({
-          email_verified: verified,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-
-      if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
-      }
-
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
-    }
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
   }
 }
 
-export const userService = new UserService();
+export async function getUserProfile(
+  userId: string
+): Promise<UserServiceResult<UserProfile>> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) return { success: false, error: error.message };
+
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
+export async function updateUserProfile(
+  userId: string,
+  profileData: ProfileFormData
+): Promise<UserServiceResult<UserProfile>> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        full_name: `${profileData.firstName} ${profileData.lastName}`.trim(),
+        phone_number: profileData.phone || null,
+        bio: profileData.bio || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) return { success: false, error: error.message };
+
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
+export async function updateLastLogin(
+  userId: string,
+  ip?: string
+): Promise<UserServiceResult> {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase
+      .from("users")
+      .update({
+        last_login_at: new Date().toISOString(),
+        last_login_ip: ip || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
+export async function updateEmailVerification(
+  userId: string,
+  verified: boolean
+): Promise<UserServiceResult> {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase
+      .from("users")
+      .update({
+        email_verified: verified,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
+export async function deleteUser(userId: string): Promise<UserServiceResult> {
+  const adminSupabase = createServiceRoleClient();
+
+  try {
+    const { error } = await adminSupabase.from("users").delete().eq("id", userId);
+
+    if (error) return { success: false, error: error.message };
+
+    const { error: authError } = await adminSupabase.auth.admin.deleteUser(userId);
+
+    if (authError) return { success: false, error: authError.message };
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
