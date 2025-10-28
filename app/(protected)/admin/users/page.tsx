@@ -111,7 +111,7 @@ export default function UsersPage() {
       sortable: true,
       render: (row: User) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{row.name}</div>
+          <div className="text-sm font-medium text-gray-900">{row.full_name}</div>
           <div className="text-sm text-gray-500">{row.email}</div>
         </div>
       ),
