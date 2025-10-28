@@ -64,7 +64,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
               />
             </div>
 
-            {/* Comparison Operator */}
+            {/* Comparison Operator
             <div className="flex-1">
               <FormInput
                 label="Comparison"
@@ -75,7 +75,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
                   handleCustomFieldChange(index, "comparison", e.target.value)
                 }
               />
-            </div>
+            </div> */}
 
             {/* Input Value */}
             <div className="flex-1">

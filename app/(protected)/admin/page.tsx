@@ -16,16 +16,36 @@ import {
   Bell as BellIcon,
   FileText as FileTextIcon,
 } from "lucide-react";
+import { useFetch } from "@/hooks/api/useFetch";
+import { Enquiry } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
-const RecentEnquiryItem = ({ name, context, time }) => (
-  <div className="flex justify-between items-start border-b border-gray-100 last:border-b-0 py-3 px-6 hover:bg-gray-50 transition">
-    <div>
-      <p className="text-sm font-semibold text-gray-800">{name}</p>
-      <p className="text-xs text-gray-500">{context}</p>
+const RecentEnquiryItem = ({
+  name,
+  context,
+  course,
+  id,
+}: {
+  name: string;
+  context: string;
+  course: string;
+  id: string;
+}) => {
+  const router = useRouter();
+
+  return (
+    <div
+      onClick={() => router.push(`/admin/enquiries/${id}/suggestions`)}
+      className="flex justify-between items-start border-b border-gray-100 last:border-b-0 py-3 px-6 hover:bg-gray-50 transition cursor-pointer"
+    >
+      <div>
+        <p className="text-sm font-semibold text-gray-800 underline">{name}</p>
+        <p className="text-xs text-gray-500">{context}</p>
+      </div>
+      <p className="text-xs text-gray-600">{course || "-"}</p>
     </div>
-    <p className="text-xs text-gray-400">{time}</p>
-  </div>
-);
+  );
+};
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -36,25 +56,19 @@ export default function AdminDashboard() {
     resolvedEnquiries: 543,
   });
 
-  const recentEnquiries = [
-    {
-      name: "John Doe",
-      context: "Inquiry about MBA program",
-      time: "2 hours ago",
-    },
-    { name: "Jane Smith", context: "Question on fees", time: "5 hours ago" },
-    {
-      name: "Peter Jones",
-      context: "Application status check",
-      time: "1 day ago",
-    },
-    {
-      name: "Amit Kumar",
-      context: "Regarding scholarship",
-      time: "2 days ago",
-    },
-  ];
+  const { data: enquiries } = useFetch("/api/admin/enquiries");
 
+  console.log("enquiries", enquiries?.data[0]?.academic_entries?.data);
+
+  const recentEnquiries = enquiries?.data?.slice(0, 5);
+
+  const filterEnquiries = enquiries?.data?.filter(
+    (enquiry: Enquiry) =>
+      enquiry?.academic_entries?.data?.length > 0 &&
+      enquiry?.academic_entries?.data[0]?.course !== null
+  );
+
+  console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
   }, []);
@@ -191,7 +205,7 @@ export default function AdminDashboard() {
               {quickActions.map((action, i) => (
                 <Link
                   key={i}
-                  href={action.href || "#"}
+                  href={"#"}
                   className={`rounded-xl bg-white shadow-sm hover:shadow-lg p-6 flex flex-col items-center justify-center transition transform hover:-translate-y-1 border border-gray-100`}
                 >
                   <div
@@ -206,16 +220,29 @@ export default function AdminDashboard() {
               ))}
             </div>
           </div>
-
-          {/* Recent Enquiries */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               Recent Enquiries
             </h2>
             <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
-              {recentEnquiries.map((enquiry, i) => (
-                <RecentEnquiryItem key={i} {...enquiry} />
-              ))}
+              {filterEnquiries?.length ? (
+                filterEnquiries.map((enquiry: Enquiry, i: number) => (
+                  <RecentEnquiryItem
+                    key={enquiry.id}
+                    name={enquiry.student_name}
+                    course={
+                      enquiry.academic_entries?.data?.[0]?.course
+                        ?.course_name || "-"
+                    }
+                    context={enquiry.email}
+                    id={enquiry.id}
+                  />
+                ))
+              ) : (
+                <div className="p-4 text-gray-500 text-sm text-center">
+                  No recent enquiries found.
+                </div>
+              )}
             </div>
           </div>
         </div>
