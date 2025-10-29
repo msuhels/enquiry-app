@@ -202,7 +202,7 @@ export async function getProgramById(
 
 
 export async function getPrograms(filters: any) {
-  const { university, study_level, study_area, search, limit = 10, offset = 0 } = filters;
+  const { university, course_name, search, limit = 10, offset = 0 } = filters;
   const supabase = createServiceRoleClient();
 
   try {
@@ -211,11 +211,10 @@ export async function getPrograms(filters: any) {
 
     // Apply filters
     if (university) query = query.ilike("university", `%${university}%`);
-    if (study_level) query = query.ilike("study_level", `%${study_level}%`);
-    if (study_area) query = query.ilike("study_area", `%${study_area}%`);
+    if (course_name) query = query.ilike("course_name", `%${course_name}%`);
     if (search) {
       query = query.or(
-        `university.ilike.%${search}%,programme_name.ilike.%${search}%,study_area.ilike.%${search}%`
+        `university.ilike.%${search}%,course_name.ilike.%${search}%`
       );
     }
 
