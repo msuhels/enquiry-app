@@ -45,6 +45,7 @@ const RecentEnquiryItem = ({
 };
 
 export default function AdminDashboard() {
+  const  router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 1250,
@@ -53,14 +54,25 @@ export default function AdminDashboard() {
     resolvedEnquiries: 543,
   });
 
+  const {data} = useFetch("/api/admin/stats");
+
+  useEffect(() => {
+    setStats({
+      totalUsers: data?.data?.users || 0,
+      totalPrograms: data?.data?.programs || 0,
+      openEnquiries: data?.data?.enquiries || 0,
+      resolvedEnquiries: 543,
+    });
+  }, [data]);
+
   const { data: enquiries } = useFetch("/api/admin/enquiries");
+
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
       enquiry?.academic_entries?.data?.length > 0 &&
       enquiry?.academic_entries?.data[0]?.course !== null
   );
 
-  console.log("enquiries", enquiries?.data[0]?.academic_entries?.data);
 
   console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
@@ -100,11 +112,11 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { title: "Add User", icon: UserPlusIcon, color: "bg-indigo-100" },
-    { title: "Add Program", icon: PlusIcon, color: "bg-purple-100" },
-    { title: "Bulk Upload", icon: UploadIcon, color: "bg-orange-100" },
-    { title: "View Enquiries", icon: EyeIcon, color: "bg-green-100" },
-    { title: "View Reports", icon: BarChartIcon, color: "bg-cyan-100" },
+    { title: "Add User", link: "/admin/users/add", icon: UserPlusIcon, color: "bg-indigo-100" },
+    { title: "Add Program",link: "/admin/programs/add", icon: PlusIcon, color: "bg-purple-100" },
+    { title: "Bulk Upload", link: "/admin/users/bulk-upload", icon: UploadIcon, color: "bg-orange-100" },
+    { title: "View Enquiries", link: "/admin/enquiries", icon: EyeIcon, color: "bg-green-100" },
+    { title: "View Reports",  icon: BarChartIcon, color: "bg-cyan-100" },
     { title: "System Settings", icon: SettingsIcon, color: "bg-gray-100" },
   ];
 
@@ -160,6 +172,7 @@ export default function AdminDashboard() {
               {quickActions.map((action, idx) => (
                 <div
                   key={idx}
+                  onClick={() => router.push(action.link)}
                   className={`${action.color} rounded-xl flex flex-col items-center justify-center p-6 shadow hover:shadow-md transition cursor-pointer`}
                 >
                   <div className="p-3 bg-white rounded-full shadow-sm">
