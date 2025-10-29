@@ -83,7 +83,7 @@ export default function NewUserPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs />
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New User</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Create New Vendor</h1>
           <p className="mt-2 text-gray-600">
             Fill out the details to create a new user account
           </p>
@@ -147,7 +147,7 @@ export default function NewUserPage() {
               ) : (
                 <SaveIcon className="h-4 w-4 mr-2" />
               )}
-              {loading ? "Creating..." : "Create User"}
+              {loading ? "Creating..." : "Create Vendor"}
             </button>
           </div>
         </form>
