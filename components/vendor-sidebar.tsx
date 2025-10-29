@@ -23,9 +23,9 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
       <div>
         <div className="p-6 flex items-center gap-3 border-b border-white/20">
           <div className="h-10 w-10 bg-white/20 flex items-center justify-center rounded-lg font-bold text-lg">
-            U
+            V
           </div>
-          <h1 className="text-lg font-bold">User Panel</h1>
+          <h1 className="text-lg font-bold">Vendor Panel</h1>
         </div>
 
         <nav className="mt-6 space-y-1">
