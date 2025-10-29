@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateUser } from "@/lib/supabase/auth-module/services/admin-user.services";
+import { getUser, updateUser } from "@/lib/supabase/auth-module/services/admin-user.services";
 import { deleteUser } from "@/lib/supabase/auth-module/services/user.services";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -66,6 +66,40 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   } catch (error) {
     console.error("API user delete error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    console.log("LOGGING : API received user fetch request:", id);
+
+    const result = await getUser(id);
+
+    if (!result.success) {
+      console.error("LOGGING : Failed to fetch user:", result.error);
+      return NextResponse.json(
+        { error: result.error },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: result.data,
+    });
+
+  } catch (error) {
+    console.error("API user fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
