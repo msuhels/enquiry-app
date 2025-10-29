@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/ui/breadCrumbs";
 import FormInput from "@/components/form/formInput";
 import { toast } from "sonner";
 import { useFetch } from "@/hooks/api/useFetch";
+import SearchSelect from "@/components/form/FormSearchSelect";
 
 export default function NewProgramPage() {
   const router = useRouter();
@@ -22,28 +23,33 @@ export default function NewProgramPage() {
     special_requirements: "",
     remarks: "",
   });
-
+  
   const { data: degreeGoingFor } = useFetch("/api/admin/degree-going-for");
-  const { data: previousCurrentStudy } = useFetch("/api/admin/previous-or-current-study");
+  const { data: previousCurrentStudy } = useFetch(
+    "/api/admin/previous-or-current-study"
+  );
 
   // Transform API data to select options format
   const getPreviousStudyOptions = () => {
-    const data = previousCurrentStudy?.data || previousCurrentStudy?.success && previousCurrentStudy?.data;
+    const data =
+      previousCurrentStudy?.data ||
+      (previousCurrentStudy?.success && previousCurrentStudy?.data);
     if (!data || !Array.isArray(data)) return [];
-    
+
     return data.map((item: any) => ({
-      value: item.id,
-      label: item.name
+      value: item.name,
+      label: item.name,
     }));
   };
 
   const getDegreeGoingForOptions = () => {
-    const data = degreeGoingFor?.data || degreeGoingFor?.success && degreeGoingFor?.data;
+    const data =
+      degreeGoingFor?.data || (degreeGoingFor?.success && degreeGoingFor?.data);
     if (!data || !Array.isArray(data)) return [];
-    
+
     return data.map((item: any) => ({
-      value: item.id,
-      label: item.name
+      value: item.name,
+      label: item.name,
     }));
   };
 
@@ -98,18 +104,6 @@ export default function NewProgramPage() {
   const basicInfoFields = [
     { label: "University", name: "university" },
     { label: "Course Name", name: "course_name" },
-    {
-      label: "Previous / Current Study",
-      name: "previous_or_current_study",
-      select: getPreviousStudyOptions(),
-      disabled: !previousCurrentStudy || getPreviousStudyOptions().length === 0
-    },
-    {
-      label: "Degree Going For",
-      name: "degree_going_for",
-      select: getDegreeGoingForOptions(),
-      disabled: !degreeGoingFor || getDegreeGoingForOptions().length === 0
-    },
     { label: "IELTS Requirement", name: "ielts_requirement", textarea: true },
     {
       label: "Special Requirements",
@@ -150,6 +144,20 @@ export default function NewProgramPage() {
       );
     });
 
+  const handlePrevStudyChange = (val: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      previous_or_current_study: val,
+    }));
+  };
+
+  const handleDegreeGoingChange = (val: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      degree_going_for: val,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -167,7 +175,27 @@ export default function NewProgramPage() {
               Basic Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {renderFields(basicInfoFields)}
+              {renderFields(basicInfoFields.slice(0, 2))}
+
+              <SearchSelect
+                label="Previous / Current Study"
+                name="previous_or_current_study"
+                width="full"
+                value={formData.previous_or_current_study || ""}
+                options={getPreviousStudyOptions()}
+                onChange={handlePrevStudyChange}
+              />
+
+              <SearchSelect
+                label="Degree Going For"
+                name="degree_going_for"
+                width="full"
+                value={formData.degree_going_for || ""}
+                options={getDegreeGoingForOptions()}
+                onChange={handleDegreeGoingChange}
+              />
+
+              {renderFields(basicInfoFields.slice(2))}
             </div>
           </div>
 
@@ -196,4 +224,3 @@ export default function NewProgramPage() {
     </div>
   );
 }
-

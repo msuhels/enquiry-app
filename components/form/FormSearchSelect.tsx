@@ -2,6 +2,7 @@
 
 import React from "react";
 import CreatableSelect from "react-select/creatable";
+import Select from "react-select";
 
 interface SearchSelectProps {
   label: string;
@@ -10,6 +11,8 @@ interface SearchSelectProps {
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   placeholder?: string;
+  width?: string;
+  allowCreate?: boolean;   // ✅ NEW
 }
 
 const SearchSelect: React.FC<SearchSelectProps> = ({
@@ -19,30 +22,35 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   options,
   onChange,
   placeholder = "Search or type to add...",
+  width = "100%",
+  allowCreate = true,       // ✅ default = true
 }) => {
-  // Always make sure the selected value is an object
+
   const selectedOption =
     options.find((opt) => opt.value === value) ||
     (value ? { value, label: value } : null);
 
+  const Component = allowCreate ? CreatableSelect : Select;   // ✅ choose component
+
   return (
-    <div>
+    <div style={{ width }}>
       <label
         htmlFor={name}
         className="block text-lg font-medium text-gray-700 mb-2"
       >
         {label}
       </label>
-      <CreatableSelect
+
+      <Component
         id={name}
         name={name}
         value={selectedOption}
-        onChange={(newValue) => onChange(newValue ? newValue.value : "")}
+        onChange={(newValue: any) => onChange(newValue?.value ?? "")}
         options={options}
         placeholder={placeholder}
         isClearable
         classNamePrefix="react-select"
-        className="min-w-80 w-80"
+        className={`min-w-80 ${width ? width : "w-80"}`}
         styles={{
           control: (base) => ({
             ...base,
