@@ -26,9 +26,6 @@ export default function NewProgramPage() {
   const { data: degreeGoingFor } = useFetch("/api/admin/degree-going-for");
   const { data: previousCurrentStudy } = useFetch("/api/admin/previous-or-current-study");
 
-  console.log("degreeGoingFor 🚀🚀", degreeGoingFor);
-  console.log("previousCurrentStudy 🚀🚀", previousCurrentStudy);
-
   // Transform API data to select options format
   const getPreviousStudyOptions = () => {
     const data = previousCurrentStudy?.data || previousCurrentStudy?.success && previousCurrentStudy?.data;
@@ -72,9 +69,6 @@ export default function NewProgramPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log("formData 🚀🚀🚀", formData);
-
     setLoading(true);
 
     try {
