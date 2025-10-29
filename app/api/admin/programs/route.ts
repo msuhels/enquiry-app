@@ -12,8 +12,7 @@ export async function GET(request: NextRequest) {
     const filters = {
       search: searchParams.get("search") || undefined,
       university: searchParams.get("university") || undefined,
-      study_level: searchParams.get("study_level") || undefined,
-      study_area: searchParams.get("study_area") || undefined,
+      course_name: searchParams.get("course_name") || undefined,
       limit: searchParams.get("limit")
         ? parseInt(searchParams.get("limit")!)
         : undefined,
