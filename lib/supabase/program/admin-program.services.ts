@@ -1,6 +1,6 @@
 "use server";
 
-import { CustomFieldEntry, Program } from './../../types';
+import { CustomFieldEntry } from './../../types';
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { BulkUploadResult, Program } from "@/lib/types";
 
@@ -18,15 +18,9 @@ export async function createProgram(
   try {
     const supabase = createServiceRoleClient();
 
-    const programRecord = {
-      ...programData,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
     const { data, error } = await supabase
       .from("programs")
-      .insert([programRecord])
+      .insert([programData])
       .select()
       .single();
 
