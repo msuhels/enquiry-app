@@ -16,15 +16,6 @@ export default function Home() {
   }, [data]);
 
   useEffect(() => {
-      if (userRole === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/vendor");
-      }
-    
-  }, [userRole, router]);
-
-  useEffect(() => {
     router.push("/auth/login");
   }, []);
 

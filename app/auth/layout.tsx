@@ -14,27 +14,36 @@ export default function AuthLayout({
   const router = useRouter();
   const { isAuthenticated, isLoading, getCurrentUser } = useAuth();
   const [userRole, setUserRole] = useState("");
-  const { data } = useFetch("/api/admin/users/getAuthUser");
+  // const { data } = useFetch("/api/admin/users/getAuthUser");
 
   useEffect(() => {
     getCurrentUser();
   }, [getCurrentUser]);
 
   useEffect(() => {
-    if (data) {
-      setUserRole(data.userDetails.role);
-    }
-  }, [data]);
+    const fetchUser = async () => {
+      const res = await fetch("/api/admin/users/getAuthUser");
+      const data = await res.json();
+      return data;
+    };
+
+    const fetchUserRole = async () => {
+      const data = await fetchUser();
+      if (data) {
+        setUserRole(data.userDetails.role);
+      }
+    };
+
+    fetchUserRole();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (userRole === "admin") {
-          router.push("/admin");
-      } else {
-        router.push("/vendor");
-      }
+    if (userRole === "admin") {
+      router.push("/admin");
+    } else if (userRole === "user") {
+      router.push("/vendor");
     }
-  }, [isAuthenticated, router]);
+  }, [userRole]);
 
   if (isLoading) {
     return (
