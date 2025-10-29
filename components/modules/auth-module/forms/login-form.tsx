@@ -56,6 +56,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
         >
           {loginConfig.title?.show && (
             <CardTitle
+            style={{color:"#EE7B23"}}
               className={cn(
                 authConfig.globalStyles?.title || "text-2xl",
                 loginConfig.styles?.title
@@ -66,6 +67,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
           )}
           {loginConfig.description?.show && (
             <CardDescription
+            style={{color:"#3A3886"}}
               className={cn(
                 authConfig.globalStyles?.description,
                 loginConfig.styles?.description
@@ -88,6 +90,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                 <div className="grid gap-2">
                   <Label
                     htmlFor="email"
+                    style={{color:"#EE7B23"}}
                     className={cn(
                       authConfig.globalStyles?.label,
                       loginConfig.email?.styles?.label
@@ -107,6 +110,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                       updateField("email", e.target.value);
                       if (error) clearError();
                     }}
+                    style={{color:"#3A3886"}}
                     className={cn(
                       authConfig.globalStyles?.input,
                       loginConfig.email?.styles?.input,
@@ -134,6 +138,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                   <div className="flex items-center">
                     <Label
                       htmlFor="password"
+                      style={{color:"#EE7B23"}}
                       className={cn(
                         authConfig.globalStyles?.label,
                         loginConfig.password?.styles?.label
@@ -165,6 +170,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                       updateField("password", e.target.value);
                       if (error) clearError();
                     }}
+                    style={{color:"#3A3886"}}
                     className={cn(
                       authConfig.globalStyles?.input,
                       loginConfig.password?.styles?.input,
@@ -219,6 +225,7 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                     authConfig.globalStyles?.button || "w-full",
                     loginConfig.submitButton?.styles?.button
                   )}
+                  style={{backgroundColor:"#EE7B23"}}
                   disabled={
                     isLoginLoading || !formData.email || !formData.password
                   }
