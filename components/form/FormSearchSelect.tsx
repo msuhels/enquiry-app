@@ -25,13 +25,11 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
     options.find((opt) => opt.value === value) ||
     (value ? { value, label: value } : null);
 
-  console.log("selectedOption", selectedOption);
-
   return (
     <div>
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-2"
+        className="block text-lg font-medium text-gray-700 mb-2"
       >
         {label}
       </label>
@@ -44,6 +42,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
         placeholder={placeholder}
         isClearable
         classNamePrefix="react-select"
+        className="min-w-80 w-80"
         styles={{
           control: (base) => ({
             ...base,
