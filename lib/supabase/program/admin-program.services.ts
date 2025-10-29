@@ -1,6 +1,6 @@
 "use server";
 
-import { CustomFieldEntry, Program } from './../../types';
+import { CustomFieldEntry } from './../../types';
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { BulkUploadResult, Program } from "@/lib/types";
 
@@ -18,15 +18,9 @@ export async function createProgram(
   try {
     const supabase = createServiceRoleClient();
 
-    const programRecord = {
-      ...programData,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
     const { data, error } = await supabase
       .from("programs")
-      .insert([programRecord])
+      .insert([programData])
       .select()
       .single();
 
@@ -91,6 +85,45 @@ export async function updateProgram(
     };
   }
 }
+
+// export async function updateProgram(
+//   programId: string,
+//   programData: Partial<Program>
+// ): Promise<ProgramServiceResult<Program>> {
+//   try {
+//     const supabase = createServiceRoleClient();
+
+//     const { data, error } = await supabase
+//       .from("programs")
+//       .update({
+//         ...programData,
+//         updated_at: new Date().toISOString(),
+//       })
+//       .eq("id", programId)
+//       .select()
+//       .single();
+
+//     if (error) {
+//       console.error("Admin program update error:", error);
+//       return {
+//         success: false,
+//         error: error.message,
+//       };
+//     }
+
+//     return {
+//       success: true,
+//       data: data,
+//     };
+//   } catch (error) {
+//     console.error("Admin program update unexpected error:", error);
+//     return {
+//       success: false,
+//       error:
+//         error instanceof Error ? error.message : "An unexpected error occurred",
+//     };
+//   }
+// }
 
 
 export async function deleteProgram(
