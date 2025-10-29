@@ -111,7 +111,9 @@ export default function UsersPage() {
       sortable: true,
       render: (row: User) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{row.full_name}</div>
+          <div className="text-sm font-medium text-gray-900">
+            {row.full_name}
+          </div>
           <div className="text-sm text-gray-500">{row.email}</div>
         </div>
       ),
@@ -128,7 +130,7 @@ export default function UsersPage() {
               : "bg-blue-100 text-blue-800"
           }`}
         >
-          {row.role}
+          {row.role === "user" ? "vendor" : row.role}
         </span>
       ),
     },
@@ -169,7 +171,7 @@ export default function UsersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-8">
         <AdvancedDataTable
-          title="Users"
+          title="Vendors"
           columns={columns}
           data={users}
           searchQuery={search}

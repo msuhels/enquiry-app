@@ -112,9 +112,9 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { title: "Add User", link: "/admin/users/add", icon: UserPlusIcon, color: "bg-indigo-100" },
+    { title: "Add Vendor", link: "/admin/users/addUser", icon: UserPlusIcon, color: "bg-indigo-100" },
     { title: "Add Program",link: "/admin/programs/add", icon: PlusIcon, color: "bg-purple-100" },
-    { title: "Bulk Upload", link: "/admin/users/bulk-upload", icon: UploadIcon, color: "bg-orange-100" },
+    // { title: "Bulk Upload", link: "/admin/users/bulk-upload", icon: UploadIcon, color: "bg-orange-100" },
     { title: "View Enquiries", link: "/admin/enquiries", icon: EyeIcon, color: "bg-green-100" },
     { title: "View Reports",  icon: BarChartIcon, color: "bg-cyan-100" },
     { title: "System Settings", icon: SettingsIcon, color: "bg-gray-100" },

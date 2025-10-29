@@ -3,11 +3,9 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeftIcon,
   UploadIcon,
   FileIcon,
   CheckCircleIcon,
-  AlertCircleIcon,
   XCircleIcon,
   Loader2,
   ChevronLeft,
@@ -17,51 +15,114 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { BulkUploadService } from "@/lib/bulk-upload";
-import { ProgramFormData } from "@/lib/types";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
+import Breadcrumbs from "@/components/ui/breadCrumbs";
 import { useModal } from "@/components/ui/modal";
 import FileFormatInstructions from "@/components/modals/fileInstructionModal";
-import Breadcrumbs from "@/components/ui/breadCrumbs";
 
-interface ValidationError {
-  row: number;
-  field: string;
-  message: string;
-  value: any;
-}
-
-interface ValidationResponse {
-  valid: boolean;
-  totalPrograms: number;
-  validPrograms: number;
-  invalidPrograms: number;
-  errors: ValidationError[];
+// Types
+interface ProgramFormData {
+  university: string;
+  previous_or_current_study: string;
+  degree_going_for: string;
+  course_name: string;
+  ielts_requirement?: string;
+  special_requirements?: string;
+  remarks?: string;
 }
 
 interface UploadResult {
   success: boolean;
-  total: number;
-  created: number;
-  failed: number;
+  successCount: number;
+  failedCount: number;
   errors?: Array<{ index: number; programme_name: string; error: string }>;
-}
-
-interface IExtraField {
-  field: string;
-  accept: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-// Comparison operator mapping
-const COMPARISON_MAP: Record<string, string> = {
-  gt: ">",
-  gte: ">=",
-  lt: "<",
-  lte: "<=",
-  eq: "=",
+// Helper Functions
+const parseCSV = (file: File): Promise<ProgramFormData[]> => {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        try {
+          const programs = mapDataToPrograms(results.data as any[]);
+          resolve(programs);
+        } catch (error) {
+          reject(error);
+        }
+      },
+      error: (error) => {
+        reject(error);
+      },
+    });
+  });
 };
 
+const parseExcel = (file: File): Promise<ProgramFormData[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        const programs = mapDataToPrograms(jsonData as any[]);
+        resolve(programs);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read Excel file"));
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+const mapDataToPrograms = (data: any[]): ProgramFormData[] => {
+  return data.map((row) => ({
+    university: row["University"] || row["university"] || "",
+    previous_or_current_study:
+      row["Previous / Current Study"] ||
+      row["previous_or_current_study"] ||
+      "",
+    degree_going_for: row["Degree Going For"] || row["degree_going_for"] || "",
+    course_name: row["Courses Name"] || row["course_name"] || "",
+    ielts_requirement:
+      row["IELTS Requirment"] || row["ielts_requirement"] || undefined,
+    special_requirements:
+      row["Special Requirments"] || row["special_requirements"] || undefined,
+    remarks: row["Remarks"] || row["remarks"] || undefined,
+  }));
+};
+
+const validateFileType = (file: File): boolean => {
+  const allowedTypes = [
+    "text/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ];
+
+  const allowedExtensions = [".csv", ".xls", ".xlsx"];
+  const fileExtension = file.name
+    .toLowerCase()
+    .substring(file.name.lastIndexOf("."));
+
+  return (
+    allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension)
+  );
+};
+
+const getFileExtension = (filename: string): string => {
+  return filename.toLowerCase().substring(filename.lastIndexOf(".") + 1);
+};
+
+// Main Component
 export default function BulkUploadPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,9 +133,9 @@ export default function BulkUploadPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string>("");
-  const [extraFields, setExtraFields] = useState<IExtraField[]>([]);
 
-  const bulkUploadService = new BulkUploadService();
+  console.log("uploadResult 🚀🚀", uploadResult)
+
   const { openModal } = useModal();
 
   // Pagination calculations
@@ -88,24 +149,19 @@ export default function BulkUploadPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (bulkUploadService.validateFileType(file)) {
+      if (validateFileType(file)) {
         setSelectedFile(file);
         setParsedData(null);
         setUploadResult(null);
         setError("");
         setCurrentPage(1);
-        setExtraFields([]);
       } else {
         setError(
-          "Invalid file type. Please select a CSV, Excel (.xls, .xlsx), or XML file."
+          "Invalid file type. Please select a CSV or Excel (.xls, .xlsx) file."
         );
         setSelectedFile(null);
       }
     }
-  };
-
-  type ProgramFormDataWithExtra = ProgramFormData & {
-    extraFields: Record<string, any>;
   };
 
   const handleParseFile = async () => {
@@ -117,22 +173,17 @@ export default function BulkUploadPage() {
     setCurrentPage(1);
 
     try {
-      const fileExtension = bulkUploadService.getFileExtension(
-        selectedFile.name
-      );
+      const fileExtension = getFileExtension(selectedFile.name);
 
       let data: ProgramFormData[] = [];
 
       switch (fileExtension) {
         case "csv":
-          data = await bulkUploadService.parseCSV(selectedFile);
+          data = await parseCSV(selectedFile);
           break;
         case "xls":
         case "xlsx":
-          data = await bulkUploadService.parseExcel(selectedFile);
-          break;
-        case "xml":
-          data = await bulkUploadService.parseXML(selectedFile);
+          data = await parseExcel(selectedFile);
           break;
         default:
           throw new Error("Unsupported file type");
@@ -143,15 +194,6 @@ export default function BulkUploadPage() {
       }
 
       setParsedData(data);
-      const extraFields = (data[0] as ProgramFormDataWithExtra)?.extraFields;
-
-      if (extraFields) {
-        const fields = Object.keys(extraFields)
-          .filter((key) => !key.toLowerCase().startsWith("comp-"))
-          .map((key) => ({ field: key, accept: true }));
-        setExtraFields(fields);
-      }
-
       console.log(`Successfully parsed ${data.length} programs`);
     } catch (err) {
       console.error("Parse error:", err);
@@ -161,68 +203,17 @@ export default function BulkUploadPage() {
     }
   };
 
-  const transformDataForAPI = () => {
-    if (!parsedData) return [];
-
-    const acceptedFields = extraFields
-      .filter((field) => field.accept)
-      .map((field) => field.field);
-
-    return parsedData.map((program) => {
-      const { extraFields: programExtraFields, ...restProgram } =
-        program as ProgramFormDataWithExtra;
-
-      // Build custom_fields array
-      const custom_fields: Array<{
-        field: string;
-        comparison: string;
-        value: number | string;
-      }> = [];
-
-      if (programExtraFields && acceptedFields.length > 0) {
-        acceptedFields.forEach((fieldName) => {
-          const value = programExtraFields[fieldName];
-          const comparisonKey = `Comp-${fieldName}`;
-          const comparisonOperator = programExtraFields[comparisonKey];
-
-          // Only add if value exists and is not empty
-          if (
-            value !== null &&
-            value !== undefined &&
-            value.toString().trim() !== ""
-          ) {
-            const mappedComparison =
-              COMPARISON_MAP[comparisonOperator?.toLowerCase()] || ">";
-
-            custom_fields.push({
-              field: fieldName,
-              comparison: mappedComparison,
-              value: value,
-            });
-          }
-        });
-      }
-
-      return {
-        ...restProgram,
-        custom_fields,
-      };
-    });
-  };
-
   const handleSaveToDatabase = async () => {
     if (!parsedData || !selectedFile) return;
-
     setUploading(true);
     setUploadResult(null);
     setError("");
 
     try {
-      const transformedPrograms = transformDataForAPI();
       const response = await fetch("/api/admin/programs/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transformedPrograms),
+        body: JSON.stringify(parsedData),
       });
 
       if (!response.ok) {
@@ -235,11 +226,10 @@ export default function BulkUploadPage() {
       const result: UploadResult = await response.json();
       setUploadResult(result);
 
-      if (result.success && result.failed === 0) {
+      if (result.success && result.failedCount === 0) {
         setTimeout(() => {
           setSelectedFile(null);
           setParsedData(null);
-          setExtraFields([]);
           setCurrentPage(1);
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -258,77 +248,25 @@ export default function BulkUploadPage() {
 
   const downloadTemplate = () => {
     const headers = [
-      "Sr.No.",
-      "UNIVERSITY",
-      "University Ranking",
-      "Study Level",
-      "Study Area",
-      "PROGRAMME Name",
-      "Campus",
-      "Duration",
-      "Open Intake",
-      "Open Call",
-      "Application Deadline",
-      "Entry REQUIREMENTS",
-      "PERCENTAGE Required",
-      "MOI",
-      "Ielts Score",
-      "No band less than",
-      "Toefl Score",
-      "No ban less than",
-      "PTE Score",
-      "No band less than",
-      "DET Score",
-      "No band less than",
-      "TOLC Score",
-      "SAT Score",
-      "GRE Score",
-      "GMAT Score",
-      "CENTS Score",
-      "TIL Score",
-      "ARCHED Test",
-      "Application Fees",
-      "Additional Requirement",
+      "S. No.",
+      "University",
+      "Previous / Current Study",
+      "Degree Going For",
+      "Courses Name",
+      "IELTS Requirment",
+      "Special Requirments",
       "Remarks",
-      "My Custom Field",
-      "Comp-My Custom Field"
     ];
 
     const sampleData = [
       "1",
-      "University of Example",
-      "100",
-      "Bachelor",
-      "Computer Science",
-      "Computer Science",
-      "Main Campus",
-      "4 years",
-      "Fall 2024",
-      "Open",
-      "2024-03-15",
-      "High school diploma",
-      "80",
-      "English",
-      "6.5",
-      "6.0",
-      "90",
-      "20",
-      "65",
-      "60",
-      "120",
-      "100",
-      "25",
-      "1200",
-      "320",
-      "650",
-      "85",
-      "75",
-      "Pass",
-      "100",
-      "Portfolio required",
-      "Popular program",
-      "custom field value",
-      "gt"
+      "University of Milan",
+      "Bcom",
+      "Master",
+      "Management of Innovation and Entrepreneurship",
+      "Above 5.5",
+      "no",
+      "best in class",
     ];
 
     const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
@@ -357,20 +295,9 @@ export default function BulkUploadPage() {
   const handleUploadAnotherFile = () => {
     setSelectedFile(null);
     setParsedData(null);
-    setExtraFields([]);
     setCurrentPage(1);
     setUploadResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handleSelectExtraField = (
-    index: number,
-    isChecked: boolean
-  ) => {
-    const updated = extraFields.map((field, i) =>
-      i === index ? { ...field, accept: isChecked } : field
-    );
-    setExtraFields(updated);
   };
 
   return (
@@ -384,8 +311,7 @@ export default function BulkUploadPage() {
                 Bulk Upload Programs
               </h1>
               <p className="mt-2 text-gray-600">
-                Upload multiple university programs using CSV, Excel, or XML
-                files
+                Upload multiple university programs using CSV or Excel files
               </p>
             </div>
 
@@ -426,7 +352,7 @@ export default function BulkUploadPage() {
                           Click to upload or drag and drop
                         </span>
                         <span className="mt-1 block text-sm text-gray-500">
-                          CSV, Excel (.xls, .xlsx), or XML files up to 10MB
+                          CSV or Excel (.xls, .xlsx) files up to 10MB
                         </span>
                       </label>
                       <input
@@ -434,7 +360,7 @@ export default function BulkUploadPage() {
                         id="file-upload"
                         name="file-upload"
                         type="file"
-                        accept=".csv,.xls,.xlsx,.xml"
+                        accept=".csv,.xls,.xlsx"
                         className="sr-only"
                         onChange={handleFileSelect}
                         disabled={parsing || uploading}
@@ -500,15 +426,18 @@ export default function BulkUploadPage() {
                 </h2>
 
                 <div className="flex gap-2 items-center justify-center">
-                  <button
+                 
+                  {parsedData && !uploading && !uploadResult && (
+                    <>
+                     <button
                     className="w-full p-2 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors flex items-center"
                     onClick={handleUploadAnotherFile}
                   >
-                   <X className="h-5 w-5 mr-2" />
-                    Cancel Upload 
+                    <X className="h-5 w-5 mr-2" />
+                    Cancel Upload
                   </button>
-                  {parsedData && !uploading && !uploadResult && (
-                    <button
+                    
+                     <button
                       onClick={handleSaveToDatabase}
                       disabled={uploading}
                       className="w-full items-center p-2 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
@@ -527,6 +456,8 @@ export default function BulkUploadPage() {
                         </div>
                       )}
                     </button>
+                    </>
+                   
                   )}
                 </div>
               </div>
@@ -541,42 +472,6 @@ export default function BulkUploadPage() {
                   </div>
                 </div>
               </div>
-
-              {extraFields.length > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
-                  <h3 className="text-sm font-semibold text-yellow-900 mb-3">
-                   Detected {extraFields.length} Custom field(s). Select
-                    which to include:
-                  </h3>
-
-                  <ul className="space-y-2">
-                    {extraFields.map((item, index) => {
-                      return (
-                        <li key={index} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`field-${index}`}
-                            checked={item.accept}
-                            onChange={(e) =>
-                              handleSelectExtraField(
-                                index,
-                                e.target.checked
-                              )
-                            }
-                            className="h-4 w-4 text-indigo-600 checked:bg-indigo-500 focus:ring-indigo-500 border-gray-300 rounded"
-                          />
-                          <label
-                            htmlFor={`field-${index}`}
-                            className="ml-2 text-sm text-gray-700 cursor-pointer"
-                          >
-                            {item.field}
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
             </div>
 
             {/* Data Table */}
@@ -585,28 +480,22 @@ export default function BulkUploadPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      #
+                      S. No.
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       University
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Programme
+                      Previous / Current Study
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Study Level
+                      Degree Going For
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Study Area
+                      Courses Name
                     </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IELTS
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Application Fee
+                      IELTS Requirment
                     </th>
                   </tr>
                 </thead>
@@ -619,23 +508,17 @@ export default function BulkUploadPage() {
                       <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {program.university || "-"}
                       </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.previous_or_current_study || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {program.degree_going_for || "-"}
+                      </td>
                       <td className="px-3 py-4 text-sm text-gray-900">
-                        {program.programme_name || "-"}
+                        {program.course_name || "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.study_level || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.study_area || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.duration || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.ielts_score || "-"}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {program.application_fees || "-"}
+                        {program.ielts_requirement || "-"}
                       </td>
                     </tr>
                   ))}
@@ -733,7 +616,7 @@ export default function BulkUploadPage() {
                   {uploadResult.success ? (
                     <CheckCircleIcon className="h-8 w-8 text-green-400" />
                   ) : (
-                    <AlertCircleIcon className="h-8 w-8 text-yellow-400" />
+                    <XCircleIcon className="h-8 w-8 text-yellow-400" />
                   )}
                 </div>
                 <div className="ml-4 flex-1">
@@ -753,15 +636,13 @@ export default function BulkUploadPage() {
                         : "text-yellow-700"
                     }`}
                   >
+                   
                     <p className="font-medium">
-                      Total programs: {uploadResult.total}
+                      Successfully uploaded: {uploadResult.successCount}
                     </p>
-                    <p className="font-medium">
-                      Successfully uploaded: {uploadResult.created}
-                    </p>
-                    {uploadResult.failed > 0 && (
+                    {uploadResult.failedCount > 0 && (
                       <p className="font-medium text-red-600">
-                        Failed: {uploadResult.failed}
+                        Failed: {uploadResult.failedCount}
                       </p>
                     )}
                   </div>
