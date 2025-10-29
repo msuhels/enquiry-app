@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  createCustomProgramFields,
   createProgram,
   getPrograms,
-  processCustomFields,
 } from "@/lib/supabase/program/admin-program.services";
-import { CustomFieldEntry } from "@/lib/types";
+import {  Program } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,27 +53,36 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log("LOGGING : API received program creation request");
 
-    const { custom_fields = [], ...rest } = body;
+    const { 
+      university, 
+      previous_or_current_study, 
+      degree_going_for, 
+      course_name, 
+      ielts_requirement, 
+      special_requirements, 
+      remarks 
+    } = body;
 
-    // Check if any meaningful data is present
-    const hasProgramData =
-      Object.values(rest).some(
-        (value) =>
-          value !== null &&
-          value !== undefined &&
-          value.toString().trim() !== ""
-      ) ||
-      custom_fields.some(
-        (field: CustomFieldEntry) =>
-          field.value !== null &&
-          field.value !== undefined &&
-          field.value.toString().trim() !== ""
-      );
+    const hasProgramData = [
+      university, 
+      previous_or_current_study, 
+      degree_going_for, 
+      course_name, 
+      ielts_requirement, 
+      special_requirements, 
+      remarks
+    ].some(value => 
+      value !== null && 
+      value !== undefined && 
+      value.toString().trim() !== ""
+    );
 
     if (!hasProgramData) {
       return NextResponse.json(
@@ -84,38 +91,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create program first
     const programData = {
-      ...rest,
+      university,
+      previous_or_current_study,
+      degree_going_for,
+      course_name,
+      ielts_requirement,
+      special_requirements,
+      remarks,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
+    } as Program
+
     const result = await createProgram(programData);
 
     if (!result.success) {
       console.error("LOGGING : Failed to create program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
-    }
-
-    const programId = result.data?.id;
-
-    // Process custom fields if any
-    if (custom_fields.length > 0) {
-      const processedCustomFields = await processCustomFields(
-        custom_fields,
-        programId
-      );
-
-      if (!processedCustomFields.success) {
-        console.error(
-          "LOGGING : Failed to save custom fields:",
-          processedCustomFields.error
-        );
-        return NextResponse.json(
-          { error: processedCustomFields.error },
-          { status: 500 }
-        );
-      }
     }
 
     console.log("LOGGING : Program created successfully via API");
