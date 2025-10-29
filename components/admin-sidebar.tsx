@@ -17,7 +17,7 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
     { name: "Programs", icon: BookOpen, href: "/admin/programs" },
-    { name: "Users", icon: Users, href: "/admin/users" },
+    { name: "Vendors", icon: Users, href: "/admin/users" },
     { name: "Enquiries", icon: Mail, href: "/admin/enquiries" },
     // { name: "Settings", icon: Settings, href: "/admin/settings" },
   ];

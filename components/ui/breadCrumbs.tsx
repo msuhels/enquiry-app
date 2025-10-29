@@ -20,7 +20,7 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
   const routeLabels: Record<string, string> = {
     admin: 'Dashboard',
     programs: 'Programs',
-    users: 'Users',
+    users: 'Vendors',
     enquiries: 'Enquiries',
     settings: 'Settings',
   };
