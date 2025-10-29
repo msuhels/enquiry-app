@@ -76,11 +76,11 @@ export default function ProgramsPage() {
         </span>
       ),
     },
-    { key: "programme_name", label: "Program", sortable: true },
-    { key: "study_level", label: "Study Level" },
-    { key: "duration", label: "Duration" },
-    { key: "university_ranking", label: "Ranking" },
-    { key: "application_deadline", label: "Deadline" },
+    { key: "course_name", label: "Course Name", sortable: true },
+    // { key: "study_level", label: "Study Level" },
+    // { key: "duration", label: "Duration" },
+    // { key: "university_ranking", label: "Ranking" },
+    // { key: "application_deadline", label: "Deadline" },
   ];
 
   const filterTabs = [
