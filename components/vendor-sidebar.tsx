@@ -4,22 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  BookOpen,
-  Users,
   Mail,
   Settings,
   LogOut,
 } from "lucide-react";
 
-export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
+export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
-    { name: "Programs", icon: BookOpen, href: "/admin/programs" },
-    { name: "Users", icon: Users, href: "/admin/users" },
-    { name: "Enquiries", icon: Mail, href: "/admin/enquiries" },
-    // { name: "Settings", icon: Settings, href: "/admin/settings" },
+    { name: "Dashboard", icon: LayoutDashboard, href: "/vendor" },
+    { name: "Enquiries", icon: Mail, href: "/vendor/enquiries" },
+    // { name: "Settings", icon: Settings, href: "/user/settings" },
   ];
 
   return (
@@ -27,9 +23,9 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
       <div>
         <div className="p-6 flex items-center gap-3 border-b border-white/20">
           <div className="h-10 w-10 bg-white/20 flex items-center justify-center rounded-lg font-bold text-lg">
-            A
+            U
           </div>
-          <h1 className="text-lg font-bold">Admin Panel</h1>
+          <h1 className="text-lg font-bold">User Panel</h1>
         </div>
 
         <nav className="mt-6 space-y-1">
@@ -59,7 +55,10 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
       </div>
 
       <div className="p-6 border-t border-white/20">
-        <button onClick={onLogout} className="flex items-center gap-3 text-sm font-medium text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-3 text-sm font-medium text-white hover:bg-white/20 px-4 py-2 rounded-lg transition"
+        >
           <LogOut className="h-5 w-5" />
           Logout
         </button>

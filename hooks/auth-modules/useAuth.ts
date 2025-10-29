@@ -60,11 +60,12 @@ export function useAuth(): UseAuthReturn {
         return false;
       }
       if (result.success) {
+        console.log({ result })
         toast.success("Login successful! Redirecting...", { id: loginToast });
-        // if(true)
-        setTimeout(() => {
-          router.push("/admin");
-        }, 500);
+        // Small delay to show completion before redirect
+        // setTimeout(() => {
+        //   router.push("/admin");
+        // }, 500);
         return true;
       } else {
         console.log({ result })
