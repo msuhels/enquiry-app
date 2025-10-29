@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProgramById, updateProgram, deleteProgram } from "@/lib/supabase/program/admin-program.services";
+import { Program } from "@/lib/types";
 
 export async function GET(
   request: NextRequest,
@@ -34,6 +35,7 @@ export async function GET(
   }
 }
 
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -44,7 +46,49 @@ export async function PATCH(
     
     console.log("LOGGING : API received program update request for ID:", id);
 
-    const result = await updateProgram(id, body);
+    const { 
+      university, 
+      previous_or_current_study, 
+      degree_going_for, 
+      course_name, 
+      ielts_requirement, 
+      special_requirements, 
+      remarks 
+    } = body;
+
+    // Validate that at least one field is being updated
+    const hasProgramData = [
+      university, 
+      previous_or_current_study, 
+      degree_going_for, 
+      course_name, 
+      ielts_requirement, 
+      special_requirements, 
+      remarks
+    ].some(value => 
+      value !== null && 
+      value !== undefined && 
+      value.toString().trim() !== ""
+    );
+
+    if (!hasProgramData) {
+      return NextResponse.json(
+        { error: "At least one field is required to update" },
+        { status: 400 }
+      );
+    }
+
+    const programData = {
+      university,
+      previous_or_current_study,
+      degree_going_for,
+      course_name,
+      ielts_requirement,
+      special_requirements,
+      remarks,
+    } as Partial<Program>;
+
+    const result = await updateProgram(id, programData);
     
     if (!result.success) {
       console.error("LOGGING : Failed to update program:", result.error);
@@ -68,6 +112,41 @@ export async function PATCH(
     );
   }
 }
+
+// export async function PATCH(
+//   request: NextRequest,
+//   { params }: { params: Promise<{ id: string }> }
+// ) {
+//   try {
+//     const { id } = await params;
+//     const body = await request.json();
+    
+//     console.log("LOGGING : API received program update request for ID:", id);
+
+//     const result = await updateProgram(id, body);
+    
+//     if (!result.success) {
+//       console.error("LOGGING : Failed to update program:", result.error);
+//       return NextResponse.json(
+//         { error: result.error },
+//         { status: 500 }
+//       );
+//     }
+
+//     console.log("LOGGING : Program updated successfully via API");
+//     return NextResponse.json({
+//       success: true,
+//       data: result.data,
+//     });
+
+//   } catch (error) {
+//     console.error("API program update error:", error);
+//     return NextResponse.json(
+//       { error: "Internal server error" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
 export async function DELETE(
   request: NextRequest,

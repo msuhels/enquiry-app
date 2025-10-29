@@ -86,6 +86,45 @@ export async function updateProgram(
   }
 }
 
+// export async function updateProgram(
+//   programId: string,
+//   programData: Partial<Program>
+// ): Promise<ProgramServiceResult<Program>> {
+//   try {
+//     const supabase = createServiceRoleClient();
+
+//     const { data, error } = await supabase
+//       .from("programs")
+//       .update({
+//         ...programData,
+//         updated_at: new Date().toISOString(),
+//       })
+//       .eq("id", programId)
+//       .select()
+//       .single();
+
+//     if (error) {
+//       console.error("Admin program update error:", error);
+//       return {
+//         success: false,
+//         error: error.message,
+//       };
+//     }
+
+//     return {
+//       success: true,
+//       data: data,
+//     };
+//   } catch (error) {
+//     console.error("Admin program update unexpected error:", error);
+//     return {
+//       success: false,
+//       error:
+//         error instanceof Error ? error.message : "An unexpected error occurred",
+//     };
+//   }
+// }
+
 
 export async function deleteProgram(
   programId: string
