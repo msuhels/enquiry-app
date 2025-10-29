@@ -175,9 +175,9 @@ const ProgramsTable = ({ data }: any) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Degree Going For
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Duration
-              </th>
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 IELTS Requirement
               </th>
@@ -204,9 +204,9 @@ const ProgramsTable = ({ data }: any) => {
                 <td className="px-6 py-4 text-sm text-gray-900">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.duration || "-"}
-                </td>
+                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.ielts_requirement || "-"}
                 </td>
