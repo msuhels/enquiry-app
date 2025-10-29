@@ -38,10 +38,12 @@ const RecentEnquiryItem = ({
 
 export default function UserDashboard() {
   const router = useRouter();
-
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
 
   const { data: enquiries } = useFetch("/api/user/enquiries");
+
+  const { data : user} = useFetch("/api/admin/users/getAuthUser");
 
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
@@ -52,6 +54,12 @@ export default function UserDashboard() {
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setUserName(user.userDetails.full_name);
+    }
+  }, [user]);
 
   const statCards = [
     {
@@ -64,7 +72,7 @@ export default function UserDashboard() {
   ];
 
   const quickActions = [
-    { title: "Add Enquiry", link: "/vendor/enquiries/add", icon: PlusIcon, color: "bg-purple-100" },
+    // { title: "Add Enquiry", link: "/vendor/enquiries/add", icon: PlusIcon, color: "bg-purple-100" },
     { title: "View Enquiries", link: "/vendor/enquiries", icon: EyeIcon, color: "bg-green-100" },
   ];
 
@@ -76,7 +84,7 @@ export default function UserDashboard() {
           <div>
             <h1 className="text-3xl font-bold">
               Welcome back,{" "}
-              <span className="text-purple-600 font-extrabold">User!</span>
+              <span className="text-purple-600 font-extrabold">{userName}</span>
             </h1>
             <p className="text-gray-500 text-sm mt-1">
               Here’s your enquiry overview.
@@ -86,7 +94,7 @@ export default function UserDashboard() {
           <div className="flex items-center gap-4">
             <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
             <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
-              U
+              V
             </div>
           </div>
         </div>
@@ -136,7 +144,7 @@ export default function UserDashboard() {
           </div>
 
           {/* RECENT ENQUIRIES */}
-          <div>
+          {/* <div>
             <h2 className="text-lg font-bold mb-4">My Recent Enquiries</h2>
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
               {filterEnquiries?.length ? (
@@ -158,7 +166,7 @@ export default function UserDashboard() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
