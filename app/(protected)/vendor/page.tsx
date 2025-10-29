@@ -43,7 +43,7 @@ export default function UserDashboard() {
 
   const { data: enquiries } = useFetch("/api/user/enquiries");
 
-  const { data : user} = useFetch("/api/admin/users/getAuthUser");
+  const { data: user } = useFetch("/api/admin/users/getAuthUser");
 
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
@@ -73,23 +73,29 @@ export default function UserDashboard() {
 
   const quickActions = [
     // { title: "Add Enquiry", link: "/vendor/enquiries/add", icon: PlusIcon, color: "bg-purple-100" },
-    { title: "View Enquiries", link: "/vendor/enquiries", icon: EyeIcon, color: "bg-green-100" },
+    {
+      title: "View Enquiries",
+      link: "/vendor/enquiries",
+      icon: EyeIcon,
+      color: "bg-green-100",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <div className="p-8">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-5">
           <div>
             <h1 className="text-3xl font-bold">
-              Welcome back,{" "}
+              Hello Mr.{" "}
               <span className="text-purple-600 font-extrabold">{userName}</span>
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
+            {/* <p className="text-gray-500 text-sm mt-1">
               Here’s your enquiry overview.
-            </p>
+            </p> */}
           </div>
+
 
           <div className="flex items-center gap-4">
             <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
@@ -98,6 +104,10 @@ export default function UserDashboard() {
             </div>
           </div>
         </div>
+
+          <div className="mb-10 w-full flex items-center justify-center text-[#000000] font-bold">
+            <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2>
+          </div>
 
         {/* USER STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -109,7 +119,9 @@ export default function UserDashboard() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm text-white opacity-90">{card.title}</p>
-                  <p className="text-4xl text-white font-bold mt-2">{card.value}</p>
+                  <p className="text-4xl text-white font-bold mt-2">
+                    {card.value}
+                  </p>
                 </div>
                 <div className="bg-white/30 p-2 rounded-lg">
                   <card.icon className="w-6 h-6 text-white" />

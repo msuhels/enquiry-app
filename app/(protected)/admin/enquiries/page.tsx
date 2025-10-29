@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/ui/breadCrumbs";
 import { useFetch } from "@/hooks/api/useFetch";
 import SearchSelect from "@/components/form/FormSearchSelect";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function EnquiriesPage() {
   const router = useRouter();
@@ -17,22 +18,23 @@ export default function EnquiriesPage() {
   const [degreeGoingFor, setDegreeGoingFor] = useState("");
   const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
 
-  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [programs, setPrograms] = useState([]);
 
-  const {
-    data: previousOrCurrentStudyData,
-    isLoading: previousOrCurrentStudyLoading,
-  } = useFetch(`/api/admin/previous-or-current-study`);
+  const isCentered = !hasSearched;
 
-  const { data: degreeGoingForData, isLoading: degreeGoingForLoading } =
-    useFetch(`/api/admin/degree-going-for`);
+  const { data: previousOrCurrentStudyData } = useFetch(
+    `/api/admin/previous-or-current-study`
+  );
+
+  const { data: degreeGoingForData } = useFetch(`/api/admin/degree-going-for`);
 
   useEffect(() => {
     if (previousOrCurrentStudyData?.success) {
       const options = previousOrCurrentStudyData?.data.map(
         (option: { id: string; name: string }) => ({
-          value: option.id,
+          value: option.name,
           label: option.name,
         })
       );
@@ -44,7 +46,7 @@ export default function EnquiriesPage() {
     if (degreeGoingForData?.success) {
       const options = degreeGoingForData?.data.map(
         (option: { id: string; name: string }) => ({
-          value: option.id,
+          value: option.name,
           label: option.name,
         })
       );
@@ -52,9 +54,17 @@ export default function EnquiriesPage() {
     }
   }, [degreeGoingForData]);
 
+  useEffect(() => {
+    if (!previousOrCurrentStudy || !degreeGoingFor) {
+      setHasSearched(false);
+      setPrograms([]);
+    }
+  }, [previousOrCurrentStudy, degreeGoingFor]);
+
   const handleFindPrograms = async () => {
     try {
       setLoading(true);
+      setHasSearched(false);
 
       const params = new URLSearchParams();
       if (previousOrCurrentStudy) {
@@ -72,6 +82,7 @@ export default function EnquiriesPage() {
       if (!response.ok) throw new Error(result.error);
 
       setPrograms(result.data);
+      setHasSearched(true);
       toast.success("Programs fetched successfully!");
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch programs");
@@ -80,58 +91,74 @@ export default function EnquiriesPage() {
     }
   };
 
+  // const isCentered =
+  //   programs.length === 0 && (!previousOrCurrentStudy || !degreeGoingFor);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+    <div className="min-h-screen bg-gray-50 relative">
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 pt-4">
           <Breadcrumbs />
         </div>
 
-        {/* Filters */}
-        <div className="flex items-end justify-start gap-6 mb-4">
-          <SearchSelect
-            label="Previous/Current Study"
-            name="previous_or_current_study"
-            value={previousOrCurrentStudy}
-            onChange={setPreviousOrCurrentStudy}
-            options={previousOrCurrentStudyOptions}
-          />
+        <motion.div
+          animate={{
+            y: isCentered ? "40vh" : 0,
+          }}
+          transition={{ duration: 0.6, type: "spring" }}
+        >
+          <div className="flex items-end justify-center gap-6 mb-4">
+            <SearchSelect
+              label="Previous/Current Study"
+              name="previous_or_current_study"
+              value={previousOrCurrentStudy}
+              allowCreate={false}
+              onChange={setPreviousOrCurrentStudy}
+              options={previousOrCurrentStudyOptions}
+            />
 
-          <SearchSelect
-            label="Degree Going For"
-            name="degree_going_for"
-            value={degreeGoingFor}
-            onChange={setDegreeGoingFor}
-            options={degreeGoingForOptions}
-          />
+            <SearchSelect
+              label="Degree Going For"
+              name="degree_going_for"
+              value={degreeGoingFor}
+              allowCreate={false}
+              onChange={setDegreeGoingFor}
+              options={degreeGoingForOptions}
+            />
 
-          <button
-            onClick={handleFindPrograms}
-            className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded disabled:"
-            disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
-          >
-            {loading ? "Loading..." : "Find Programs"}
-          </button>
-        </div>
+            <button
+              onClick={handleFindPrograms}
+              className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded"
+              disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
+            >
+              {loading ? "Loading..." : "Find"}
+            </button>
+          </div>
+          <div>
+            <p className="text-orange-700 font-bold">
+              *This course finder is for counselling purposes only. Final course
+              options will be provided by our subject matter experts after a
+              detailed analysis of your profile*
+            </p>
+          </div>
+        </motion.div>
 
         {/* Result */}
-        <div className="mt-6">
+        <div className="mt-6 w-full">
           {programs.length > 0 ? (
             <ProgramsTable data={programs} />
-          ) : (
-            previousOrCurrentStudy &&
-            degreeGoingFor && (
-              <p className="text-gray-500">No programs found.</p>
-            )
-          )}
+          ) : hasSearched && !loading ? (
+            <p className="text-gray-500 text-center">No programs found.</p>
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
+
 const ProgramsTable = ({ data }: any) => {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white w-full rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -172,10 +199,10 @@ const ProgramsTable = ({ data }: any) => {
                   {item.course_name || "-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.previous_or_current_study?.name || "-"}
+                  {item.previous_or_current_study || "-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.degree_going_for?.name || "-"}
+                  {item.degree_going_for || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.duration || "-"}

@@ -6,20 +6,26 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceRoleClient();
 
     const { searchParams } = new URL(request.url);
-    const previousOrCurrentStudy = searchParams.get("previous_or_current_study");
+
+    const previousOrCurrentStudy = searchParams.get(
+      "previous_or_current_study"
+    );
     const degreeGoingFor = searchParams.get("degree_going_for");
-    
-    const { data, error } = await supabase
-      .from("programs")
-      .select(
-        `
-    *,
-    previous_or_current_study:previous_or_current_study(*),
-    degree_going_for:degree_going_for(*)
-  `
-      )
-      .eq("previous_or_current_study", previousOrCurrentStudy)
-      .eq("degree_going_for", degreeGoingFor);
+
+    let query = supabase.from("programs").select("*");
+
+    if (previousOrCurrentStudy) {
+      query = query.ilike(
+        "previous_or_current_study",
+        `%${previousOrCurrentStudy}%`
+      );
+    }
+
+    if (degreeGoingFor) {
+      query = query.ilike("degree_going_for", `%${degreeGoingFor}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Supabase fetch error:", error);
