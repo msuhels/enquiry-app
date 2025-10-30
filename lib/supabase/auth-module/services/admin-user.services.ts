@@ -50,6 +50,10 @@ export async function createUser({
       password_algo: enc.algo,
       role: "user",
       status: "active",
+      is_active: user.is_active,
+      organization: user.organization,
+      state: user.state,
+      city: user.city,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
