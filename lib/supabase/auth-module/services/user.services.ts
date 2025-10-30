@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 import { createClient } from "@/lib/supabase/adapters/server";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
@@ -11,6 +11,10 @@ export interface UserProfile {
   email: string;
   updated_at: string;
   full_name: string | null;
+  organization: string;
+  state: string;
+  city: string;
+  is_active: boolean;
   profile_picture_url: string | null;
   status: string;
   email_verified: boolean;
@@ -173,11 +177,16 @@ export async function deleteUser(userId: string): Promise<UserServiceResult> {
   const adminSupabase = createServiceRoleClient();
 
   try {
-    const { error } = await adminSupabase.from("users").delete().eq("id", userId);
+    const { error } = await adminSupabase
+      .from("users")
+      .delete()
+      .eq("id", userId);
 
     if (error) return { success: false, error: error.message };
 
-    const { error: authError } = await adminSupabase.auth.admin.deleteUser(userId);
+    const { error: authError } = await adminSupabase.auth.admin.deleteUser(
+      userId
+    );
 
     if (authError) return { success: false, error: authError.message };
 

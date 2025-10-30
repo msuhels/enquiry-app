@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Copy, Mail, Eye, Save } from "lucide-react";
+import { State, City } from "country-state-city";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
+import SearchSelect from "@/components/form/FormSearchSelect";
 import * as Switch from "@radix-ui/react-switch";
 import { usePatch } from "@/hooks/api/usePatch";
 import { usePut } from "@/hooks/api/usePut";
 import { toast } from "sonner";
 import { usePost } from "@/hooks/api/usePost";
 import { useFetch } from "@/hooks/api/useFetch";
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -18,6 +21,9 @@ interface User {
   phone_number?: string | null;
   password?: string | null;
   role?: string;
+  organization?: string;
+  state?: string;
+  city?: string;
   is_active?: boolean;
   status?: string;
   email_verified?: boolean;
@@ -36,6 +42,9 @@ export default function UserUpdatePage() {
     role: "",
     is_active: false,
     status: "",
+    organization: "",
+    state: "",
+    city: "",
     email_verified: false,
     profile_picture_url: null,
     created_at: "",
@@ -47,16 +56,64 @@ export default function UserUpdatePage() {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   const userId = useParams().id;
-  const {data: userData, isLoading} = useFetch(`/api/admin/users?id=${userId}`);
+  const { data: userData, isLoading } = useFetch(
+    `/api/admin/users?id=${userId}`
+  );
   const { patch } = usePatch();
   const { put } = usePut();
-  const  { post } = usePost();
-  
+  const { post } = usePost();
+
   useEffect(() => {
     if (userData?.data) {
       setUser(userData?.data);
     }
   }, [userData]);
+
+  // Get all states from India (country code: IN)
+  const stateOptions = useMemo(() => {
+    const indianStates = State.getStatesOfCountry("IN");
+    return indianStates.map((state) => ({
+      value: state.name,
+      label: state.name,
+      isoCode: state.isoCode,
+    }));
+  }, []);
+
+  // Get cities based on selected state
+  const cityOptions = useMemo(() => {
+    if (!user.state) return [];
+
+    // Find the state ISO code
+    const selectedState = stateOptions.find(
+      (state) => state.value === user.state
+    );
+
+    if (!selectedState) return [];
+
+    const cities = City.getCitiesOfState("IN", selectedState.isoCode);
+    return cities.map((city) => ({
+      value: city.name,
+      label: city.name,
+    }));
+  }, [user.state, stateOptions]);
+
+  // Handle SearchSelect change
+  const handleSelectChange = (name: string, value: string) => {
+    setUser((prev) => {
+      // If state changes, reset city
+      if (name === "state") {
+        return {
+          ...prev,
+          state: value,
+          city: "",
+        };
+      }
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  };
 
   const fetchPassword = async () => {
     if (showPassword) return;
@@ -98,7 +155,7 @@ export default function UserUpdatePage() {
       const res = await post("/api/admin/send-password-email", {
         email: user.email,
         password: user.password,
-      })
+      });
 
       if (res.success) {
         toast.success("Email sent successfully!", {
@@ -129,7 +186,7 @@ export default function UserUpdatePage() {
           position: "top-center",
           richColors: true,
         });
-        router.push("/admin/users");
+        router.push("/admin/b2b");
       } else {
         toast.error(res.error || "Failed to save user", {
           position: "top-center",
@@ -170,15 +227,9 @@ export default function UserUpdatePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs disabledItemIndex={2} />
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit User</h1>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            <Save size={18} />
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+            Edit B2B Partner
+          </h1>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
           <div className="mb-4">
@@ -238,6 +289,47 @@ export default function UserUpdatePage() {
                 setUser({ ...user, phone_number: e.target.value })
               }
               className="mt-1 p-2 border rounded w-full"
+            />
+          </div>
+
+          {/* Organization */}
+          <div className="mb-4">
+            <label className="block font-medium">Organization</label>
+            <input
+              type="text"
+              value={user.organization || ""}
+              onChange={(e) =>
+                setUser({ ...user, organization: e.target.value })
+              }
+              className="mt-1 p-2 border rounded w-full"
+            />
+          </div>
+
+          {/* State */}
+          <div className="mb-4">
+            <SearchSelect
+              label="State"
+              name="state"
+              value={user.state || ""}
+              options={stateOptions}
+              onChange={(value) => handleSelectChange("state", value)}
+              placeholder="Select a state..."
+              allowCreate={false}
+            />
+          </div>
+
+          {/* City */}
+          <div className="mb-4">
+            <SearchSelect
+              label="City"
+              name="city"
+              value={user.city || ""}
+              options={cityOptions}
+              onChange={(value) => handleSelectChange("city", value)}
+              placeholder={
+                user.state ? "Select a city..." : "Please first select a state"
+              }
+              allowCreate={false}
             />
           </div>
 
@@ -341,6 +433,24 @@ export default function UserUpdatePage() {
                 className="mt-1 p-2 border rounded w-full bg-gray-100"
               />
             </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Link
+              href="/admin/b2b"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </Link>
+
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              <Save size={18} />
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
           </div>
         </div>
       </div>

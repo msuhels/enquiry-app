@@ -1,30 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { SaveIcon } from "lucide-react";
 import Link from "next/link";
+import { State, City } from "country-state-city";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import FormInput from "@/components/form/formInput";
+import SearchSelect from "@/components/form/FormSearchSelect";
 
 export default function NewUserPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
     phone_number: "",
+    organization: "",
+    state: "",
+    city: "",
     role: "user",
     is_active: true,
   });
 
-  const [generatedPassword, setGeneratedPassword] = useState<string>("");
+  // Get all states from India (country code: IN)
+  const stateOptions = useMemo(() => {
+    const indianStates = State.getStatesOfCountry("IN");
+    return indianStates.map((state) => ({
+      value: state.name,
+      label: state.name,
+      isoCode: state.isoCode,
+    }));
+  }, []);
 
-  // handle input change
+  // Get cities based on selected state
+  const cityOptions = useMemo(() => {
+    if (!formData.state) return [];
+
+    // Find the state ISO code
+    const selectedState = stateOptions.find(
+      (state) => state.value === formData.state
+    );
+
+    if (!selectedState) return [];
+
+    const cities = City.getCitiesOfState("IN", selectedState.isoCode);
+    return cities.map((city) => ({
+      value: city.name,
+      label: city.name,
+    }));
+  }, [formData.state, stateOptions]);
+
+  // Handle input change
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -33,13 +65,31 @@ export default function NewUserPage() {
     }));
   };
 
+  // Handle SearchSelect change
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => {
+      // If state changes, reset city
+      if (name === "state") {
+        return {
+          ...prev,
+          state: value,
+          city: "",
+        };
+      }
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const payload = {
-        ...formData
+        ...formData,
       };
 
       const response = await fetch("/api/admin/users", {
@@ -66,16 +116,9 @@ export default function NewUserPage() {
 
   const basicFields = [
     { label: "Full Name", name: "full_name", required: true },
-    { label: "Email", name: "email", type: "email", required:true},
+    { label: "Email", name: "email", type: "email", required: true },
     { label: "Phone Number", name: "phone_number", type: "text" },
-    // {
-    //   label: "Role",
-    //   name: "role",
-    //   select: [
-    //     { value: "user", label: "User" },
-    //     { value: "admin", label: "Admin" },
-    //   ],
-    // },
+    { label: "Organization", name: "organization", type: "text" },
   ];
 
   return (
@@ -83,7 +126,9 @@ export default function NewUserPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs />
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New B2B Partner</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Create New B2B Partner
+          </h1>
           <p className="mt-2 text-gray-600">
             Fill out the details to create a new b2b account
           </p>
@@ -102,14 +147,39 @@ export default function NewUserPage() {
                   label={f.label}
                   name={f.name}
                   type={f.type}
-                  select={f.select}
                   value={formData[f.name as keyof typeof formData] as string}
                   onChange={handleInputChange}
                   required={f.required}
                 />
               ))}
 
-              <div className="flex items-center space-x-2 mt-2">
+              {/* State SearchSelect */}
+              <SearchSelect
+                label="State"
+                name="state"
+                value={formData.state}
+                options={stateOptions}
+                onChange={(value) => handleSelectChange("state", value)}
+                placeholder="Select a state..."
+                allowCreate={false}
+              />
+
+              {/* City SearchSelect */}
+              <SearchSelect
+                label="City"
+                name="city"
+                value={formData.city}
+                options={cityOptions}
+                onChange={(value) => handleSelectChange("city", value)}
+                placeholder={
+                  formData.state
+                    ? "Select a city..."
+                    : "Please first select a state"
+                }
+                allowCreate={false}
+              />
+
+              <div className="flex items-center space-x-2 mt-2 md:col-span-2">
                 <input
                   id="is_active"
                   name="is_active"
@@ -127,7 +197,6 @@ export default function NewUserPage() {
               </div>
             </div>
           </div>
-
 
           {/* Submit */}
           <div className="flex justify-end space-x-4">
@@ -147,7 +216,7 @@ export default function NewUserPage() {
               ) : (
                 <SaveIcon className="h-4 w-4 mr-2" />
               )}
-              {loading ? "Creating..." : "Create B2b Partner"}
+              {loading ? "Creating..." : "Create B2B Partner"}
             </button>
           </div>
         </form>
