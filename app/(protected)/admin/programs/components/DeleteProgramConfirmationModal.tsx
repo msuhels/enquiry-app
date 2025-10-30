@@ -26,10 +26,10 @@ export default function DeleteProgramConfirmationModal({
         <ul className="w-full text-start mb-3">
           <li className="text-base text-gray-500">
             <span className="font-semibold text-gray-900">Name:</span>{" "}
-            {program.programme_name || "N/A"}
+            {program.course_name || "N/A"}
           </li>
           <li className="text-base text-gray-500">
-            <span className="font-semibold text-gray-900">Email:</span>{" "}
+            <span className="font-semibold text-gray-900">university:</span>{" "}
             {program.university}
           </li>
         </ul>

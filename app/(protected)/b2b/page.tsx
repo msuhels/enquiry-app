@@ -40,11 +40,17 @@ export default function UserDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const { data: enquiries } = useFetch("/api/user/enquiries");
-
   const { data: user } = useFetch("/api/admin/users/getAuthUser");
+  const { data: notifications } = useFetch("/api/admin/notifications");
 
+  useEffect(() => {
+    if (notifications) {
+      setNotificationCount(notifications?.data?.length || 0);
+    }
+  }, [notifications]);
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
       enquiry?.academic_entries?.data?.length > 0 &&
@@ -96,18 +102,38 @@ export default function UserDashboard() {
             </p> */}
           </div>
 
-
           <div className="flex items-center gap-4">
-            <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
+            <div className="relative inline-block">
+              {/* bell / icon / button goes here */}
+              <BellIcon
+                onClick={() => router.push("/b2b/notifications")}
+                className="w-6 h-6 cursor-pointer hover:text-gray-600"
+              />
+
+              {notificationCount > 0 && (
+                <span
+                  className="
+      absolute -top-1 -right-1 
+      min-w-4 h-4 
+      bg-red-600 text-white text-[10px] 
+      flex items-center justify-center 
+      rounded-full px-1
+    "
+                >
+                  {notificationCount}
+                </span>
+              )}
+            </div>
+
             <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
-              {userName.slice(0,1)}
+              {userName.slice(0, 1)}
             </div>
           </div>
         </div>
 
-          <div className="mb-10 w-full flex items-center justify-center text-[#000000] font-bold">
-            {/* <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2> */}
-          </div>
+        <div className="mb-10 w-full flex items-center justify-center text-[#000000] font-bold">
+          {/* <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2> */}
+        </div>
 
         {/* USER STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

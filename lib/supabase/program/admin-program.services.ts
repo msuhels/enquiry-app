@@ -1,16 +1,14 @@
 "use server";
 
-import { CustomFieldEntry } from './../../types';
+import { CustomFieldEntry } from "./../../types";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { BulkUploadResult, Program } from "@/lib/types";
-
 
 export interface ProgramServiceResult<T = void> {
   success: boolean;
   data?: T;
   error?: string;
 }
-
 
 export async function createProgram(
   programData: Program
@@ -45,7 +43,6 @@ export async function createProgram(
     };
   }
 }
-
 
 export async function updateProgram(
   programId: string,
@@ -125,7 +122,6 @@ export async function updateProgram(
 //   }
 // }
 
-
 export async function deleteProgram(
   programId: string
 ): Promise<ProgramServiceResult> {
@@ -133,12 +129,16 @@ export async function deleteProgram(
     const supabase = createServiceRoleClient();
 
     const { error: fieldError } = await supabase
-    .from("custom_programs_fields")
-    .delete()
-    .eq("program_id", programId);
+      .from("custom_programs_fields")
+      .delete()
+      .eq("program_id", programId);
 
-  if (fieldError) return { success: false, error: fieldError.message };
-
+    if (fieldError) return { success: false, error: fieldError.message };
+    const { data } = await supabase
+      .from("programs")
+      .select("*")
+      .eq("id", programId)
+      .single();
     const { error } = await supabase
       .from("programs")
       .delete()
@@ -154,6 +154,7 @@ export async function deleteProgram(
 
     return {
       success: true,
+      data
     };
   } catch (error) {
     console.error("Admin program deletion unexpected error:", error);
@@ -164,7 +165,6 @@ export async function deleteProgram(
     };
   }
 }
-
 
 export async function getProgramById(
   programId: string
@@ -200,7 +200,6 @@ export async function getProgramById(
   }
 }
 
-
 export async function getPrograms(filters: any) {
   const { university, course_name, search, limit = 10, offset = 0 } = filters;
   const supabase = createServiceRoleClient();
@@ -220,7 +219,8 @@ export async function getPrograms(filters: any) {
 
     // Pagination
     query = query.order("created_at", { ascending: false });
-    if (limit && offset !== undefined) query = query.range(offset, offset + limit - 1);
+    if (limit && offset !== undefined)
+      query = query.range(offset, offset + limit - 1);
 
     const { data, error, count } = await query;
 
@@ -242,8 +242,6 @@ export async function getPrograms(filters: any) {
     return { success: false, error: "Unexpected error fetching programs" };
   }
 }
-
-
 
 export async function bulkCreatePrograms(
   programs: Program[]
@@ -374,8 +372,9 @@ export async function bulkCreateProgramsWithValidation(
   }
 }
 
-
-export async function createCustomProgramFields(customFields:CustomFieldEntry[]){
+export async function createCustomProgramFields(
+  customFields: CustomFieldEntry[]
+) {
   try {
     const supabase = createServiceRoleClient();
 
@@ -402,18 +401,15 @@ export async function createCustomProgramFields(customFields:CustomFieldEntry[])
       success: false,
       error:
         error instanceof Error ? error.message : "An unexpected error occurred",
-    }
+    };
   }
 }
 
-
-export async function getAvailableCustomFields(){
+export async function getAvailableCustomFields() {
   try {
     const supabase = createServiceRoleClient();
 
-    const { data, error } = await supabase
-      .from("custom_fields")
-      .select();
+    const { data, error } = await supabase.from("custom_fields").select();
 
     if (error) {
       console.error("Admin custom field creation error:", error);
@@ -433,11 +429,14 @@ export async function getAvailableCustomFields(){
       success: false,
       error:
         error instanceof Error ? error.message : "An unexpected error occurred",
-    }
+    };
   }
 }
 
-export async function processCustomFields(customFields: CustomFieldEntry[], programId: string | undefined) {
+export async function processCustomFields(
+  customFields: CustomFieldEntry[],
+  programId: string | undefined
+) {
   try {
     const supabase = createServiceRoleClient();
     const customFieldEntries = [];
@@ -452,7 +451,9 @@ export async function processCustomFields(customFields: CustomFieldEntry[], prog
 
       if (selectError) throw selectError;
 
-      let fieldId = existingFields?.find(f => f.field_name.toLowerCase() === fieldName)?.id;
+      let fieldId = existingFields?.find(
+        (f) => f.field_name.toLowerCase() === fieldName
+      )?.id;
 
       // If not exists, create it
       if (!fieldId) {
