@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -16,9 +17,7 @@ import {
   Info,
 } from "lucide-react";
 import Link from "next/link";
-// Assuming you create a new service for user bulk upload
-// You'll need to create this file: "@/lib/user-bulk-upload"
-import { BulkUploadUserService as BulkUploadService } from "@/lib/user-bulk-upload-service";
+import * as BulkUploadService from "@/lib/user-bulk-upload-service";
 import { useModal } from "@/components/ui/modal";
 import FileFormatInstructions from "@/components/modals/fileInstructionModal";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
@@ -29,6 +28,9 @@ export interface UserFormData {
   name: string;
   role: "admin" | "user";
   phone?: string;
+  organization?: string;
+  state?: string;
+  city?: string;
 }
 
 interface ValidationError {
@@ -71,7 +73,6 @@ export default function BulkUploadUsersPage() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string>("");
 
-  const bulkUploadService = new BulkUploadService();
   const { openModal, closeModal } = useModal();
 
   const totalPages = parsedData
@@ -84,7 +85,7 @@ export default function BulkUploadUsersPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (bulkUploadService.validateFileType(file)) {
+      if (BulkUploadService.validateFileType(file)) {
         setSelectedFile(file);
         setParsedData(null);
         setValidationErrors([]);
@@ -110,22 +111,21 @@ export default function BulkUploadUsersPage() {
     setCurrentPage(1);
 
     try {
-      const fileExtension = bulkUploadService.getFileExtension(
+      const fileExtension = BulkUploadService.getFileExtension(
         selectedFile.name
       );
       let data: UserFormData[] = [];
 
       switch (fileExtension) {
         case "csv":
-          // The service method must be updated to map CSV/Excel columns to UserFormData
-          data = await bulkUploadService.parseCSV(selectedFile);
+          data = await BulkUploadService.parseCSV(selectedFile);
           break;
         case "xls":
         case "xlsx":
-          data = await bulkUploadService.parseExcel(selectedFile);
+          data = await BulkUploadService.parseExcel(selectedFile);
           break;
         case "xml":
-          data = await bulkUploadService.parseXML(selectedFile);
+          data = await BulkUploadService.parseXML(selectedFile);
           break;
         default:
           throw new Error("Unsupported file type");
@@ -144,7 +144,6 @@ export default function BulkUploadUsersPage() {
       setParsing(false);
     }
   };
-
 
   const handleSaveToDatabase = async () => {
     if (!parsedData || !selectedFile) return;
@@ -166,9 +165,12 @@ export default function BulkUploadUsersPage() {
         full_name: user.name,
         email: user.email,
         role: user.role,
-        phone: user.phone,
+        phone_number: user.phone,
+        organization: user.organization,
+        state: user.state,
+        city: user.city,
       }));
-      // 4. API Path Modification for Upload
+
       const response = await fetch("/api/admin/users/bulk-upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -209,8 +211,16 @@ export default function BulkUploadUsersPage() {
   };
 
   const downloadTemplate = () => {
-    // 5. Template Headers and Data Modified for Users
-    const headers = ["Sr.No.", "Name", "Email", "Phone", "Role"];
+    const headers = [
+      "Sr.No.",
+      "Name",
+      "Email",
+      "Phone",
+      "Role",
+      "Organization",
+      "State",
+      "City",
+    ];
 
     const sampleData = [
       "1",
@@ -218,6 +228,9 @@ export default function BulkUploadUsersPage() {
       "alice.smith@example.com",
       "123-456-7890",
       "user",
+      "ABC Corp",
+      "Madhya Pradesh",
+      "Indore",
     ];
 
     const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
@@ -235,6 +248,7 @@ export default function BulkUploadUsersPage() {
   };
 
   const handleOpenInstructions = () => {
+    // @ts-ignore
     openModal(<FileFormatInstructions />, {
       size: "md",
       closeOnOverlayClick: true,
@@ -243,10 +257,12 @@ export default function BulkUploadUsersPage() {
   };
 
   const handleOpenGeneratePasswordModal = () => {
+     // @ts-ignore
     const modalId = openModal(
       <GeneratePasswordModal
         handleConfirmation={() => {
           console.log("done done done");
+           // @ts-ignore
           closeModal(modalId);
         }}
       />,
@@ -260,7 +276,7 @@ export default function BulkUploadUsersPage() {
         <div className="mb-8">
           <Breadcrumbs />
           <h1 className="text-3xl font-bold text-gray-900">
-            Bulk Upload Users
+            Bulk Upload B2B Partners
           </h1>
           <p className="mt-2 text-gray-600">
             Upload multiple users using CSV, Excel, or XML files
@@ -301,7 +317,7 @@ export default function BulkUploadUsersPage() {
                 <div>
                   <label htmlFor="file-upload" className="cursor-pointer">
                     <span className="mt-2 block text-sm font-medium text-gray-900">
-                      Click to upload or drag and drop
+                      Click to upload
                     </span>
                     <span className="mt-1 block text-sm text-gray-500">
                       CSV, Excel (.xls, .xlsx), or XML files up to 10MB
@@ -370,12 +386,12 @@ export default function BulkUploadUsersPage() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   Review Parsed Data
                 </h2>
-                <button
+                {/* <button
                   onClick={handleOpenGeneratePasswordModal}
                   className="inline-flex items-center p-1 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                 >
                   Generate Passwords
-                </button>
+                </button> */}
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
@@ -410,6 +426,15 @@ export default function BulkUploadUsersPage() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Role
                     </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Organization
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      State
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      City
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -429,6 +454,15 @@ export default function BulkUploadUsersPage() {
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.role || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.organization || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.state || "-"}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.city || "-"}
                       </td>
                     </tr>
                   ))}
@@ -605,10 +639,10 @@ export default function BulkUploadUsersPage() {
                   {uploadResult.success && (
                     <div className="mt-4">
                       <Link
-                        href="/admin"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        href="/admin/b2b"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                       >
-                        Go to Dashboard
+                        Go Back
                       </Link>
                     </div>
                   )}

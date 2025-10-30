@@ -118,23 +118,7 @@ export default function UsersPage() {
         </div>
       ),
     },
-    {
-      key: "role",
-      label: "Role",
-      sortable: true,
-      render: (row: User) => (
-        <span
-          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            row.role === "admin"
-              ? "bg-red-100 text-red-800"
-              : "bg-blue-100 text-blue-800"
-          }`}
-        >
-          {row.role === "user" ? "vendor" : row.role}
-        </span>
-      ),
-    },
-    { key: "phone", label: "Phone" },
+    { key: "phone_number", label: "Phone" },
     {
       key: "is_active",
       label: "Status",

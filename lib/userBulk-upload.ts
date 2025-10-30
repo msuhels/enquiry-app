@@ -19,7 +19,7 @@ export async function bulkCreateUsersWithValidation(
   try {
     for (let i = 0; i < users.length; i++) {
       const userInput = users[i];
-      console.log("LOGGING : Processing user:", JSON.stringify(userInput))
+      // console.log("LOGGING : Processing user:", JSON.stringify(userInput));
       try {
         // Validate required fields
         if (!userInput.email) {
@@ -81,6 +81,9 @@ export async function bulkCreateUsersWithValidation(
           password_tag: enc.tag,
           password_algo: enc.algo,
           role: "user",
+          organization: userInput.organization,
+          state: userInput.state,
+          city: userInput.city,
           status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -95,7 +98,7 @@ export async function bulkCreateUsersWithValidation(
         if (tableError) {
           // If table insertion fails, try to delete the auth user
           await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-          
+
           results.failed++;
           results.errors.push({
             row: i + 1,
@@ -112,7 +115,9 @@ export async function bulkCreateUsersWithValidation(
           password: generatedPassword,
         });
 
-        console.log(`User ${i + 1}/${users.length} created: ${userInput.email}`);
+        // console.log(
+        //   `User ${i + 1}/${users.length} created: ${userInput.email}`
+        // );
       } catch (error) {
         results.failed++;
         results.errors.push({
@@ -145,4 +150,3 @@ export async function bulkCreateUsersWithValidation(
     };
   }
 }
-
