@@ -75,7 +75,7 @@ export default function UserDashboard() {
     // { title: "Add Enquiry", link: "/vendor/enquiries/add", icon: PlusIcon, color: "bg-purple-100" },
     {
       title: "View Enquiries",
-      link: "/vendor/enquiries",
+      link: "/b2b/enquiries",
       icon: EyeIcon,
       color: "bg-green-100",
     },
@@ -100,7 +100,7 @@ export default function UserDashboard() {
           <div className="flex items-center gap-4">
             <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
             <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
-              V
+              {userName.slice(0,1)}
             </div>
           </div>
         </div>

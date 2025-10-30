@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/auth-modules";
@@ -40,7 +39,7 @@ export default function AdminLayout({
     if (userRole === "admin") {
       router.push("/admin");
     } else if (userRole === "user") {
-      router.push("/vendor");
+      router.push("/b2b");
       setIsLoading(false);
     }
   }, [userRole]);

@@ -144,7 +144,7 @@ export default function EnquiriesPage() {
           currentPage={page}
           total={enquiriesData?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
-          addHref="/vendor/enquiries/add"
+          addHref="/b2b/enquiries/add"
           emptyMessage="No enquiries found."
           filterTabs={[
             {
