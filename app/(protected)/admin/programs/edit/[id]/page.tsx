@@ -26,10 +26,16 @@ export default function EditProgramPage() {
     ielts_requirement: "",
     special_requirements: "",
     remarks: "",
+    ielts_na: false,
+    special_requirements_na: false,
+    remarks_na: false,
   });
 
+
   const { data: degreeGoingFor } = useFetch("/api/admin/degree-going-for");
-  const { data: previousCurrentStudy } = useFetch("/api/admin/previous-or-current-study");
+  const { data: previousCurrentStudy } = useFetch(
+    "/api/admin/previous-or-current-study"
+  );
 
   const previousStudyOptions =
     previousCurrentStudy?.data?.map((item: any) => ({
@@ -43,7 +49,26 @@ export default function EditProgramPage() {
       label: item.name,
     })) ?? [];
 
-  // fetch single program
+  // Field definitions
+  const specialFields = [
+    {
+      label: "IELTS Requirement",
+      name: "ielts_requirement",
+      naKey: "ielts_na",
+    },
+    {
+      label: "Special Requirements",
+      name: "special_requirements",
+      naKey: "special_requirements_na",
+    },
+    {
+      label: "Remarks",
+      name: "remarks",
+      naKey: "remarks_na",
+    },
+  ];
+
+  // fetch program
   useEffect(() => {
     if (!id) return;
 
@@ -53,9 +78,16 @@ export default function EditProgramPage() {
         const data = await res.json();
 
         if (data.success) {
-          setFormData(data.data);
+          const mapped = {
+            ...data.data,
+            ielts_na: data.data.ielts_requirement === "Not Applicable",
+            special_requirements_na:
+              data.data.special_requirements === "Not Applicable",
+            remarks_na: data.data.remarks === "Not Applicable",
+          };
+          setFormData(mapped);
         }
-      } catch (err) {
+      } catch {
         toast.error("Failed to fetch program data");
       } finally {
         setLoading(false);
@@ -79,9 +111,35 @@ export default function EditProgramPage() {
     handleChange(name, value);
   };
 
+  // ✅ NA checkbox toggle logic
+  const handleNACheck = (naKey: string, checked: boolean) => {
+    const field = specialFields.find((f) => f.naKey === naKey);
+    if (!field) return;
+
+    const valueKey = field.name;
+
+    setFormData((prev) => ({
+      ...prev,
+      [naKey]: checked,
+      [valueKey]: checked ? "Not Applicable" : "",
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    // ✅ Validation: user must fill or NA must be checked
+    for (const field of specialFields) {
+      if (
+        !formData[field.naKey] &&
+        (!formData[field.name] || formData[field.name].trim() === "")
+      ) {
+        toast.error(`${field.label} is required`);
+        setSaving(false);
+        return;
+      }
+    }
 
     try {
       const response = await fetch(`/api/admin/programs/${id}`, {
@@ -98,7 +156,7 @@ export default function EditProgramPage() {
 
       toast.success("Program updated successfully!");
       router.push(`/admin/programs`);
-    } catch (err: any) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setSaving(false);
@@ -131,13 +189,11 @@ export default function EditProgramPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
               <FormInput
                 label="University"
                 name="university"
                 value={formData.university}
                 onChange={handleInputChange}
-                placeholder="Ex: University of Sydney"
               />
 
               <FormInput
@@ -161,35 +217,43 @@ export default function EditProgramPage() {
                 label="Degree Going For"
                 name="degree_going_for"
                 value={formData.degree_going_for}
-                onChange={(value) =>
-                  handleChange("degree_going_for", value)
-                }
+                onChange={(value) => handleChange("degree_going_for", value)}
                 options={degreeGoingForOptions}
               />
 
-              <FormInput
-                label="IELTS Requirement"
-                name="ielts_requirement"
-                value={formData.ielts_requirement}
-                textarea
-                onChange={handleInputChange}
-              />
+              {specialFields.map((field) => {
+                const isNA = formData[field.naKey];
 
-              <FormInput
-                label="Special Requirements"
-                name="special_requirements"
-                value={formData.special_requirements}
-                textarea
-                onChange={handleInputChange}
-              />
+                return (
+                  <div key={field.name} className="flex flex-col space-y-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-medium text-gray-700">
+                        {field.label}
+                      </label>
 
-              <FormInput
-                label="Remarks"
-                name="remarks"
-                value={formData.remarks}
-                textarea
-                onChange={handleInputChange}
-              />
+                      <label className="flex items-center space-x-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={isNA}
+                          onChange={(e) =>
+                            handleNACheck(field.naKey, e.target.checked)
+                          }
+                        />
+                        <span>Not Applicable</span>
+                      </label>
+                    </div>
+
+                    <FormInput
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      textarea
+                      onChange={handleInputChange}
+                      disabled={isNA}
+                      required={!isNA}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 

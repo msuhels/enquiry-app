@@ -71,7 +71,7 @@ export default function ProgramsPage() {
       label: "University",
       sortable: true,
       render: (row) => (
-        <span onClick={() => router.push(`/admin/programs/view/${row.id}`)} className="underline cursor-pointer">
+        <span>
           {row.university}
         </span>
       ),

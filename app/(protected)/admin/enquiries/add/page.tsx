@@ -1,320 +1,234 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { SearchIcon } from "lucide-react";
-import {
-  AcademicEntry,
-  EnquiryFormData,
-  Program,
-  Suggestion,
-  CustomFieldEntry,
-} from "@/lib/types";
-import CustomFieldsSection from "../components/CustomFieldsSection";
-import Breadcrumbs from "@/components/ui/breadCrumbs";
-import PersonalInfoSection from "./components/PersonalInfoSection";
-import AcademicInfoSection from "./components/AcademicInfoSection";
-import SuggestionDisplay from "./components/SuggestionDisplay";
-import InterestInfoSection from "./components/InterestInfoSection";
-import { useFetch } from "@/hooks/api/useFetch";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-const customFields = [
-  "CGPA",
-  "Percentage",
-  "GRE Score",
-  "GMAT Score",
-  "IELTS",
-  "TOEFL",
-  "PTE",
-  "DET",
-];
+import Breadcrumbs from "@/components/ui/breadCrumbs";
+import { useFetch } from "@/hooks/api/useFetch";
+import SearchSelect from "@/components/form/FormSearchSelect";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { usePost } from "@/hooks/api/usePost";
 
 export default function EnquirySystem() {
-  const [loading, setLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [formData, setFormData] = useState<EnquiryFormData>({
-    student_name: "",
-    email: "",
-    phone: "",
-    percentage: undefined,
-  });
   const router = useRouter();
 
-  const [academicEntries, setAcademicEntries] = useState<AcademicEntry[]>([
-    {
-      study_level: "",
-      study_area: "",
-      duration: "",
-      discipline_area: "",
-      what_to_pursue: "",
-      study_year: "",
-      score: 0,
-      completion_date: "",
-    },
-  ]);
+  const [previousOrCurrentStudy, setPreviousOrCurrentStudy] = useState("");
+  const [previousOrCurrentStudyOptions, setPreviousOrCurrentStudyOptions] =
+    useState([]);
 
-  const [interestInfo, setInterestInfo] = useState({
-    interested_level: "",
-    study_area: "",
-    discipline_area: "",
-    what_to_pursue: "",
-    percentage: "",
-    study_year: "",
-  });
+  const [degreeGoingFor, setDegreeGoingFor] = useState("");
+  const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
 
-  const [availableFields, setAvailableFields] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [programs, setPrograms] = useState([]);
 
-  const { data: availableFieldsData, error: fieldsError } = useFetch(
-    "/api/admin/fields/availableCustomFields"
+  const isCentered = !hasSearched;
+
+  const { data: previousOrCurrentStudyData } = useFetch(
+    `/api/admin/previous-or-current-study`
   );
+  const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
+  const { post } = usePost();
+
+  const { data: degreeGoingForData } = useFetch(`/api/admin/degree-going-for`);
 
   useEffect(() => {
-    if (
-      availableFieldsData?.success &&
-      Array.isArray(availableFieldsData.data)
-    ) {
-      setAvailableFields(
-        availableFieldsData.data.map((f: any) => f.field_name)
+    if (previousOrCurrentStudyData?.success) {
+      const options = previousOrCurrentStudyData?.data.map(
+        (option: { id: string; name: string }) => ({
+          value: option.name,
+          label: option.name,
+        })
       );
+      setPreviousOrCurrentStudyOptions(options);
     }
-  }, [availableFieldsData]);
+  }, [previousOrCurrentStudyData]);
 
-  const handleInterestChange = (field: string, value: string) => {
-    setInterestInfo((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const [gapInfo, setGapInfo] = useState({
-    is_gap: false,
-    gap_years: 0,
-  });
-
-  const [customFieldsData, setCustomFieldsData] = useState<CustomFieldEntry[]>(
-    []
-  );
-  const [customSuggestions, setCustomSuggestions] = useState<Program[]>([]);
-
-  console.log("customSuggestions", customSuggestions);
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        value === ""
-          ? undefined
-          : name === "percentage"
-          ? parseFloat(value)
-          : value,
-    }));
-  };
-
-  const handleAcademicChange = (
-    index: number,
-    field: string,
-    value: string
-  ) => {
-    setAcademicEntries((prev) => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [field]:
-          field === "score"
-            ? parseFloat(value) || 0
-            : field === "study_year"
-            ? value.toString()
-            : value,
-      } as AcademicEntry;
-      return updated;
-    });
-  };
-
-  const addAcademicEntry = () => {
-    setAcademicEntries((prev) => [
-      ...prev,
-      {
-        study_level: "",
-        study_area: "",
-        discipline_area: "", // New
-        what_to_pursue: "", // New
-        duration: "",
-        completion_date: "",
-        score: 0,
-        study_year: "", // New
-      },
-    ]);
-  };
-
-  const removeAcademicEntry = (index: number) => {
-    if (academicEntries.length > 1) {
-      setAcademicEntries((prev) => prev.filter((_, i) => i !== index));
+  useEffect(() => {
+    if (degreeGoingForData?.success) {
+      const options = degreeGoingForData?.data.map(
+        (option: { id: string; name: string }) => ({
+          value: option.name,
+          label: option.name,
+        })
+      );
+      setDegreeGoingForOptions(options);
     }
-  };
+  }, [degreeGoingForData]);
 
-  const addCustomField = () => {
-    if (customFieldsData.length === 0) {
-      setCustomFieldsData([{ field: "", value: "", comparison: ">" }]);
-      return;
+  useEffect(() => {
+    if (!previousOrCurrentStudy || !degreeGoingFor) {
+      setHasSearched(false);
+      setPrograms([]);
     }
+  }, [previousOrCurrentStudy, degreeGoingFor]);
 
-    const lastEntry = customFieldsData[customFieldsData.length - 1];
-
-    if (!lastEntry.field || lastEntry.value === "") return;
-
-    if (customFieldsData.length >= availableFields.length) return;
-
-    setCustomFieldsData((prev) => [...prev, { field: "", value: "", comparison: ">" }]);
-  };
-
-  const removeCustomField = (index: number) => {
-    setCustomFieldsData((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleCustomFieldChange = (
-    index: number,
-    key: "field" | "value" | "comparison",
-    value: string | number | "",
-  ) => {
-    setCustomFieldsData((prev) => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [key]: value,
-      };
-      return updated;
-    });
-  };
-
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleFindPrograms = async () => {
     try {
-      const payload = {
-        student_name: formData.student_name,
-        email: formData.email,
-        phone: formData.phone,
-        overall_percentage: formData.percentage,
-        is_gap: gapInfo.is_gap,
-        gap_years: gapInfo.gap_years,
-        custom_fields: customFieldsData,
-        academic_entries: academicEntries,
-        interestInfo: interestInfo,
-      };
+      setLoading(true);
+      setHasSearched(false);
 
-      const res = await fetch("/api/admin/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      await post("/api/admin/enquiries", {
+        previous_or_current_study: previousOrCurrentStudy,
+        degree_going_for: degreeGoingFor,
+        userId: user.userDetails.id,
       });
-
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.message || "Failed to save enquiry");
+      const params = new URLSearchParams();
+      if (previousOrCurrentStudy) {
+        params.append("previous_or_current_study", previousOrCurrentStudy);
+      }
+      if (degreeGoingFor) {
+        params.append("degree_going_for", degreeGoingFor);
       }
 
-      console.log("Enquiry saved successfully:", result.data);
-      // setCustomSuggestions(result.suggestions);
-      // setShowSuggestions(true);
-      router.push(`/admin/enquiries/${result.data.id}/suggestions`);
-    } catch (err: any) {
-      console.error("Error submitting enquiry:", err);
-      alert(err.message);
+      const response = await fetch(
+        `/api/admin/programs/suggestions?${params.toString()}`
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+
+      setPrograms(result.data);
+      setHasSearched(true);
+      toast.success("Programs fetched successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch programs");
     } finally {
       setLoading(false);
     }
   };
 
-
+  // const isCentered =
+  //   programs.length === 0 && (!previousOrCurrentStudy || !degreeGoingFor);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Breadcrumbs />
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            University Program Enquiry
-          </h1>
+    <div className="min-h-screen bg-gray-50 relative">
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 pt-4">
+          <Breadcrumbs />
         </div>
 
-        {/* {customSuggestions?.length > 0 && customSuggestions ? (
-          <SuggestionDisplay
-            suggestions={[]}
-            customSuggestions={customSuggestions}
-            showSuggestions={false}
-            exportCSV={exportCSV}
-            setShowSuggestions={setShowSuggestions}
-          />
-        ) : ( */}
-          <div className="space-y-8">
-            <form onSubmit={handleSubmit}>
-              <PersonalInfoSection
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
-              <div className="mt-8">
-                <AcademicInfoSection
-                  academicEntries={academicEntries}
-                  gapInfo={gapInfo}
-                  handleAcademicChange={handleAcademicChange}
-                  addAcademicEntry={addAcademicEntry}
-                  removeAcademicEntry={removeAcademicEntry}
-                  setGapInfo={setGapInfo}
-                  interestInfo={interestInfo}
-                  handleInterestChange={handleInterestChange}
-                />
-              </div>
+        <motion.div
+          animate={{
+            y: isCentered ? "40vh" : 0,
+          }}
+          transition={{ duration: 0.6, type: "spring" }}
+        >
+          <div className="flex items-end justify-center gap-6 mb-4">
+            <SearchSelect
+              label="Previous/Current Study"
+              name="previous_or_current_study"
+              value={previousOrCurrentStudy}
+              allowCreate={false}
+              onChange={setPreviousOrCurrentStudy}
+              options={previousOrCurrentStudyOptions}
+            />
 
-              <div className="mt-8">
-                <InterestInfoSection
-                  interestInfo={interestInfo}
-                  handleInterestChange={handleInterestChange}
-                />
-              </div>
+            <SearchSelect
+              label="Degree Going For"
+              name="degree_going_for"
+              value={degreeGoingFor}
+              allowCreate={false}
+              onChange={setDegreeGoingFor}
+              options={degreeGoingForOptions}
+            />
 
-              <div className="mt-8">
-                <CustomFieldsSection
-                  customFieldsData={customFieldsData}
-                  customFields={availableFields.map((f) => ({label : f, value : f}))}
-                  handleCustomFieldChange={handleCustomFieldChange}
-                  addCustomField={addCustomField}
-                  removeCustomField={removeCustomField}
-                />
-              </div>
-
-              <div className="flex justify-center mt-8">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex items-center px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-lg font-medium"
-                >
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  ) : (
-                    <SearchIcon className="h-5 w-5 mr-2" />
-                  )}
-                  {loading ? "Finding Programs..." : "Find Programs"}
-                </button>
-              </div>
-            </form>
-            {/* {customSuggestions.length > 0 && (
-              <SuggestionDisplay
-                suggestions={[]}
-                customSuggestions={customSuggestions}
-                showSuggestions={false}
-                exportCSV={exportCSV}
-                setShowSuggestions={setShowSuggestions}
-              />
-            )} */}
+            <button
+              onClick={handleFindPrograms}
+              className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded"
+              disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
+            >
+              {loading ? "Loading..." : "Find"}
+            </button>
           </div>
-        {/* )} */}
+          <div>
+            <p className="text-orange-700 font-bold">
+              *This course finder is for counselling purposes only. Final course
+              options will be provided by our subject matter experts after a
+              detailed analysis of your profile*
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Result */}
+        <div className="mt-6 w-full">
+          {programs.length > 0 ? (
+            <ProgramsTable data={programs} />
+          ) : hasSearched && !loading ? (
+            <p className="text-gray-500 text-center">No programs found.</p>
+          ) : null}
+        </div>
       </div>
     </div>
   );
 }
+
+const ProgramsTable = ({ data }: any) => {
+  return (
+    <div className="bg-white w-full rounded-lg shadow overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                University
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Course Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Previous Study
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Degree Going For
+              </th>
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Duration
+              </th> */}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                IELTS Requirement
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Special Requirements
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Remarks
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.map((item: any) => (
+              <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {item.university || "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {item.course_name || "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {item.previous_or_current_study || "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {item.degree_going_for || "-"}
+                </td>
+                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {item.duration || "-"}
+                </td> */}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {item.ielts_requirement || "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {item.special_requirements || "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {item.remarks || "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};

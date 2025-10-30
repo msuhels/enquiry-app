@@ -85,6 +85,9 @@ export interface ProgramFormData {
   ielts_requirement?: string;
   special_requirements?: string;
   remarks?: string;
+  ielts_na: boolean;
+  special_requirements_na: boolean;
+  remarks_na: boolean;
 }
 
 export interface EnquiryFormData {

@@ -67,12 +67,7 @@ export default function AdminDashboard() {
 
   const { data: enquiries } = useFetch("/api/admin/enquiries");
 
-  const filterEnquiries = enquiries?.data?.filter(
-    (enquiry: Enquiry) =>
-      enquiry?.academic_entries?.data?.length > 0 &&
-      enquiry?.academic_entries?.data[0]?.course !== null
-  );
-
+  const filterEnquiries = enquiries?.data
 
   console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
@@ -102,13 +97,13 @@ export default function AdminDashboard() {
       bg: "bg-gradient-to-r from-orange-400 to-yellow-400",
       trend: "-5% from last week",
     },
-    {
-      title: "Resolved Enquiries",
-      value: stats.resolvedEnquiries,
-      icon: CheckCircleIcon,
-      bg: "bg-gradient-to-r from-green-400 to-emerald-400",
-      trend: "+20% this month",
-    },
+    // {
+    //   title: "Resolved Enquiries",
+    //   value: stats.resolvedEnquiries,
+    //   icon: CheckCircleIcon,
+    //   bg: "bg-gradient-to-r from-green-400 to-emerald-400",
+    //   trend: "+20% this month",
+    // },
   ];
 
   const quickActions = [
@@ -194,11 +189,10 @@ export default function AdminDashboard() {
                   .map((enquiry: Enquiry, i: number) => (
                     <RecentEnquiryItem
                       key={enquiry.id}
-                      name={enquiry.student_name}
-                      context={enquiry.email}
+                      name={enquiry.createdby.full_name}
+                      context={(enquiry.created_at).slice(0, 10)}
                       course={
-                        enquiry.academic_entries?.data?.[0]?.course
-                          ?.course_name || "-"
+                        enquiry.degree_going_for
                       }
                       id={enquiry.id}
                     />
