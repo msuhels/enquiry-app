@@ -34,7 +34,7 @@ const RecentEnquiryItem = ({
 
   return (
     <div
-      onClick={() => router.push(`/admin/enquiries/${id}/suggestions`)}
+      // onClick={() => router.push(`/admin/enquiries/${id}/suggestions`)}
       className="px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer transition"
     >
       <p className="text-sm font-semibold text-gray-800">{name}</p>
@@ -45,7 +45,7 @@ const RecentEnquiryItem = ({
 };
 
 export default function AdminDashboard() {
-  const  router = useRouter();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 1250,
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
     resolvedEnquiries: 543,
   });
 
-  const {data} = useFetch("/api/admin/stats");
+  const { data } = useFetch("/api/admin/stats");
 
   useEffect(() => {
     setStats({
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
 
   const { data: enquiries } = useFetch("/api/admin/enquiries");
 
-  const filterEnquiries = enquiries?.data
+  const filterEnquiries = enquiries?.data;
 
   console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
@@ -107,10 +107,25 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { title: "Add Vendor", link: "/admin/users/addUser", icon: UserPlusIcon, color: "bg-indigo-100" },
-    { title: "Add Program",link: "/admin/programs/add", icon: PlusIcon, color: "bg-purple-100" },
+    {
+      title: "Add Vendor",
+      link: "/admin/users/addUser",
+      icon: UserPlusIcon,
+      color: "bg-indigo-100",
+    },
+    {
+      title: "Add Program",
+      link: "/admin/programs/add",
+      icon: PlusIcon,
+      color: "bg-purple-100",
+    },
     // { title: "Bulk Upload", link: "/admin/users/bulk-upload", icon: UploadIcon, color: "bg-orange-100" },
-    { title: "View Enquiries", link: "/admin/enquiries", icon: EyeIcon, color: "bg-green-100" },
+    {
+      title: "View Enquiries",
+      link: "/admin/enquiries",
+      icon: EyeIcon,
+      color: "bg-green-100",
+    },
     // { title: "View Reports",  icon: BarChartIcon, color: "bg-cyan-100" },
     // { title: "System Settings", icon: SettingsIcon, color: "bg-gray-100" },
   ];
@@ -146,11 +161,25 @@ export default function AdminDashboard() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <p className={`text-sm ${card.textClr || "text-white"} opacity-90`}>{card.title}</p>
-                  <p className={`text-4xl ${card.textClr || "text-white"} font-bold mt-2`}>{card.value}</p>
+                  <p
+                    className={`text-sm ${
+                      card.textClr || "text-white"
+                    } opacity-90`}
+                  >
+                    {card.title}
+                  </p>
+                  <p
+                    className={`text-4xl ${
+                      card.textClr || "text-white"
+                    } font-bold mt-2`}
+                  >
+                    {card.value}
+                  </p>
                 </div>
                 <div className="bg-white/30 p-2 rounded-lg">
-                  <card.icon className={`w-6 h-6 ${card.textClr || "text-white"}`} />
+                  <card.icon
+                    className={`w-6 h-6 ${card.textClr || "text-white"}`}
+                  />
                 </div>
               </div>
               <p className="text-xs mt-3 opacity-90">{card.trend}</p>
@@ -189,10 +218,8 @@ export default function AdminDashboard() {
                     <RecentEnquiryItem
                       key={enquiry.id}
                       name={enquiry.createdby.full_name}
-                      context={(enquiry.created_at).slice(0, 10)}
-                      course={
-                        enquiry.degree_going_for
-                      }
+                      context={enquiry.created_at.slice(0, 10)}
+                      course={enquiry.degree_going_for}
                       id={enquiry.id}
                     />
                   ))

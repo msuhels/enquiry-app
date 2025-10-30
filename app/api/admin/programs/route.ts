@@ -3,8 +3,9 @@ import {
   getPrograms,
   ProgramServiceResult,
 } from "@/lib/supabase/program/admin-program.services";
-import {  Program } from "@/lib/types";
+import { Program } from "@/lib/types";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
+import { saveNotification } from "../notifications/route";
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result.data,
-      pagination : result.pagination
+      pagination: result.pagination,
     });
   } catch (error) {
     console.error("API programs fetch error:", error);
@@ -59,28 +60,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log("LOGGING : API received program creation request");
 
-    const { 
-      university, 
-      previous_or_current_study, 
-      degree_going_for, 
-      course_name, 
-      ielts_requirement, 
-      special_requirements, 
-      remarks 
+    const {
+      university,
+      previous_or_current_study,
+      degree_going_for,
+      course_name,
+      ielts_requirement,
+      special_requirements,
+      remarks,
     } = body;
 
     const hasProgramData = [
-      university, 
-      previous_or_current_study, 
-      degree_going_for, 
-      course_name, 
-      ielts_requirement, 
-      special_requirements, 
-      remarks
-    ].some(value => 
-      value !== null && 
-      value !== undefined && 
-      value.toString().trim() !== ""
+      university,
+      previous_or_current_study,
+      degree_going_for,
+      course_name,
+      ielts_requirement,
+      special_requirements,
+      remarks,
+    ].some(
+      (value) =>
+        value !== null && value !== undefined && value.toString().trim() !== ""
     );
 
     if (!hasProgramData) {
@@ -100,13 +100,36 @@ export async function POST(request: NextRequest) {
       remarks,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as Program
+    } as Program;
 
     const result = await createProgram(programData);
 
     if (!result.success) {
       console.error("LOGGING : Failed to create program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
+    } else {
+      if(!result.data) {
+        return NextResponse.json({ error: "Program creation failed" }, { status: 500 });
+      }
+      const data = await saveNotification({
+        program_id: result.data.id,
+        title: `A New Program Has Been Created - ${result?.data.course_name}`,
+        description: `A new program has been created.
+        Program Details:
+        - University: ${result.data.university}
+        - Previous/Current Study: ${result.data.previous_or_current_study}
+        - Degree Going For: ${result.data.degree_going_for}
+        - Course Name: ${result.data.course_name}
+        - IELTS Requirement: ${result.data.ielts_requirement}
+        - Special Requirements: ${result.data.special_requirements || "None"}
+        - Remarks: ${result.data.remarks || "None"}
+        - Created At: ${new Date(result.data.created_at).toLocaleString()}`,
+      });
+
+      if(!data) {
+        console.error("LOGGING : Failed to create notification:", result.error);
+        return NextResponse.json({ error: "Notification creation failed" }, { status: 500 });
+      }
     }
 
     console.log("LOGGING : Program created successfully via API");
@@ -121,7 +144,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Service Function
- async function createProgram(
+async function createProgram(
   programData: Program
 ): Promise<ProgramServiceResult<Program>> {
   try {
@@ -129,16 +152,19 @@ export async function POST(request: NextRequest) {
 
     // Helper function to split values intelligently (same as bulk upload)
     const splitValues = (value: string): string[] => {
-      if (value.includes('(') || value.includes(')')) {
+      if (value.includes("(") || value.includes(")")) {
         return [value.trim()];
       }
-      return value.split(',').map(v => v.trim()).filter(v => v);
+      return value
+        .split(",")
+        .map((v) => v.trim())
+        .filter((v) => v);
     };
 
     // Step 1: Handle degree_going_for - create if not exists
     if (programData.degree_going_for) {
       const degrees = splitValues(programData.degree_going_for);
-      
+
       for (const degree of degrees) {
         // Check if degree exists
         const { data: existingDegree } = await supabase
@@ -168,7 +194,7 @@ export async function POST(request: NextRequest) {
     // Step 2: Handle previous_or_current_study - create if not exists
     if (programData.previous_or_current_study) {
       const studies = splitValues(programData.previous_or_current_study);
-      
+
       for (const study of studies) {
         // Check if study exists
         const { data: existingStudy } = await supabase
@@ -224,33 +250,32 @@ export async function POST(request: NextRequest) {
   }
 }
 
-
 // export async function POST(request: NextRequest) {
 //   try {
 //     const body = await request.json();
 //     console.log("LOGGING : API received program creation request");
 
-//     const { 
-//       university, 
-//       previous_or_current_study, 
-//       degree_going_for, 
-//       course_name, 
-//       ielts_requirement, 
-//       special_requirements, 
-//       remarks 
+//     const {
+//       university,
+//       previous_or_current_study,
+//       degree_going_for,
+//       course_name,
+//       ielts_requirement,
+//       special_requirements,
+//       remarks
 //     } = body;
 
 //     const hasProgramData = [
-//       university, 
-//       previous_or_current_study, 
-//       degree_going_for, 
-//       course_name, 
-//       ielts_requirement, 
-//       special_requirements, 
+//       university,
+//       previous_or_current_study,
+//       degree_going_for,
+//       course_name,
+//       ielts_requirement,
+//       special_requirements,
 //       remarks
-//     ].some(value => 
-//       value !== null && 
-//       value !== undefined && 
+//     ].some(value =>
+//       value !== null &&
+//       value !== undefined &&
 //       value.toString().trim() !== ""
 //     );
 

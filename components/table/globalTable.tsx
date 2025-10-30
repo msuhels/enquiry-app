@@ -110,9 +110,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
       <div className="mb-8">
         <Breadcrumbs />
         <div className="flex justify-between items-center">
-          <div className="flex items-center justify-between w-full">
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
           <div className="flex gap-2">
             {addHref && (
               <Link
@@ -120,7 +118,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 className="inline-flex items-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                <p className="w-full text-nowrap">Add {title.split(" ")[0]}</p>
+                <p className="w-full now">Add {title.split(" ")[0]}</p>
               </Link>
             )}
             {addBulkHref && (

@@ -72,12 +72,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
         <Card className="w-[380px]">
           <CardHeader>
-            <CardTitle>Welcome, {userName}!</CardTitle>
+            <CardTitle>Welcome, {userName || "Back"}!</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              We're glad to have you here.
-            </p>
             <p className="text-sm text-muted-foreground">
               Redirecting you to your dashboard...
             </p>
