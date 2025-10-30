@@ -158,7 +158,6 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* QUICK ACTIONS + RECENT ENQUIRIES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions */}
           <div className="lg:col-span-2">

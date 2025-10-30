@@ -106,7 +106,7 @@ export default function UserDashboard() {
         </div>
 
           <div className="mb-10 w-full flex items-center justify-center text-[#000000] font-bold">
-            <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2>
+            {/* <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2> */}
           </div>
 
         {/* USER STATS */}

@@ -1,92 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const supabase = createServiceRoleClient();
+    const supabase = await createServiceRoleClient();
     const { searchParams } = new URL(req.url);
 
-    const filters = {
-      search: searchParams.get("search") || undefined,
-      limit: searchParams.get("limit")
-        ? parseInt(searchParams.get("limit")!)
-        : 10,
-      offset: searchParams.get("offset")
-        ? parseInt(searchParams.get("offset")!)
-        : 0,
-    };
+    const limit = Number(searchParams.get("limit") ?? 10);
+    const offset = Number(searchParams.get("offset") ?? 0);
 
-    console.log(
-      "LOGGING : API received enquiries fetch request with filters:",
-      filters
-    );
+    const name = searchParams.get("name") ?? "";
+    const organisation = searchParams.get("organisation") ?? "";
+    const city = searchParams.get("city") ?? "";
+    const state = searchParams.get("state") ?? "";
+    const fromDate = searchParams.get("from_date") ?? "";
+    const toDate = searchParams.get("to_date") ?? "";
 
-    // Fetch all enquiries if search is provided, otherwise use pagination
     let query = supabase
       .from("enquiries")
-      .select("*, createdby:users(id, full_name, phone_number)", {
-        count: "exact",
-      })
+      .select(
+        "*, createdby:users!inner(id, full_name, phone_number, city, state, organization)",
+        { count: "exact" }
+      )
       .order("created_at", { ascending: false });
 
-    if (!filters.search) {
-      const from = filters.offset;
-      const to = filters.offset + filters.limit - 1;
-      query = query.range(from, to);
+    if (fromDate) {
+      query = query.gte("created_at", `${fromDate}T00:00:00.000Z`);
     }
 
-    const { data: enquiries, error, count } = await query;
+    if (toDate) {
+      query = query.lte("created_at", `${toDate}T23:59:59.999Z`);
+    }
+
+    if (name) {
+      query = query.ilike("createdby.full_name", `%${name}%`);
+    }
+    if (organisation) {
+      query = query.ilike("createdby.organization", `%${organisation}%`);
+    }
+    if (city) {
+      query = query.ilike("createdby.city", `%${city}%`);
+    }
+    if (state) {
+      query = query.ilike("createdby.state", `%${state}%`);
+    }
+
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
 
     if (error) {
-      console.error("LOGGING : Error fetching enquiries:", error);
+      console.error("LOGGING: Error fetching enquiries:", error);
       return NextResponse.json(
         { success: false, message: "Failed to fetch enquiries" },
         { status: 500 }
       );
     }
 
-    let filteredEnquiries = enquiries || [];
-
-    if (filters.search && enquiries) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredEnquiries = enquiries.filter((enquiry: any) => {
-        const createdByName = enquiry.createdby?.full_name?.toLowerCase() || "";
-        const createdByPhone = enquiry.createdby?.phone_number?.toLowerCase() || "";
-        const enquiryPhone = enquiry.phone_number?.toLowerCase() || "";
-        
-        return (
-          createdByName.includes(searchTerm) ||
-          createdByPhone.includes(searchTerm) ||
-          enquiryPhone.includes(searchTerm)
-        );
-      });
-    }
-
-    // Apply pagination to filtered results
-    const totalFiltered = filteredEnquiries.length;
-    const paginatedEnquiries = filters.search 
-      ? filteredEnquiries.slice(filters.offset, filters.offset + filters.limit)
-      : filteredEnquiries;
-
-    console.log(
-      "LOGGING : Enquiries service result:",
-      `Found ${paginatedEnquiries.length} enquiries out of ${filters.search ? totalFiltered : count} total`
-    );
-
-    const totalRecords = filters.search ? totalFiltered : (count || 0);
-    const totalPages = Math.ceil(totalRecords / filters.limit);
-    const currentPage = Math.floor(filters.offset / filters.limit) + 1;
-
     return NextResponse.json({
       success: true,
-      data: paginatedEnquiries,
+      data,
       pagination: {
-        total: totalRecords,
-        limit: filters.limit,
-        offset: filters.offset,
-        totalPages,
-        currentPage,
-        hasMore: filters.offset + filters.limit < totalRecords,
+        total: count ?? 0,
+        limit,
+        offset,
+        totalPages: Math.ceil((count ?? 0) / limit),
+        currentPage: Math.floor(offset / limit) + 1,
+        hasMore: offset + limit < (count ?? 0),
       },
     });
   } catch (error) {

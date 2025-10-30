@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Edit, Trash2, Search, PlusIcon, Folder } from "lucide-react";
+import { Edit, Trash2, Search, PlusIcon, Folder, Loader2 } from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
 import Pagination from "../ui/pagination";
+import SearchSelect from "../form/FormSearchSelect";
 
 export interface TableColumn<T> {
   key: string;
@@ -23,8 +24,14 @@ interface TableProps<T> {
   title?: string;
   columns: TableColumn<T>[];
   data: T[];
-  searchQuery?: string;
+  searchQuery?: Record<string, string>;
   searchPlaceholder?: string;
+  searchParameters?: string[];
+  searchSelectFilters?: {
+    name: string;
+    label: string;
+    options: { value: string; label: string };
+  }[];
   filterTabs?: FilterTab[];
   activeFilter?: string;
   sortKey?: string;
@@ -39,21 +46,28 @@ interface TableProps<T> {
   currentPage?: number;
 
   // Event Handlers
-  onSearchChange?: (val: string) => void;
+  onSearchChange?: (val: Record<string, string>) => void;
   onFilterChange?: (filterKey: string) => void;
   onSortChange?: (key: string, direction: "asc" | "desc") => void;
   onPageChange?: (page: number) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
+  dateFilters?: { from_date: string; to_date: string };
+  locationFilters?: { state: string; city: string };
+  onDateFilterChange?: (val: { fromDate: string; toDate: string }) => void;
+  onLocationFilterChange?: (val: { state: string; city: string }) => void;
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
   title = "All Records",
   columns,
   data,
-  searchQuery = "",
+  searchQuery,
   searchPlaceholder = "Search...",
+  searchParameters = [],
   filterTabs = [],
+  searchSelectFilters = [],
+  dateFilters,
   activeFilter = "all",
   sortKey,
   sortDir,
@@ -83,12 +97,22 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
     onSortChange(key, nextDir);
   };
 
+  // if (isLoading) {
+  //   return (
+  // <div className="flex items-center justify-center h-64">
+  //   <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
+  // </div>
+  //   );
+  // }
+
   return (
     <div className={`w-full ${className}`}>
       <div className="mb-8">
         <Breadcrumbs />
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          <div className="flex items-center justify-between w-full">
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          </div>
           <div className="flex gap-2">
             {addHref && (
               <Link
@@ -96,7 +120,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 className="inline-flex items-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                Add {title.split(" ")[0]}
+                <p className="w-full text-nowrap">Add {title.split(" ")[0]}</p>
               </Link>
             )}
             {addBulkHref && (
@@ -111,24 +135,76 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           </div>
         </div>
       </div>
+      <div className="flex w-full gap-4 items-center">
+        {onSearchChange &&
+          searchParameters.map((param) => (
+            <div key={param} className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder={`Search by ${param}`}
+                value={searchQuery?.[param] || ""}
+                onChange={(e) =>
+                  onSearchChange({
+                    ...searchQuery,
+                    [param]: e.target.value,
+                  })
+                }
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+          ))}
 
-      {onSearchChange && (
-        <div className="mb-4 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-          <input
-            type="text"
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-        </div>
-      )}
+        {searchSelectFilters.length > 0 &&
+          searchSelectFilters.map((filter: any, index) => (
+            <div key={index} className="flex-1">
+              <SearchSelect
+                placeholder={`Filter by ${filter.label}`}
+                name={filter.key}
+                value={searchQuery?.[filter.key] ?? ""}
+                options={filter.options}
+                allowCreate={false}
+                onChange={(val) =>
+                  onSearchChange?.({
+                    ...searchQuery,
+                    [filter.key]: val,
+                  })
+                }
+                width="w-full"
+              />
+            </div>
+          ))}
+      </div>
 
-      {filterTabs.length > 0 && (
-        <div className="mb-4 border-b border-gray-200">
-          <div className="flex space-x-8">
-            {filterTabs.map((tab) => (
+      <div className="flex w-full justify-end items-center mt-2 gap-2">
+        {Object.keys(dateFilters || {}).length > 0 &&
+          Object.keys(dateFilters).map((key: any, index) => (
+            <div key={index}>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  {key == "from_date" ? "From Date" : "To Date"}
+                </label>
+                <input
+                  key={index}
+                  type="date"
+                  value={searchQuery?.[key] ?? ""}
+                  onChange={(e) =>
+                    onSearchChange?.({
+                      ...searchQuery,
+                      [key]: e.target.value,
+                    })
+                  }
+                  className="flex pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          ))}
+      </div>
+
+      <div className="mb-4 border-gray-200">
+        <div className="flex space-x-8">
+          {filterTabs.length > 0 &&
+            filterTabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
@@ -152,11 +228,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 )}
               </button>
             ))}
-          </div>
         </div>
-      )}
+      </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow rounded-lg mt-6 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -193,7 +268,9 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
                     className="px-6 py-12 text-center text-gray-500"
                   >
-                    Loading...
+                    <div className="flex items-center justify-center h-64">
+                      <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
+                    </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (

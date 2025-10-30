@@ -12,75 +12,81 @@ export async function GET(
     const { id } = await params;
 
     const createdById = id;
-    
-    console.log("LOGGING : API received enquiries fetch request for creator:", createdById);
-    const search = searchParams.get("search") || undefined;
-    const limit = searchParams.get("limit")
-      ? parseInt(searchParams.get("limit")!)
-      : 10;
-    const offset = searchParams.get("offset")
-      ? parseInt(searchParams.get("offset")!)
-      : 0;
 
-    console.log("LOGGING => Creator filter:", createdById);
+    const limit = Number(searchParams.get("limit") ?? 10);
+    const offset = Number(searchParams.get("offset") ?? 0);
+
+    const name = searchParams.get("name") ?? "";
+    const organisation = searchParams.get("organisation") ?? "";
+    const city = searchParams.get("city") ?? "";
+    const state = searchParams.get("state") ?? "";
+    const fromDate = searchParams.get("from_date") ?? "";
+    const toDate = searchParams.get("to_date") ?? "";
+
+    console.log("LOGGING : API received enquiries for creator:", createdById);
 
     let query = supabase
       .from("enquiries")
-      .select("*, createdby:users(id, full_name, phone_number)", {
-        count: "exact",
-      })
+      .select(
+        "*, createdby:users(id, full_name, phone_number, city, state, organization)",
+        {
+          count: "exact",
+        }
+      )
       .eq("createdby", createdById)
       .order("created_at", { ascending: false });
 
-    // Pagination only when no search
-    if (!search) {
-      query = query.range(offset, offset + limit - 1);
+    if (fromDate) {
+      query = query.gte("created_at", `${fromDate}T00:00:00.000Z`);
     }
 
-    const { data: enquiries, error, count } = await query;
+    if (toDate) {
+      query = query.lte("created_at", `${toDate}T23:59:59.999Z`);
+    }
+
+    const orFilters: string[] = [];
+
+    if (name) {
+      orFilters.push(`createdby.full_name.ilike.%${name}%`);
+    }
+    if (organisation) {
+      orFilters.push(`createdby.organization.ilike.%${organisation}%`);
+    }
+    if (city) {
+      orFilters.push(`createdby.city.ilike.%${city}%`);
+    }
+    if (state) {
+      orFilters.push(`createdby.state.ilike.%${state}%`);
+    }
+
+    if (orFilters.length > 0) {
+      query = query.or(orFilters.join(","), {
+        foreignTable: "users",
+      });
+    }
+
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
 
     if (error) {
-      console.error("LOGGING : Error fetching enquiries:", error);
+      console.error("LOGGING: Error fetching enquiries:", error);
       return NextResponse.json(
         { success: false, message: "Failed to fetch enquiries" },
         { status: 500 }
       );
     }
 
-    let filteredEnquiries = enquiries ?? [];
-
-    // ✅ Local search
-    if (search && enquiries) {
-      const searchTerm = search.toLowerCase();
-
-      filteredEnquiries = enquiries.filter((e: any) => {
-        const createdName = e.createdby?.full_name?.toLowerCase() || "";
-        const createdPhone = e.createdby?.phone_number?.toLowerCase() || "";
-        const enquiryPhone = e.phone_number?.toLowerCase() || "";
-
-        return (
-          createdName.includes(searchTerm) ||
-          createdPhone.includes(searchTerm) ||
-          enquiryPhone.includes(searchTerm)
-        );
-      });
-    }
-
-    const totalFiltered = filteredEnquiries.length;
-    const paginated = search
-      ? filteredEnquiries.slice(offset, offset + limit)
-      : filteredEnquiries;
-
     return NextResponse.json({
       success: true,
-      data: paginated,
+      data,
       pagination: {
-        total: search ? totalFiltered : count,
+        total: count ?? 0,
         limit,
         offset,
-        totalPages: Math.ceil((search ? totalFiltered : count!) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
         currentPage: Math.floor(offset / limit) + 1,
-        hasMore: offset + limit < (search ? totalFiltered : count!),
+        hasMore: offset + limit < (count ?? 0),
       },
     });
   } catch (error) {
