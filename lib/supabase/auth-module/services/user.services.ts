@@ -14,7 +14,7 @@ export interface UserProfile {
   organization: string;
   state: string;
   city: string;
-  is_active: true;
+  is_active: boolean;
   profile_picture_url: string | null;
   status: string;
   email_verified: boolean;

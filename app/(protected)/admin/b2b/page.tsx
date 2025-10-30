@@ -47,7 +47,7 @@ export default function UsersPage() {
   }, [data]);
 
   const handleEdit = (user: User) => {
-    router.push(`/admin/users/${user.id}`);
+    router.push(`/admin/b2b/${user.id}`);
   };
 
   const handleDelete = (user: User) => {
