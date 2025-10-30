@@ -177,7 +177,7 @@ export default function NewProgramPage() {
 
           <FormInput
             key={field.name}
-            label=""
+            // label={field.label}
             name={field.name}
             type={field.type}
             value={formData[field.name] || ""}
