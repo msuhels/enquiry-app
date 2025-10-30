@@ -12,6 +12,7 @@ import { useModal } from "@/components/ui/modal";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
 import { useDelete } from "@/hooks/api/useDelete";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function EnquiriesPage() {
   const router = useRouter();
