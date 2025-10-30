@@ -171,7 +171,7 @@ export default function UsersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-8">
         <AdvancedDataTable
-          title="Vendors"
+          title="B2B Partners"
           columns={columns}
           data={users}
           searchQuery={search}
@@ -189,8 +189,8 @@ export default function UsersPage() {
           itemsPerPage={itemsPerPage}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          addHref="/admin/users/addUser"
-          addBulkHref="/admin/users/bulkUpload"
+          addHref="/admin/b2b/addUser"
+          addBulkHref="/admin/b2b/bulkUpload"
           isLoading={isLoading}
           emptyMessage="No users found."
         />
