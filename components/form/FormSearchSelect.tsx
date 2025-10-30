@@ -34,12 +34,12 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
 
   return (
     <div style={{ width }}>
-      <label
+      {label?.trim() && <label
         htmlFor={name}
         className="block text-lg font-medium text-gray-700 mb-2"
       >
         {label}
-      </label>
+      </label>}
 
       <Component
         id={name}
@@ -50,7 +50,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
         placeholder={placeholder}
         isClearable
         classNamePrefix="react-select"
-        className={`min-w-80 ${width ? width : "w-80"}`}
+        className={`${width ? width : "w-80"} rounded-lg`}
         styles={{
           control: (base) => ({
             ...base,
