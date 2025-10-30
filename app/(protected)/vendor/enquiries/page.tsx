@@ -27,13 +27,19 @@ export default function EnquiriesPage() {
   const { data: user } = useFetch("/api/admin/users/getAuthUser");
 
   const offset = (page - 1) * itemsPerPage;
-  const apiUrl = `/api/admin/myenquiries/${
-    user?.userDetails?.id
-  }?search=${encodeURIComponent(
-    debouncedSearch
-  )}&limit=${itemsPerPage}&offset=${offset}`;
+  
+  // Only construct API URL when user ID is available
+  const userId = user?.userDetails?.id;
+  const apiUrl = userId 
+    ? `/api/admin/myenquiries/${userId}?search=${encodeURIComponent(
+        debouncedSearch
+      )}&limit=${itemsPerPage}&offset=${offset}`
+    : null;
 
-  const { data: enquiriesData, isLoading } = useFetch(apiUrl);
+  // Only fetch when apiUrl is available (user is loaded)
+  const { data: enquiriesData, isLoading } = useFetch(apiUrl, {
+    enabled: !!userId, // Only fetch when userId exists
+  });
 
   useEffect(() => {
     setPage(1);
@@ -107,26 +113,6 @@ export default function EnquiriesPage() {
     },
     { key: "degree_going_for", label: "Program Interest" },
     { key: "previous_or_current_study", label: "Previous/Current Degree" },
-    // {
-    //   key: "status",
-    //   label: "Status",
-    //   render: (row: Enquiry) => (
-    //     <button
-    //       onClick={() => handleStatusChange(row)}
-    //       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition ${
-    //         row.status === "pending"
-    //           ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-    //           : row.status === "in_progress"
-    //           ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-    //           : row.status === "completed"
-    //           ? "bg-green-100 text-green-800 hover:bg-green-200"
-    //           : "bg-red-100 text-red-800 hover:bg-red-200"
-    //       }`}
-    //     >
-    //       {row?.status?.replace("_", " ") || "-"}
-    //     </button>
-    //   ),
-    // },
     {
       key: "created_at",
       label: "Date",
@@ -134,13 +120,14 @@ export default function EnquiriesPage() {
     },
   ];
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-64">
-  //      <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
-  //     </div>
-  //   );
-  // }
+  // Show loading while user or enquiries are loading
+  if (!userId || isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,8 +140,6 @@ export default function EnquiriesPage() {
           searchQuery={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search by name, email, or phone..."
-          // onEdit={handleView}
-          // onDelete={handleDelete}
           onPageChange={setPage}
           currentPage={page}
           total={enquiriesData?.pagination?.total || 0}
