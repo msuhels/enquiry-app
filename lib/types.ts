@@ -1,4 +1,4 @@
-import { UserProfile } from './supabase/auth-module/services/user.services';
+import { UserProfile } from "./supabase/auth-module/services/user.services";
 export interface Program {
   id: string;
   university: string;
@@ -33,10 +33,10 @@ export interface Enquiry {
   overall_percentage?: number | null;
   is_gap?: boolean;
   gap_years?: number | null;
-  custom_fields?: string | null; 
+  custom_fields?: string | null;
   created_at: string;
   createdby?: string | null;
-  updated_at?: string; 
+  updated_at?: string;
 
   program_interest?: string;
   preferred_university?: string;
@@ -53,7 +53,7 @@ export interface Enquiry {
   preferred_intake?: string;
   additional_requirements?: string;
   message?: string;
-  status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  status?: "pending" | "in_progress" | "completed" | "rejected";
   assigned_to_user_id?: string;
 
   academic_entries?: {
@@ -69,7 +69,7 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
   phone?: string;
   password?: string;
   is_active: boolean;
@@ -94,7 +94,7 @@ export interface EnquiryFormData {
   student_name: string;
   email: string;
   phone?: string;
-  academics?:{
+  academics?: {
     study_level?: string;
     study_area?: string;
     duration?: string;
@@ -122,7 +122,6 @@ export interface Suggestion {
   reasons: string[];
 }
 
-
 export interface BulkUploadResult {
   success: boolean;
   total: number;
@@ -140,6 +139,9 @@ export interface BulkUserInput {
   full_name: string;
   email: string;
   phone_number?: string; // Optional
+  organization?: string;
+  state?: string;
+  city?: string;
 }
 
 export interface BulkUserUploadResult {
@@ -171,6 +173,6 @@ export interface AcademicEntry {
   discipline_area: string; // New field
   what_to_pursue: string; // New field
   study_year: string;
-  score ?: number;
+  score?: number;
   completion_date: string;
 }
