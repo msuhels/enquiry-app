@@ -24,9 +24,12 @@ export default function EnquiriesPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 400);
   const { del } = useDelete();
+  const { data: user } = useFetch("/api/admin/users/getAuthUser");
 
   const offset = (page - 1) * itemsPerPage;
-  const apiUrl = `/api/admin/my-enquiries?search=${encodeURIComponent(
+  const apiUrl = `/api/admin/myenquiries/${
+    user?.userDetails?.id
+  }?search=${encodeURIComponent(
     debouncedSearch
   )}&limit=${itemsPerPage}&offset=${offset}`;
 
@@ -156,7 +159,7 @@ export default function EnquiriesPage() {
           currentPage={page}
           total={enquiriesData?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
-          addHref="/admin/enquiries/add"
+          addHref="/vendor/enquiries/add"
           emptyMessage="No enquiries found."
           filterTabs={[
             {
