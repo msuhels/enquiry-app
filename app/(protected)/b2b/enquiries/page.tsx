@@ -200,6 +200,7 @@ export default function EnquiriesPage() {
           total={enquiriesData?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
           emptyMessage="No enquiries found."
+          addHref="/b2b/enquiries/add"
           searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
           onDelete={handleDelete}
