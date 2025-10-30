@@ -22,8 +22,11 @@ export default function NewProgramPage() {
     ielts_requirement: "",
     special_requirements: "",
     remarks: "",
+    ielts_na: false,
+    special_requirements_na: false,
+    remarks_na: false,
   });
-  
+
   const { data: degreeGoingFor } = useFetch("/api/admin/degree-going-for");
   const { data: previousCurrentStudy } = useFetch(
     "/api/admin/previous-or-current-study"
@@ -77,6 +80,20 @@ export default function NewProgramPage() {
     e.preventDefault();
     setLoading(true);
 
+    const requiredGroups = [
+      ["ielts_requirement", "ielts_na"],
+      ["special_requirements", "special_requirements_na"],
+      ["remarks", "remarks_na"],
+    ];
+
+    for (const [valueKey, naKey] of requiredGroups) {
+      if (!formData[naKey] && !formData[valueKey]) {
+        toast.error(`${valueKey.replace(/_/g, " ")} is required`);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch("/api/admin/programs", {
         method: "POST",
@@ -104,23 +121,57 @@ export default function NewProgramPage() {
   const basicInfoFields = [
     { label: "University", name: "university" },
     { label: "Course Name", name: "course_name" },
-    { label: "IELTS Requirement", name: "ielts_requirement", textarea: true },
+
+    {
+      label: "IELTS Requirement",
+      name: "ielts_requirement",
+      naKey: "ielts_na",
+      textarea: true,
+    },
     {
       label: "Special Requirements",
       name: "special_requirements",
+      naKey: "special_requirements_na",
       textarea: true,
     },
-    { label: "Remarks", name: "remarks", textarea: true },
+    {
+      label: "Remarks",
+      name: "remarks",
+      naKey: "remarks_na",
+      textarea: true,
+    },
   ];
+
+  const handleNACheck = (naKey: string, checked: boolean) => {
+    const valueKey = basicInfoFields.find((f) => f.naKey === naKey)?.name;
+
+    if (!valueKey) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      [naKey]: checked,
+      [valueKey]: checked ? "Not Applicable" : "",
+    }));
+  };
 
   const renderFields = (fields: any[]) =>
     fields.map((field) => {
+      const isNA = field.naKey ? formData[field.naKey] : false;
+
       return (
         <div key={field.name} className="flex flex-col space-y-1 relative">
           <div className="flex justify-between items-center mb-1">
             <label className="font-medium text-gray-700">{field.label}</label>
-            {field.disabled && (
-              <span className="text-xs text-gray-400">Loading...</span>
+
+            {field.naKey && (
+              <label className="flex items-center space-x-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isNA}
+                  onChange={(e) => handleNACheck(field.naKey, e.target.checked)}
+                />
+                <span>Not Applicable</span>
+              </label>
             )}
           </div>
 
@@ -129,16 +180,12 @@ export default function NewProgramPage() {
             label=""
             name={field.name}
             type={field.type}
-            value={formData[field.name]}
+            value={formData[field.name] || ""}
             onChange={handleInputChange}
-            required={field.required}
-            select={field.select}
-            step={field.step}
-            min={field.min}
-            max={field.max}
+            required={!isNA}
             textarea={field.textarea}
             placeholder={field.placeholder}
-            disabled={field.disabled}
+            disabled={isNA}
           />
         </div>
       );

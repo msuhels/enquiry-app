@@ -2,225 +2,172 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Table from "@/components/table/globalTable";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
+import { Enquiry } from "@/lib/types";
+import { FileTextIcon, Loader2, MessageSquareIcon } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
-import SearchSelect from "@/components/form/FormSearchSelect";
+import { useDebounce } from "use-debounce";
+import { useModal } from "@/components/ui/modal";
+import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
+import { useDelete } from "@/hooks/api/useDelete";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 export default function EnquiriesPage() {
   const router = useRouter();
-
-  const [previousOrCurrentStudy, setPreviousOrCurrentStudy] = useState("");
-  const [previousOrCurrentStudyOptions, setPreviousOrCurrentStudyOptions] =
-    useState([]);
-
-  const [degreeGoingFor, setDegreeGoingFor] = useState("");
-  const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
-
+  const { openModal, closeModal } = useModal();
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [programs, setPrograms] = useState([]);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 400);
+  const { del } = useDelete();
 
-  const isCentered = !hasSearched;
+  const offset = (page - 1) * itemsPerPage;
+  const apiUrl = `/api/admin/my-enquiries?search=${encodeURIComponent(
+    debouncedSearch
+  )}&limit=${itemsPerPage}&offset=${offset}`;
 
-  const { data: previousOrCurrentStudyData } = useFetch(
-    `/api/admin/previous-or-current-study`
-  );
-
-  const { data: degreeGoingForData } = useFetch(`/api/admin/degree-going-for`);
-
-  useEffect(() => {
-    if (previousOrCurrentStudyData?.success) {
-      const options = previousOrCurrentStudyData?.data.map(
-        (option: { id: string; name: string }) => ({
-          value: option.name,
-          label: option.name,
-        })
-      );
-      setPreviousOrCurrentStudyOptions(options);
-    }
-  }, [previousOrCurrentStudyData]);
+  const { data: enquiriesData, isLoading } = useFetch(apiUrl);
 
   useEffect(() => {
-    if (degreeGoingForData?.success) {
-      const options = degreeGoingForData?.data.map(
-        (option: { id: string; name: string }) => ({
-          value: option.name,
-          label: option.name,
-        })
-      );
-      setDegreeGoingForOptions(options);
-    }
-  }, [degreeGoingForData]);
+    setPage(1);
+  }, [debouncedSearch]);
 
   useEffect(() => {
-    if (!previousOrCurrentStudy || !degreeGoingFor) {
-      setHasSearched(false);
-      setPrograms([]);
+    if (enquiriesData?.success) {
+      setEnquiries(enquiriesData?.data);
     }
-  }, [previousOrCurrentStudy, degreeGoingFor]);
+  }, [enquiriesData]);
 
-  const handleFindPrograms = async () => {
-    try {
-      setLoading(true);
-      setHasSearched(false);
-
-      const params = new URLSearchParams();
-      if (previousOrCurrentStudy) {
-        params.append("previous_or_current_study", previousOrCurrentStudy);
-      }
-      if (degreeGoingFor) {
-        params.append("degree_going_for", degreeGoingFor);
-      }
-
-      const response = await fetch(
-        `/api/admin/programs/suggestions?${params.toString()}`
-      );
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-
-      setPrograms(result.data);
-      setHasSearched(true);
-      toast.success("Programs fetched successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to fetch programs");
-    } finally {
-      setLoading(false);
-    }
+  const handleView = (enquiry: Enquiry) => {
+    router.push(`/admin/enquiries/${enquiry.id}`);
   };
 
-  // const isCentered =
-  //   programs.length === 0 && (!previousOrCurrentStudy || !degreeGoingFor);
+  const handleDelete = (enquiry: Enquiry) => {
+    const modalId = openModal(
+      <DeleteConfirmationModal
+        onDelete={() => handleConfirmDelete(enquiry, modalId)}
+        onClose={() => closeModal(modalId)}
+      />,
+      { size: "half" }
+    );
+  };
+
+  const handleConfirmDelete = async (enquiry: Enquiry, modalId: string) => {
+    const res = await del(`/api/admin/enquiries?id=${enquiry.id}`);
+    if (res.success) {
+      toast.success("Enquiry deleted successfully!");
+      setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
+    } else {
+      toast.error(res.error || "Failed to delete enquiry");
+    }
+    closeModal(modalId);
+  };
+
+  const handleStatusChange = (enquiry: Enquiry) => {
+    const nextStatus =
+      enquiry.status === "pending"
+        ? "in_progress"
+        : enquiry.status === "in_progress"
+        ? "completed"
+        : enquiry.status === "completed"
+        ? "rejected"
+        : "pending";
+
+    setEnquiries((prev) =>
+      prev.map((e) => (e.id === enquiry.id ? { ...e, status: nextStatus } : e))
+    );
+  };
+
+  const columns = [
+    {
+      key: "createdby",
+      label: "Created By",
+      render: (row: Enquiry) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900">
+            {row.createdby.full_name}
+          </div>
+          {/* <div className="text-sm text-gray-500">{row.email}</div> */}
+        </div>
+      ),
+    },
+    {
+      key: "phone_number",
+      label: "Phone",
+      render: (row: Enquiry) => (
+        <span>{row.createdby.phone_number || "-"}</span>
+      ),
+    },
+    { key: "degree_going_for", label: "Program Interest" },
+    { key: "previous_or_current_study", label: "Previous/Current Degree" },
+    // {
+    //   key: "status",
+    //   label: "Status",
+    //   render: (row: Enquiry) => (
+    //     <button
+    //       onClick={() => handleStatusChange(row)}
+    //       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition ${
+    //         row.status === "pending"
+    //           ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+    //           : row.status === "in_progress"
+    //           ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+    //           : row.status === "completed"
+    //           ? "bg-green-100 text-green-800 hover:bg-green-200"
+    //           : "bg-red-100 text-red-800 hover:bg-red-200"
+    //       }`}
+    //     >
+    //       {row?.status?.replace("_", " ") || "-"}
+    //     </button>
+    //   ),
+    // },
+    {
+      key: "created_at",
+      label: "Date",
+      render: (row: Enquiry) => new Date(row.created_at).toLocaleDateString(),
+    },
+  ];
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64">
+  //      <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
+  //     </div>
+  //   );
+  // }
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 pt-4">
-          <Breadcrumbs />
-        </div>
-
-        <motion.div
-          animate={{
-            y: isCentered ? "40vh" : 0,
-          }}
-          transition={{ duration: 0.6, type: "spring" }}
-        >
-          <div className="flex items-end justify-center gap-6 mb-4">
-            <SearchSelect
-              label="Previous/Current Study"
-              name="previous_or_current_study"
-              value={previousOrCurrentStudy}
-              allowCreate={false}
-              onChange={setPreviousOrCurrentStudy}
-              options={previousOrCurrentStudyOptions}
-            />
-
-            <SearchSelect
-              label="Degree Going For"
-              name="degree_going_for"
-              value={degreeGoingFor}
-              allowCreate={false}
-              onChange={setDegreeGoingFor}
-              options={degreeGoingForOptions}
-            />
-
-            <button
-              onClick={handleFindPrograms}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded"
-              disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
-            >
-              {loading ? "Loading..." : "Find"}
-            </button>
-          </div>
-          <div>
-            <p className="text-orange-700 font-bold">
-              *This course finder is for counselling purposes only. Final course
-              options will be provided by our subject matter experts after a
-              detailed analysis of your profile*
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Result */}
-        <div className="mt-6 w-full">
-          {programs.length > 0 ? (
-            <ProgramsTable data={programs} />
-          ) : hasSearched && !loading ? (
-            <p className="text-gray-500 text-center">No programs found.</p>
-          ) : null}
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Table
+          title="Enquiries"
+          columns={columns}
+          data={enquiries}
+          searchKeys={["student_name", "email", "program_interest", "status"]}
+          searchQuery={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, email, or phone..."
+          // onEdit={handleView}
+          // onDelete={handleDelete}
+          onPageChange={setPage}
+          currentPage={page}
+          total={enquiriesData?.pagination?.total || 0}
+          itemsPerPage={itemsPerPage}
+          addHref="/admin/enquiries/add"
+          emptyMessage="No enquiries found."
+          filterTabs={[
+            {
+              key: "all",
+              label: "All",
+              count: enquiries.length,
+              filter: () => true,
+            },
+          ]}
+        />
       </div>
     </div>
   );
 }
-
-const ProgramsTable = ({ data }: any) => {
-  return (
-    <div className="bg-white w-full rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                University
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Course Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Previous Study
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Degree Going For
-              </th>
-              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Duration
-              </th> */}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                IELTS Requirement
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Special Requirements
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Remarks
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((item: any) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.university || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.course_name || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.previous_or_current_study || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.degree_going_for || "-"}
-                </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.duration || "-"}
-                </td> */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.ielts_requirement || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.special_requirements || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.remarks || "-"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};

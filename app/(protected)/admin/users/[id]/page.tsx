@@ -85,7 +85,10 @@ export default function UserUpdatePage() {
   const copyPassword = () => {
     if (!user.password) return;
     navigator.clipboard.writeText(user.password);
-    alert("Password copied to clipboard!");
+    toast.success("Password copied to clipboard!", {
+      position: "top-center",
+      richColors: true,
+    });
   };
 
   const sendPasswordEmail = async () => {
