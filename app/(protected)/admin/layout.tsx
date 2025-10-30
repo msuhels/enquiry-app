@@ -40,7 +40,7 @@ export default function AdminLayout({
     if (userRole === "admin") {
       router.push("/admin");
     } else if (userRole === "user") {
-      router.push("/vendor");
+      router.push("/b2b");
     }
   }, [userRole]);
 

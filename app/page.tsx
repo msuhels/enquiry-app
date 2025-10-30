@@ -18,8 +18,8 @@ export default function Home() {
   useEffect(() => {
     if (userRole === "admin") {
       router.push("/admin");
-    } else if (userRole === "vendor") {
-      router.push("/vendor");
+    } else if (userRole === "user") {
+      router.push("/b2b");
     }
   }, [userRole]);
 

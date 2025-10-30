@@ -13,9 +13,8 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, href: "/vendor" },
-    { name: "Enquiries", icon: Mail, href: "/vendor/enquiries" },
-    // { name: "Settings", icon: Settings, href: "/user/settings" },
+    { name: "Dashboard", icon: LayoutDashboard, href: "/b2b" },
+    { name: "Enquiries", icon: Mail, href: "/b2b/enquiries" },
   ];
 
   return (
@@ -23,9 +22,9 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
       <div>
         <div className="p-6 flex items-center gap-3 border-b border-white/20">
           <div className="h-10 w-10 bg-white/20 flex items-center justify-center rounded-lg font-bold text-lg">
-            V
+            B
           </div>
-          <h1 className="text-lg font-bold">Vendor Panel</h1>
+          <h1 className="text-lg font-bold">B2B Panel</h1>
         </div>
 
         <nav className="mt-6 space-y-1">
