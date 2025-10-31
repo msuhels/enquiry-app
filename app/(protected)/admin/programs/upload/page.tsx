@@ -383,7 +383,7 @@ export default function BulkUploadPage() {
                     <button
                       onClick={handleParseFile}
                       disabled={parsing}
-                      className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                     >
                       {parsing ? (
                         <>
@@ -430,7 +430,6 @@ export default function BulkUploadPage() {
           </div>
         )}
 
-          {/* Upload Result */}
         {uploadResult && (
           <div className="bg-white shadow rounded-lg p-8 mb-4">
             <div
@@ -500,7 +499,7 @@ export default function BulkUploadPage() {
                     <div className="mt-4">
                       <Link
                         href="/admin/programs"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                        className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                       >
                         Go to Programs
                       </Link>
@@ -526,7 +525,7 @@ export default function BulkUploadPage() {
                   {parsedData && !uploading && !uploadResult && (
                     <>
                      <button
-                    className="w-full p-2 border bg-red-600 border-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700 transition-colors flex items-center"
+                    className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                     onClick={handleUploadAnotherFile}
                   >
                     <X className="h-5 w-5 mr-2" />
@@ -536,7 +535,7 @@ export default function BulkUploadPage() {
                      <button
                       onClick={handleSaveToDatabase}
                       disabled={uploading}
-                      className="w-full items-center p-2 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                      className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                     >
                       {uploading ? (
                         <>

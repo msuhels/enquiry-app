@@ -27,6 +27,8 @@ export default function NewProgramPage() {
     remarks_na: false,
   });
 
+  console.log("formData", formData);
+
   const { data: degreeGoingFor } = useFetch("/api/admin/degree-going-for");
   const { data: previousCurrentStudy } = useFetch(
     "/api/admin/previous-or-current-study"
@@ -147,6 +149,8 @@ export default function NewProgramPage() {
 
     if (!valueKey) return;
 
+    console.log(valueKey);
+
     setFormData((prev) => ({
       ...prev,
       [naKey]: checked,
@@ -160,7 +164,7 @@ export default function NewProgramPage() {
 
       return (
         <div key={field.name} className="flex flex-col space-y-1 relative">
-          <div className="flex justify-between items-center mb-1">
+          {/* <div className="flex justify-between items-center mb-1">
             <label className="font-medium text-gray-700">{field.label}</label>
 
             {field.naKey && (
@@ -173,14 +177,17 @@ export default function NewProgramPage() {
                 <span>Not Applicable</span>
               </label>
             )}
-          </div>
+          </div> */}
 
           <FormInput
             key={field.name}
-            // label={field.label}
+            naKey={field.naKey || ""}
+            isNA={isNA}
+            onNAChange={handleNACheck}
+            label={field.label}
             name={field.name}
             type={field.type}
-            value={formData[field.name] || ""}
+            value={formData?.[field.name]}
             onChange={handleInputChange}
             required={!isNA}
             textarea={field.textarea}
@@ -210,7 +217,7 @@ export default function NewProgramPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <Breadcrumbs />
-          <h1 className="text-3xl font-bold text-gray-900">Add New Program</h1>
+          <h1 className="text-3xl font-bold text-[#3a3886]">Add New Program</h1>
           <p className="mt-2 text-gray-600">
             Enter the details for the new university program
           </p>
@@ -249,14 +256,14 @@ export default function NewProgramPage() {
           <div className="flex justify-end space-x-4">
             <Link
               href="/admin/programs"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
