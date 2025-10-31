@@ -105,7 +105,7 @@ export default function EnquirySystem() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      <div className="max-w-7xl mx-auto p-6 md:p-8">
+      <div className="max-w-full mx-auto p-6 md:p-8">
           <Breadcrumbs />
 
         <motion.div
@@ -136,7 +136,7 @@ export default function EnquirySystem() {
 
               <button
                 onClick={handleFindPrograms}
-                className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-xl text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
               >
                 {loading ? (
@@ -146,7 +146,7 @@ export default function EnquirySystem() {
                   </>
                 ) : (
                   <>
-                    <Search className="w-4 h-4" />
+                    <Search className="w-6 h-6" />
                     Find
                   </>
                 )}
@@ -154,7 +154,7 @@ export default function EnquirySystem() {
             </div>
 
             <div className="bg-[#F97316]/5 border-l-4 border-[#F97316] rounded-lg p-4">
-              <p className="text-[#F97316] font-semibold text-sm">
+              <p className="text-[#F97316] font-semibold text-lg">
                 <span className="font-bold">*Note:</span> This course finder is
                 for counselling purposes only. Final course options will be
                 provided by our subject matter experts after a detailed analysis
@@ -173,8 +173,8 @@ export default function EnquirySystem() {
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-gray-400" />
               </div>
-              <p className="text-gray-600 font-medium">No programs found.</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className="text-gray-600 text-xl font-medium">No programs found.</p>
+              <p className="text-gray-400 text-2xl mt-2">
                 Try adjusting your search criteria
               </p>
             </div>
@@ -195,31 +195,31 @@ const ProgramsTable = ({ data, settings }: any) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-[#3a3886] to-[#2d2b6b]">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                 University
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                 Course Name
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                 Previous Study
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                 Degree Going For
               </th>
 
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                 IELTS Requirement
               </th>
 
               {showSpecialRequirements && (
-                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                   Special Requirements
                 </th>
               )}
 
               {showRemarks && (
-                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
                   Remarks
                 </th>
               )}
@@ -229,30 +229,30 @@ const ProgramsTable = ({ data, settings }: any) => {
           <tbody className="bg-white divide-y divide-gray-100">
             {data.map((item: any, index: number) => (
               <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#3a3886]">
+                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#3a3886]">
                   {item.university || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
+                <td className="px-6 py-4 text-xl text-gray-900">
                   {item.course_name || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.previous_or_current_study || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#F97316]">
+                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
                   {item.ielts_requirement || "-"}
                 </td>
 
                 {showSpecialRequirements && (
-                  <td className="px-6 py-4 text-sm text-gray-700">
+                  <td className="px-6 py-4 text-xl text-gray-700">
                     {item.special_requirements || "-"}
                   </td>
                 )}
 
                 {showRemarks && (
-                  <td className="px-6 py-4 text-sm text-gray-700">
+                  <td className="px-6 py-4 text-xl text-gray-700">
                     {item.remarks || "-"}
                   </td>
                 )}
