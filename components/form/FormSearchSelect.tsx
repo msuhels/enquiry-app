@@ -25,7 +25,6 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   width = "100%",
   allowCreate = true,
 }) => {
-
   const selectedOption =
     options.find((opt) => opt.value === value) ||
     (value ? { value, label: value } : null);
@@ -37,7 +36,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
       {label?.trim() && (
         <label
           htmlFor={name}
-          className="block text-sm font-semibold text-[#3a3886] mb-2"
+          className="block text-lg font-semibold text-[#3a3886] mb-2"
         >
           {label}
         </label>
@@ -58,20 +57,22 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
             ...base,
             borderColor: state.isFocused ? "#F97316" : "#E5E7EB",
             borderWidth: "2px",
-            boxShadow: state.isFocused ? "0 0 0 3px rgba(249, 115, 22, 0.1)" : "none",
+            boxShadow: state.isFocused
+              ? "0 0 0 3px rgba(249, 115, 22, 0.1)"
+              : "none",
             borderRadius: "0.5rem",
-            minHeight: "42px",
+            minHeight: "52px",
             transition: "all 0.2s",
-            "&:hover": { 
+            "&:hover": {
               borderColor: state.isFocused ? "#F97316" : "#3a3886",
             },
           }),
           option: (base, state) => ({
             ...base,
-            backgroundColor: state.isSelected 
-              ? "#F97316" 
-              : state.isFocused 
-              ? "#F97316/10" 
+            backgroundColor: state.isSelected
+              ? "#F97316"
+              : state.isFocused
+              ? "#F97316/10"
               : "white",
             color: state.isSelected ? "white" : "#3a3886",
             fontWeight: state.isSelected ? "600" : "400",
@@ -84,7 +85,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
           placeholder: (base) => ({
             ...base,
             color: "#9CA3AF",
-            fontSize: "0.875rem",
+            fontSize: "1rem",
           }),
           singleValue: (base) => ({
             ...base,
@@ -114,7 +115,8 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
           menu: (base) => ({
             ...base,
             borderRadius: "0.5rem",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            boxShadow:
+              "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             border: "1px solid #E5E7EB",
             overflow: "hidden",
           }),
