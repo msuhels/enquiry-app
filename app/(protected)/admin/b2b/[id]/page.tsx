@@ -180,7 +180,8 @@ export default function UserUpdatePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await put(`/api/admin/users/${user.id}`, user);
+      const { password, ...userDataToSave } = user;
+      const res = await put(`/api/admin/users/${user.id}`, userDataToSave);
       if (res.success) {
         toast.success("User saved successfully!", {
           position: "top-center",
