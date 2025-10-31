@@ -28,7 +28,7 @@ const RecentEnquiryItem = ({
   return (
     <div
       // onClick={() => router.push(`/admin/enquiries/${id}`)}
-      className="px-5 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
+      className="px-5 flex w-full items-center gap-10 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
       <p className="text-lg font-semibold text-[#3a3886]">{name}</p>
       <p className="text-base text-gray-600 mt-1">{context}</p>
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* RECENT ENQUIRIES */}
-        <div className="w-[50%]">
+        <div className="w-full">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold text-[#3a3886]">
               Recent Activity
