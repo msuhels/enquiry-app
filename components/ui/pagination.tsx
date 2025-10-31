@@ -53,7 +53,7 @@ export default function Pagination({
 
   return (
     <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-6">
-      <div className="text-sm font-medium text-[#3a3886]">
+      <div className="text-base font-medium text-[#3a3886]">
         Showing <span className="font-bold text-[#F97316]">{startIndex + 1}</span> to{" "}
         <span className="font-bold text-[#F97316]">{endIndex}</span> of{" "}
         <span className="font-bold text-[#F97316]">{totalItems}</span> items
@@ -76,7 +76,7 @@ export default function Pagination({
             <button
               key={pageNum}
               onClick={() => goToPage(pageNum)}
-              className={`min-w-[40px] px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              className={`min-w-[45px] px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 currentPage === pageNum
                   ? "bg-[#F97316] text-white shadow-md scale-105"
                   : "text-[#3a3886] hover:bg-[#3a3886]/10 border-2 border-gray-200 hover:border-[#3a3886]"

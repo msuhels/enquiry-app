@@ -622,7 +622,7 @@ export default function BulkUploadPage() {
 
             {totalPages > 1 && (
               <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                <div className="text-sm text-gray-700">
+                <div className="text-lg text-gray-700">
                   Showing {startIndex + 1} to{" "}
                   {Math.min(endIndex, parsedData.length)} of {parsedData.length}{" "}
                   programs

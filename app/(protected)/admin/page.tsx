@@ -30,9 +30,9 @@ const RecentEnquiryItem = ({
       // onClick={() => router.push(`/admin/enquiries/${id}`)}
       className="px-5 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
-      <p className="text-sm font-semibold text-[#3a3886]">{name}</p>
-      <p className="text-xs text-gray-600 mt-1">{context}</p>
-      <p className="text-xs text-[#F97316] mt-1 font-medium">{course || "-"}</p>
+      <p className="text-lg font-semibold text-[#3a3886]">{name}</p>
+      <p className="text-base text-gray-600 mt-1">{context}</p>
+      <p className="text-base text-[#F97316] mt-1 font-medium">{course || "-"}</p>
     </div>
   );
 };
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#3a3886]">
-                Welcome back, Admin
+                Welcome back to Alzato Portal
               </h1>
             </div>
 
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <p className="text-sm text-white/80 font-medium">
+                <p className="text-lg text-white/80 font-medium">
                   {card.title}
                 </p>
                 <p className="text-4xl font-bold mt-2">{card.value}</p>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
           {/* QUICK ACTIONS */}
           <div className="lg:col-span-2 w-full ">
             <div className="flex items-center justify-between mb-6 w-[50%]">
-              <h2 className="text-xl font-bold text-[#3a3886]">
+              <h2 className="text-2xl font-bold text-[#3a3886]">
                 Quick Actions
               </h2>
               <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
@@ -170,10 +170,10 @@ export default function AdminDashboard() {
                     </div>
 
                     <div>
-                      <p className="text-base font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
+                      <p className="text-lg font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
                         {action.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-base text-gray-500 mt-1">
                         Click to open
                       </p>
                     </div>
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
         {/* RECENT ENQUIRIES */}
         <div className="w-[50%]">
           <div className="flex items-center justify-between my-6">
-            <h2 className="text-xl font-bold text-[#3a3886]">
+            <h2 className="text-2xl font-bold text-[#3a3886]">
               Recent Activity
             </h2>
             <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
