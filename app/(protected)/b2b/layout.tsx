@@ -14,11 +14,16 @@ export default function AdminLayout({
   const { logout, isAuthenticated } = useAuth();
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const localUser = localStorage.getItem("user");
-  const user = localUser ? JSON.parse(localUser) : null;
-  const [isWelcome, setIsWelcome] = useState(
-    localStorage.getItem("showedWelcome")
-  );
+  const [user, setUser]  = useState("")
+
+   const [isWelcome, setIsWelcome] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const showedWelcome = localStorage.getItem("showedWelcome");
+      setIsWelcome(showedWelcome);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,6 +36,7 @@ export default function AdminLayout({
       const data = await fetchUser();
       if (data) {
         setUserRole(data.userDetails.role);
+        setUser(data.userDetails)
         setTimeout(() => {
           setIsLoading(false);
         }, 1000);
@@ -51,7 +57,19 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     logout();
+     if (typeof window !== "undefined") {
+      localStorage.removeItem("showedWelcome");
+    }
   };
+
+    useEffect(() => {
+    if (!isLoading && isWelcome === "false" && typeof window !== "undefined") {
+      setTimeout(() => {
+        setIsWelcome("true");
+        localStorage.setItem("showedWelcome", "true");
+      }, 3000);
+    }
+  }, [isLoading, isWelcome]);
 
   if (isLoading) {
     return (
@@ -59,13 +77,6 @@ export default function AdminLayout({
         <Loader2 className="animate-spin text-indigo-600 h-12 w-12" />
       </div>
     );
-  }
-
-  if (!isLoading && isWelcome === "false") {
-    setTimeout(() => {
-      setIsWelcome("true");
-      localStorage.setItem("showedWelcome", "true");
-    }, 3000);
   }
 
   return (

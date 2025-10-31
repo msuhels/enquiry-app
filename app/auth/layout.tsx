@@ -33,7 +33,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
     const fetchUserRole = async () => {
       const data = await fetchUser();
-      localStorage.setItem("user", JSON.stringify(data.userDetails))
       localStorage.setItem("showedWelcome", "false")
 
       if (data) {
