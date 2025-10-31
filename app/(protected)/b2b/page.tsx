@@ -72,7 +72,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (user) {
-      setUserName(user.userDetails.full_name);
+      setUserName(user.userDetails.organization || user.userDetails.full_name);
     }
   }, [user]);
 
@@ -143,7 +143,7 @@ export default function UserDashboard() {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-white/80 font-medium">{card.title}</p>
+                <p className="text-lg text-white/80 font-medium">{card.title}</p>
                 <p className="text-4xl font-bold mt-2">{card.value}</p>
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <p className="text-xs text-white/70">{card.trend}</p>
@@ -158,7 +158,7 @@ export default function UserDashboard() {
           {/* QUICK ACTIONS */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#3a3886]">Quick Actions</h2>
+              <h2 className="text-2xl font-bold text-[#3a3886]">Quick Actions</h2>
               <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -173,10 +173,10 @@ export default function UserDashboard() {
                       <action.icon className="w-7 h-7 text-white" />
                     </div>
                     <div>
-                      <p className="text-base font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
+                      <p className="text-lg font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
                         {action.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">Access your enquiries</p>
+                      <p className="text-base text-gray-500 mt-1">Access your enquiries</p>
                     </div>
                   </div>
                 </div>
