@@ -111,10 +111,10 @@ export default function UsersPage() {
       sortable: true,
       render: (row: User) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-lg font-medium text-gray-900">
             {row.full_name}
           </div>
-          <div className="text-sm text-gray-500">{row.email}</div>
+          <div className="text-lg text-gray-500">{row.email}</div>
         </div>
       ),
     },
@@ -128,7 +128,7 @@ export default function UsersPage() {
       render: (row: User) => (
         <button
           onClick={() => handleToggleActive(row)}
-          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          className={`inline-flex px-2 py-1 text-lg font-semibold rounded-full ${
             row.is_active
               ? "bg-green-100 text-green-800 hover:bg-green-200"
               : "bg-gray-100 text-gray-800 hover:bg-gray-200"

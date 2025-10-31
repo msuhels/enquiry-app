@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     <p>
       You can log in here: 
-      <a href="[Login Link]" style="color:#1a73e8;">Click here to login</a>
+      <a href=${process.env.FRONTEND_URL} style="color:#1a73e8;">Click here to login</a>
     </p>
 
     <p>

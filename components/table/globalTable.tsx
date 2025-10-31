@@ -106,12 +106,12 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
       <div className="mb-8">
         <Breadcrumbs />
         <div className="flex justify-between items-center mt-4">
-          <h1 className="text-3xl font-bold text-[#3a3886]">{title}</h1>
+          <h1 className="text-4xl font-bold text-[#3a3886]">{title}</h1>
           <div className="flex gap-3">
             {addHref && (
               <Link
                 href={addHref}
-                className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                className="inline-flex text-xl items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 <p className="whitespace-nowrap">Add {title.split(" ")[0]}</p>
@@ -120,7 +120,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
             {addBulkHref && (
               <Link
                 href={addBulkHref}
-                className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                className="inline-flex text-xl items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <Folder className="h-4 w-4 mr-2" />
                 Bulk Add
@@ -136,7 +136,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           <div className="flex flex-col items-start gap-4">
             {fieldsSwitches.map((item, index) => (
               <div key={index} className="flex items-center justify-between w-full gap-4">
-                <label className="text-sm font-medium text-[#3a3886] capitalize">
+                <label className="text-xl font-medium text-[#3a3886] capitalize">
                   {item.key.replace(/_/g, " ")}
                 </label>
 
@@ -270,7 +270,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   <th
                     key={col.key}
                     onClick={() => handleSortClick(col.key, col.sortable)}
-                    className={`px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider ${
+                    className={`px-6 py-4 text-left text-lg font-semibold text-white uppercase tracking-wider ${
                       col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
                     }`}
                   >
@@ -285,7 +285,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   </th>
                 ))}
                 {(onEdit || onDelete) && (
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-white uppercase tracking-wider sticky right-0 bg-[#3a3886]">
+                  <th className="px-6 py-4 text-right text-lg font-semibold text-white uppercase tracking-wider sticky right-0 bg-[#3a3886]">
                     Actions
                   </th>
                 )}
@@ -323,13 +323,13 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     {columns.map((col) => (
                       <td
                         key={col.key}
-                        className="px-6 py-4 text-sm text-gray-900"
+                        className="px-6 py-4 text-lg text-gray-900"
                       >
                         {col.render ? col.render(row) : row[col.key]}
                       </td>
                     ))}
                     {(onEdit || onDelete) && (
-                      <td className="px-6 py-4 text-right text-sm font-medium">
+                      <td className="px-6 py-4 text-right text-sm font-medium sticky right-0 bg-white">
                         <div className="flex space-x-3 justify-end">
                           {onEdit && (
                             <button
@@ -337,7 +337,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                               className="text-[#3a3886] hover:text-[#2d2b6b] transition-colors p-1.5 hover:bg-[#3a3886]/10 rounded-lg"
                               title="Edit"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-6 w-6" />
                             </button>
                           )}
                           {onDelete && (
@@ -346,7 +346,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                               className="text-[#F97316] hover:text-[#ea6a0f] transition-colors p-1.5 hover:bg-[#F97316]/10 rounded-lg"
                               title="Delete"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-6 w-6" />
                             </button>
                           )}
                         </div>
