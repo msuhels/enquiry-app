@@ -1,23 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users as UsersIcon,
   ClipboardList as ClipboardListIcon,
-  CheckCircle as CheckCircleIcon,
   FileText as FileTextIcon,
-  Plus as PlusIcon,
-  Upload as UploadIcon,
   Eye as EyeIcon,
-  BarChart as BarChartIcon,
-  Settings as SettingsIcon,
   UserPlus as UserPlusIcon,
   Bell as BellIcon,
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
-import { useRouter } from "next/navigation";
 
 const RecentEnquiryItem = ({
   name,
@@ -31,15 +25,14 @@ const RecentEnquiryItem = ({
   id: string;
 }) => {
   const router = useRouter();
-
   return (
     <div
-      // onClick={() => router.push(`/admin/enquiries/${id}/suggestions`)}
-      className="px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer transition"
+      // onClick={() => router.push(`/admin/enquiries/${id}`)}
+      className="px-5 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
-      <p className="text-sm font-semibold text-gray-800">{name}</p>
-      <p className="text-xs text-gray-500">{context}</p>
-      <p className="text-xs text-gray-600 mt-1">{course || "-"}</p>
+      <p className="text-sm font-semibold text-[#3a3886]">{name}</p>
+      <p className="text-xs text-gray-600 mt-1">{context}</p>
+      <p className="text-xs text-[#F97316] mt-1 font-medium">{course || "-"}</p>
     </div>
   );
 };
@@ -47,29 +40,19 @@ const RecentEnquiryItem = ({
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalUsers: 1250,
-    totalPrograms: 34,
-    openEnquiries: 82,
-    resolvedEnquiries: 543,
-  });
+  const [notificationCount] = useState(0);
 
-  const { data } = useFetch("/api/admin/stats");
-
-  useEffect(() => {
-    setStats({
-      totalUsers: data?.data?.users || 0,
-      totalPrograms: data?.data?.programs || 0,
-      openEnquiries: data?.data?.enquiries || 0,
-      resolvedEnquiries: 543,
-    });
-  }, [data]);
-
+  const { data: stat } = useFetch("/api/admin/stats");
   const { data: enquiries } = useFetch("/api/admin/enquiries");
+
+  const stats = {
+    users: stat?.data?.users || 0,
+    programs: stat?.data?.programs || 0,
+    enquiries: stat?.data?.enquiries || 0,
+  };
 
   const filterEnquiries = enquiries?.data;
 
-  console.log("filterEnquiries", filterEnquiries);
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
   }, []);
@@ -77,33 +60,19 @@ export default function AdminDashboard() {
   const statCards = [
     {
       title: "Total Users",
-      value: stats.totalUsers,
+      value: stats.users,
       icon: UsersIcon,
-      bg: "bg-gradient-to-r from-blue-400 to-indigo-400",
-      trend: "+15% from last month",
-      // textClr : "text-blue-600"
     },
     {
       title: "Total Programs",
-      value: stats.totalPrograms,
+      value: stats.programs,
       icon: FileTextIcon,
-      bg: "bg-gradient-to-r from-purple-400 to-pink-400",
-      trend: "+5 new programs",
     },
     {
       title: "Open Enquiries",
-      value: stats.openEnquiries,
+      value: stats.enquiries,
       icon: ClipboardListIcon,
-      bg: "bg-gradient-to-r from-orange-400 to-yellow-400",
-      trend: "-5% from last week",
     },
-    // {
-    //   title: "Resolved Enquiries",
-    //   value: stats.resolvedEnquiries,
-    //   icon: CheckCircleIcon,
-    //   bg: "bg-gradient-to-r from-green-400 to-emerald-400",
-    //   trend: "+20% this month",
-    // },
   ];
 
   const quickActions = [
@@ -111,125 +80,132 @@ export default function AdminDashboard() {
       title: "Add Vendor",
       link: "/admin/users/addUser",
       icon: UserPlusIcon,
-      color: "bg-indigo-100",
     },
     {
       title: "Add Program",
       link: "/admin/programs/add",
-      icon: PlusIcon,
-      color: "bg-purple-100",
+      icon: EyeIcon,
     },
-    // { title: "Bulk Upload", link: "/admin/users/bulk-upload", icon: UploadIcon, color: "bg-orange-100" },
     {
       title: "View Enquiries",
       link: "/admin/enquiries",
-      icon: EyeIcon,
-      color: "bg-green-100",
+      icon: ClipboardListIcon,
     },
-    // { title: "View Reports",  icon: BarChartIcon, color: "bg-cyan-100" },
-    // { title: "System Settings", icon: SettingsIcon, color: "bg-gray-100" },
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <div className="p-8">
+    <div className="bg-gray-50">
+      <div className="max-w-full mx-auto p-6 md:p-8">
+
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Welcome back,{" "}
-              <span className="text-purple-600 font-extrabold">Admin!</span>
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Here's an overview of your institution’s performance.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <BellIcon className="w-6 h-6 text-gray-400 cursor-pointer hover:text-purple-600 transition" />
-            <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
-              A
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#3a3886]">
+                Welcome back, Admin
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div
+                className="relative inline-block cursor-pointer group"
+                onClick={() => router.push("/admin/notifications")}
+              >
+                <div className="p-2.5 rounded-full bg-gray-50 group-hover:bg-[#F97316]/10 transition-all duration-200">
+                  <BellIcon className="w-5 h-5 text-[#3a3886] group-hover:text-[#F97316] transition-colors" />
+                </div>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-[#F97316] text-white text-[10px] font-semibold flex items-center justify-center rounded-full px-1.5 shadow-lg">
+                    {notificationCount}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* STATS CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* STAT CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {statCards.map((card, idx) => (
             <div
               key={idx}
-              className={`${card.bg} text-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition`}
+              className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p
-                    className={`text-sm ${
-                      card.textClr || "text-white"
-                    } opacity-90`}
-                  >
-                    {card.title}
-                  </p>
-                  <p
-                    className={`text-4xl ${
-                      card.textClr || "text-white"
-                    } font-bold mt-2`}
-                  >
-                    {card.value}
-                  </p>
-                </div>
-                <div className="bg-white/30 p-2 rounded-lg">
-                  <card.icon
-                    className={`w-6 h-6 ${card.textClr || "text-white"}`}
-                  />
+              <div className="flex justify-between items-start mb-4">
+                <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                  <card.icon className="w-7 h-7 text-white" />
                 </div>
               </div>
-              <p className="text-xs mt-3 opacity-90">{card.trend}</p>
+
+              <div>
+                <p className="text-sm text-white/80 font-medium">{card.title}</p>
+                <p className="text-4xl font-bold mt-2">{card.value}</p>
+              </div>
             </div>
           ))}
         </div>
 
+        {/* QUICK ACTIONS + RECENT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
+
+          {/* QUICK ACTIONS */}
           <div className="lg:col-span-2">
-            <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-[#3a3886]">Quick Actions</h2>
+              <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {quickActions.map((action, idx) => (
                 <div
                   key={idx}
                   onClick={() => router.push(action.link)}
-                  className={`${action.color} rounded-xl flex flex-col items-center justify-center p-6 shadow hover:shadow-md transition cursor-pointer`}
+                  className="group bg-white rounded-2xl p-8 shadow-sm border-2 border-gray-100 hover:border-[#F97316] transition-all duration-300 cursor-pointer hover:shadow-lg"
                 >
-                  <div className="p-3 bg-white rounded-full shadow-sm">
-                    <action.icon className="w-6 h-6 text-gray-700" />
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 bg-gradient-to-br from-[#F97316] to-[#ff8c42] rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <action.icon className="w-7 h-7 text-white" />
+                    </div>
+
+                    <div>
+                      <p className="text-base font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
+                        {action.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Click to open</p>
+                    </div>
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-gray-800">
-                    {action.title}
-                  </p>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* RECENT ENQUIRIES */}
           <div>
-            <h2 className="text-lg font-bold mb-4">Recent Enquiries</h2>
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-[#3a3886]">Recent Activity</h2>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {filterEnquiries?.length ? (
-                filterEnquiries
-                  .slice(0, 3)
-                  .map((enquiry: Enquiry, i: number) => (
+                <div className="max-h-[250px] overflow-y-auto">
+                  {filterEnquiries.slice(0, 5).map((e: Enquiry) => (
                     <RecentEnquiryItem
-                      key={enquiry.id}
-                      name={enquiry.createdby.full_name}
-                      context={enquiry.created_at.slice(0, 10)}
-                      course={enquiry.degree_going_for}
-                      id={enquiry.id}
+                      key={e.id}
+                      name={e.createdby.full_name}
+                      context={e.created_at.slice(0, 10)}
+                      course={e.degree_going_for}
+                      id={e.id}
                     />
-                  ))
+                  ))}
+                </div>
               ) : (
-                <div className="p-4 text-center text-gray-500 text-sm">
-                  No recent enquiries found.
+                <div className="p-8 text-center text-gray-600 text-sm">
+                  No recent enquiries…
                 </div>
               )}
             </div>
           </div>
+
         </div>
       </div>
     </div>

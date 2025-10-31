@@ -193,16 +193,16 @@ export default function EnquiriesPage() {
           searchQuery={search}
           onSearchChange={setSearch}
           isLoading={isLoading}
-          searchParameters={["name", "organisation"]}
+          // searchParameters={["name", "organisation"]}
           onPageChange={setPage}
           currentPage={page}
           total={enquiriesData?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
           emptyMessage="No enquiries found."
           addHref="/b2b/enquiries/add"
-          searchSelectFilters={searchSelectFilters}
+          // searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
-          onDelete={handleDelete}
+          // onDelete={handleDelete}
         />
       </div>
     </div>

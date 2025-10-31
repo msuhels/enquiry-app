@@ -100,34 +100,27 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
     onSortChange(key, nextDir);
   };
 
-  // if (isLoading) {
-  //   return (
-  // <div className="flex items-center justify-center h-64">
-  //   <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
-  // </div>
-  //   );
-  // }
-
   return (
     <div className={`w-full ${className}`}>
+      {/* Header Section */}
       <div className="mb-8">
         <Breadcrumbs />
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          <div className="flex gap-2">
+        <div className="flex justify-between items-center mt-4">
+          <h1 className="text-3xl font-bold text-[#3a3886]">{title}</h1>
+          <div className="flex gap-3">
             {addHref && (
               <Link
                 href={addHref}
-                className="inline-flex items-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                <p className="w-full now">Add {title.split(" ")[0]}</p>
+                <p className="whitespace-nowrap">Add {title.split(" ")[0]}</p>
               </Link>
             )}
             {addBulkHref && (
               <Link
                 href={addBulkHref}
-                className="inline-flex items-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <Folder className="h-4 w-4 mr-2" />
                 Bulk Add
@@ -136,39 +129,41 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           </div>
         </div>
       </div>
-      <div className="w-full flex justify-end">
-        <div>
-          {fieldsSwitches?.length > 0 && (
-            <div className="flex flex-col items-start gap-3">
-              {fieldsSwitches.map((item, index) => (
-                <div key={index} className="flex items-center justify-between w-full gap-4">
-                  <label className="text-sm text-gray-700">
-                    {item.key.replace(/_/g, " ")}
-                  </label>
 
-                  <Switch.Root
-                    checked={item.value}
-                    onClick={(e) => e.stopPropagation()}
-                    onCheckedChange={(value) =>
-                      handleToggleActive?.(item.key, value)
-                    }
-                    className={`relative w-10 h-5 rounded-full transition-colors ${
-                      item.value ? "bg-indigo-600" : "bg-gray-300"
+      {/* Field Switches */}
+      {fieldsSwitches?.length > 0 && (
+        <div className="mb-6 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col items-start gap-4">
+            {fieldsSwitches.map((item, index) => (
+              <div key={index} className="flex items-center justify-between w-full gap-4">
+                <label className="text-sm font-medium text-[#3a3886] capitalize">
+                  {item.key.replace(/_/g, " ")}
+                </label>
+
+                <Switch.Root
+                  checked={item.value}
+                  onClick={(e) => e.stopPropagation()}
+                  onCheckedChange={(value) =>
+                    handleToggleActive?.(item.key, value)
+                  }
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    item.value ? "bg-[#F97316]" : "bg-gray-300"
+                  }`}
+                >
+                  <Switch.Thumb
+                    className={`block w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                      item.value ? "translate-x-5" : "translate-x-0.5"
                     }`}
-                  >
-                    <Switch.Thumb
-                      className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                        item.value ? "translate-x-5" : "translate-x-1"
-                      }`}
-                    />
-                  </Switch.Root>
-                </div>
-              ))}
-            </div>
-          )}
+                  />
+                </Switch.Root>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex w-full gap-4 items-center">
+      )}
+
+      {/* Search and Select Filters */}
+      <div className="flex w-full gap-4 items-center mb-4">
         {onSearchChange &&
           searchParameters.map((param) => (
             <div key={param} className="relative flex-1">
@@ -183,7 +178,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     [param]: e.target.value,
                   })
                 }
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
               />
             </div>
           ))}
@@ -209,50 +204,50 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           ))}
       </div>
 
-      <div className="flex w-full justify-end items-center mt-2 gap-2">
-        {Object.keys(dateFilters || {}).length > 0 &&
-          Object.keys(dateFilters).map((key: any, index) => (
-            <div key={index}>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  {key == "from_date" ? "From Date" : "To Date"}
-                </label>
-                <input
-                  key={index}
-                  type="date"
-                  value={searchQuery?.[key] ?? ""}
-                  onChange={(e) =>
-                    onSearchChange?.({
-                      ...searchQuery,
-                      [key]: e.target.value,
-                    })
-                  }
-                  className="flex pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
+      {/* Date Filters */}
+      {Object.keys(dateFilters || {}).length > 0 && (
+        <div className="flex w-full justify-end items-center mb-4 gap-3">
+          {Object.keys(dateFilters).map((key: any, index) => (
+            <div key={index} className="flex flex-col">
+              <label className="text-sm font-medium text-[#3a3886] mb-1.5">
+                {key == "from_date" ? "From Date" : "To Date"}
+              </label>
+              <input
+                type="date"
+                value={searchQuery?.[key] ?? ""}
+                onChange={(e) =>
+                  onSearchChange?.({
+                    ...searchQuery,
+                    [key]: e.target.value,
+                  })
+                }
+                className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
+              />
             </div>
           ))}
-      </div>
+        </div>
+      )}
 
-      <div className="mb-4 border-gray-200">
-        <div className="flex space-x-8">
-          {filterTabs.length > 0 &&
-            filterTabs.map((tab) => (
+      {/* Filter Tabs */}
+      {filterTabs.length > 0 && (
+        <div className="mb-6 border-b border-gray-200">
+          <div className="flex space-x-8">
+            {filterTabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
                 className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeFilter === tab.key
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-[#F97316] text-[#F97316]"
+                    : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
                 }`}
               >
                 {tab.label}
                 {tab.count !== undefined && (
                   <span
-                    className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                    className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                       activeFilter === tab.key
-                        ? "bg-indigo-100 text-indigo-600"
+                        ? "bg-[#F97316]/10 text-[#F97316]"
                         : "bg-gray-100 text-gray-600"
                     }`}
                   >
@@ -261,26 +256,28 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 )}
               </button>
             ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="bg-white shadow rounded-lg mt-6 overflow-hidden">
+      {/* Table */}
+      <div className="bg-white shadow-sm rounded-xl border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-[#3a3886] to-[#2d2b6b]">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col.key}
                     onClick={() => handleSortClick(col.key, col.sortable)}
-                    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                      col.sortable ? "cursor-pointer hover:bg-gray-100" : ""
+                    className={`px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider ${
+                      col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
                     }`}
                   >
                     <div className="flex items-center space-x-1">
                       <span>{col.label}</span>
                       {sortKey === col.key && (
-                        <span className="text-indigo-600">
+                        <span className="text-[#F97316] font-bold">
                           {sortDir === "asc" ? "↑" : "↓"}
                         </span>
                       )}
@@ -288,13 +285,13 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   </th>
                 ))}
                 {(onEdit || onDelete) && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-white uppercase tracking-wider sticky right-0 bg-[#3a3886]">
                     Actions
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {isLoading ? (
                 <tr>
                   <td
@@ -302,7 +299,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     <div className="flex items-center justify-center h-64">
-                      <Loader2 className="h-10 w-10 mr-2 animate-spin inline text-indigo-600" />
+                      <Loader2 className="h-10 w-10 mr-2 animate-spin text-[#F97316]" />
                     </div>
                   </td>
                 </tr>
@@ -312,12 +309,17 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
                     className="px-6 py-12 text-center text-gray-500"
                   >
-                    {emptyMessage}
+                    <div className="flex flex-col items-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Search className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="font-medium text-gray-600">{emptyMessage}</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 data.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
                     {columns.map((col) => (
                       <td
                         key={col.key}
@@ -332,7 +334,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                           {onEdit && (
                             <button
                               onClick={() => onEdit(row)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-[#3a3886] hover:text-[#2d2b6b] transition-colors p-1.5 hover:bg-[#3a3886]/10 rounded-lg"
+                              title="Edit"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
@@ -340,7 +343,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                           {onDelete && (
                             <button
                               onClick={() => onDelete(row)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-[#F97316] hover:text-[#ea6a0f] transition-colors p-1.5 hover:bg-[#F97316]/10 rounded-lg"
+                              title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -356,13 +360,16 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         </div>
       </div>
 
+      {/* Pagination */}
       {total > itemsPerPage && (
-        <Pagination
-          currentPage={currentPage}
-          totalItems={total}
-          itemsPerPage={itemsPerPage}
-          onPageChange={onPageChange}
-        />
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalItems={total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={onPageChange}
+          />
+        </div>
       )}
     </div>
   );

@@ -124,7 +124,7 @@ export default function ProgramsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-auto bg-gray-50">
       <div className="max-w-7xl mx-auto p-8">
         <AdvancedDataTable
           title="Programs"

@@ -18,12 +18,12 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
   ];
 
   return (
-    <aside className="w-64 h-screen bg-gradient-to-b from-indigo-500 to-purple-500 text-white flex flex-col justify-between">
+    <aside className="w-64 h-screen bg-gradient-to-b from-[#F97316] to-[#F97316] text-white flex flex-col justify-between">
       <div>
         <div className="p-6 flex items-center gap-3 border-b border-white/20">
-          <div className="h-10 w-10 bg-white/20 flex items-center justify-center rounded-lg font-bold text-lg">
+          {/* <div className="h-10 w-10 bg-[#3a3886] flex items-center justify-center rounded-lg font-bold text-lg">
             B
-          </div>
+          </div> */}
           <h1 className="text-lg font-bold">B2B Panel</h1>
         </div>
 
@@ -37,13 +37,13 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
                 href={item.href}
                 className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all ${
                   active
-                    ? "bg-white text-indigo-500 rounded-l-full"
+                    ? "bg-white text-[#3a3886] shadow-lg"
                     : "hover:bg-white/20"
                 }`}
               >
                 <Icon
                   className={`h-5 w-5 ${
-                    active ? "text-indigo-500" : "text-white"
+                    active ? "text-[#3a3886]" : "text-white"
                   }`}
                 />
                 {item.name}
@@ -56,7 +56,7 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
       <div className="p-6 border-t border-white/20">
         <button
           onClick={onLogout}
-          className="flex items-center gap-3 text-sm font-medium text-white hover:bg-white/20 px-4 py-2 rounded-lg transition"
+          className="flex items-center gap-3 text-sm font-medium text-white hover:bg-[#F97316]/20 px-4 py-2 rounded-lg transition"
         >
           <LogOut className="h-5 w-5" />
           Logout
