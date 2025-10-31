@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -257,12 +256,12 @@ export default function BulkUploadUsersPage() {
   };
 
   const handleOpenGeneratePasswordModal = () => {
-     // @ts-ignore
+    // @ts-ignore
     const modalId = openModal(
       <GeneratePasswordModal
         handleConfirmation={() => {
           console.log("done done done");
-           // @ts-ignore
+          // @ts-ignore
           closeModal(modalId);
         }}
       />,
@@ -283,103 +282,204 @@ export default function BulkUploadUsersPage() {
           </p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-8 mb-6">
-          {/* File Upload Section */}
-          <div className="mb-8">
-            <div className="flex justify-between">
-              <div className="flex items-center justify-center gap-2">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Upload File
-                </h2>
-                <Info
-                  onClick={handleOpenInstructions}
-                  className="h-4 w-4 text-gray-600 cursor-pointer"
-                />
-              </div>
-
-              {/* Template Download */}
-              <div className="mb-8 flex items-center gap-2 justify-center">
-                <h3 className="text-md font-medium text-gray-900">
-                  Need a template?
-                </h3>
-                <button
-                  onClick={downloadTemplate}
-                  className="inline-flex items-center p-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  <FileDown className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-              <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <span className="mt-2 block text-sm font-medium text-gray-900">
-                      Click to upload
-                    </span>
-                    <span className="mt-1 block text-sm text-gray-500">
-                      CSV, Excel (.xls, .xlsx), or XML files up to 10MB
-                    </span>
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    id="file-upload"
-                    name="file-upload"
-                    type="file"
-                    accept=".csv,.xls,.xlsx,.xml"
-                    className="sr-only"
-                    onChange={handleFileSelect}
-                    disabled={parsing || validating || uploading}
+        {!parsedData && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            {/* File Upload Section */}
+            <div className="mb-8">
+              <div className="flex justify-between">
+                <div className="flex items-center justify-center gap-2">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Upload File
+                  </h2>
+                  <Info
+                    onClick={handleOpenInstructions}
+                    className="h-4 w-4 text-gray-600 cursor-pointer"
                   />
                 </div>
 
-                {selectedFile && (
-                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                    <FileIcon className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium">{selectedFile.name}</span>
-                    <span className="text-gray-400">
-                      ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </span>
-                  </div>
-                )}
+                {/* Template Download */}
+                <div className="mb-8 flex items-center gap-2 justify-center">
+                  <h3 className="text-md font-medium text-gray-900">
+                    Need a template?
+                  </h3>
+                  <button
+                    onClick={downloadTemplate}
+                    className="inline-flex items-center p-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <FileDown className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                        Click to upload
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        CSV, Excel (.xls, .xlsx), or XML files up to 10MB
+                      </span>
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      accept=".csv,.xls,.xlsx,.xml"
+                      className="sr-only"
+                      onChange={handleFileSelect}
+                      disabled={parsing || validating || uploading}
+                    />
+                  </div>
+
+                  {selectedFile && (
+                    <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                      <FileIcon className="h-4 w-4 text-blue-500" />
+                      <span className="font-medium">{selectedFile.name}</span>
+                      <span className="text-gray-400">
+                        ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedFile && !parsedData && (
+                <div className="mt-4 w-full flex justify-end items-center">
+                  <button
+                    onClick={handleParseFile}
+                    disabled={parsing}
+                    className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {parsing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      </>
+                    ) : (
+                      "Parse File"
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {selectedFile && !parsedData && (
-              <div className="mt-4 w-full flex justify-end items-center">
-                <button
-                  onClick={handleParseFile}
-                  disabled={parsing}
-                  className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {parsing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    </>
-                  ) : (
-                    "Parse File"
-                  )}
-                </button>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-8 bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="flex">
+                  <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-red-800">{error}</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-8 bg-red-50 border border-red-200 rounded-md p-4">
+        {/* Upload Progress */}
+        {uploading && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                Uploading users to database...
+              </p>
+              <p className="text-sm text-gray-500">
+                This may take a few moments. Please don't close this page.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Result */}
+        {uploadResult && (
+          <div className="bg-white shadow rounded-lg p-8 mb-4">
+            <div
+              className={`rounded-md p-6 ${
+                uploadResult.success
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-yellow-50 border border-yellow-200"
+              }`}
+            >
               <div className="flex">
-                <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">{error}</p>
+                <div className="flex-shrink-0">
+                  {uploadResult.success ? (
+                    <CheckCircleIcon className="h-8 w-8 text-green-400" />
+                  ) : (
+                    <AlertCircleIcon className="h-8 w-8 text-yellow-400" />
+                  )}
+                </div>
+                <div className="ml-4 flex-1">
+                  <h3
+                    className={`text-lg font-medium mb-3 ${
+                      uploadResult.success
+                        ? "text-green-800"
+                        : "text-yellow-800"
+                    }`}
+                  >
+                    Upload Complete
+                  </h3>
+                  <div
+                    className={`text-sm space-y-1 mb-4 ${
+                      uploadResult.success
+                        ? "text-green-700"
+                        : "text-yellow-700"
+                    }`}
+                  >
+                    <p className="font-medium">
+                      Total users: {uploadResult.total}
+                    </p>
+                    <p className="font-medium">
+                      Successfully uploaded: {uploadResult.successful}
+                    </p>
+                    {uploadResult.failed > 0 && (
+                      <p className="font-medium text-red-600">
+                        Failed: {uploadResult.failed}
+                      </p>
+                    )}
+                  </div>
+
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-semibold text-red-800 mb-2">
+                        Error Details:
+                      </h4>
+                      <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
+                        <ul className="text-sm text-red-700 space-y-2">
+                          {uploadResult.errors.map((err, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="font-medium mr-2 flex-shrink-0">
+                                Row {err.row}:
+                              </span>
+                              <span>{err.error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadResult.success && (
+                    <div className="mt-4">
+                      <Link
+                        href="/admin/b2b"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                      >
+                        Go Back
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {parsedData && (
+        { !uploadResult && parsedData && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
               <div className="w-full flex justify-between items-center">
@@ -550,105 +650,6 @@ export default function BulkUploadUsersPage() {
                 </>
               )}
             </button>
-          </div>
-        )}
-
-        {/* Upload Progress */}
-        {uploading && (
-          <div className="bg-white shadow rounded-lg p-8 mb-6">
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">
-                Uploading users to database...
-              </p>
-              <p className="text-sm text-gray-500">
-                This may take a few moments. Please don't close this page.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Upload Result */}
-        {uploadResult && (
-          <div className="bg-white shadow rounded-lg p-8">
-            <div
-              className={`rounded-md p-6 ${
-                uploadResult.success
-                  ? "bg-green-50 border border-green-200"
-                  : "bg-yellow-50 border border-yellow-200"
-              }`}
-            >
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {uploadResult.success ? (
-                    <CheckCircleIcon className="h-8 w-8 text-green-400" />
-                  ) : (
-                    <AlertCircleIcon className="h-8 w-8 text-yellow-400" />
-                  )}
-                </div>
-                <div className="ml-4 flex-1">
-                  <h3
-                    className={`text-lg font-medium mb-3 ${
-                      uploadResult.success
-                        ? "text-green-800"
-                        : "text-yellow-800"
-                    }`}
-                  >
-                    Upload Complete
-                  </h3>
-                  <div
-                    className={`text-sm space-y-1 mb-4 ${
-                      uploadResult.success
-                        ? "text-green-700"
-                        : "text-yellow-700"
-                    }`}
-                  >
-                    <p className="font-medium">
-                      Total users: {uploadResult.total}
-                    </p>
-                    <p className="font-medium">
-                      Successfully uploaded: {uploadResult.successful}
-                    </p>
-                    {uploadResult.failed > 0 && (
-                      <p className="font-medium text-red-600">
-                        Failed: {uploadResult.failed}
-                      </p>
-                    )}
-                  </div>
-
-                  {uploadResult.errors && uploadResult.errors.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-red-800 mb-2">
-                        Error Details:
-                      </h4>
-                      <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
-                        <ul className="text-sm text-red-700 space-y-2">
-                          {uploadResult.errors.map((err, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="font-medium mr-2 flex-shrink-0">
-                                Row {err.row}:
-                              </span>
-                              <span>{err.error}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-
-                  {uploadResult.success && (
-                    <div className="mt-4">
-                      <Link
-                        href="/admin/b2b"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                      >
-                        Go Back
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
