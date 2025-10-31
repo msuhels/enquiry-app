@@ -88,9 +88,7 @@ const mapDataToPrograms = (data: any[]): ProgramFormData[] => {
   return data.map((row) => ({
     university: row["University"] || row["university"] || "",
     previous_or_current_study:
-      row["Previous / Current Study"] ||
-      row["previous_or_current_study"] ||
-      "",
+      row["Previous / Current Study"] || row["previous_or_current_study"] || "",
     degree_going_for: row["Degree Going For"] || row["degree_going_for"] || "",
     course_name: row["Courses Name"] || row["course_name"] || "",
     ielts_requirement:
@@ -114,7 +112,8 @@ const validateFileType = (file: File): boolean => {
     .substring(file.name.lastIndexOf("."));
 
   return (
-    allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension)
+    allowedTypes.includes(file.type) ||
+    allowedExtensions.includes(fileExtension)
   );
 };
 
@@ -134,7 +133,7 @@ export default function BulkUploadPage() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string>("");
 
-  console.log("uploadResult 🚀🚀", uploadResult)
+  console.log("uploadResult 🚀🚀", uploadResult);
 
   const { openModal } = useModal();
 
@@ -303,29 +302,32 @@ export default function BulkUploadPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-              <Breadcrumbs />
-              <h1 className="text-3xl font-bold text-gray-900">
-                Bulk Upload Programs
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Upload multiple university programs using CSV or Excel files
-              </p>
-            </div>
+        <div className="mb-8">
+          <Breadcrumbs />
+          <h1 className="text-3xl font-bold text-gray-900">
+            Bulk Upload Programs
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Upload multiple university programs using CSV or Excel files
+          </p>
+        </div>
         {!parsedData && (
           <>
             <div className="bg-white shadow rounded-lg p-8 mb-6">
               {/* File Upload Section */}
               <div className="mb-8">
                 <div className="flex justify-between">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className=" gap-2">
                     <h2 className="text-lg font-semibold text-gray-900">
                       Upload File
                     </h2>
-                    <Info
+                    <p className="text-xs text-[#F97316]">
+                      For file format please refer to the template
+                    </p>
+                    {/* <Info
                       onClick={handleOpenInstructions}
                       className="h-4 w-4 text-gray-600 cursor-pointer"
-                    />
+                    /> */}
                   </div>
 
                   {/* Template Download */}
@@ -415,7 +417,7 @@ export default function BulkUploadPage() {
           </>
         )}
 
-         {/* Upload Progress */}
+        {/* Upload Progress */}
         {uploading && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="flex flex-col items-center justify-center py-8">
@@ -464,7 +466,6 @@ export default function BulkUploadPage() {
                         : "text-yellow-700"
                     }`}
                   >
-                   
                     <p className="font-medium">
                       Successfully uploaded: {uploadResult.successCount}
                     </p>
@@ -512,7 +513,7 @@ export default function BulkUploadPage() {
         )}
 
         {/* Parsed Data Section */}
-        { !uploading && !uploadResult && parsedData && (
+        {!uploading && !uploadResult && parsedData && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
               <div className="w-full flex justify-between items-center">
@@ -521,38 +522,36 @@ export default function BulkUploadPage() {
                 </h2>
 
                 <div className="flex gap-2 items-center justify-center">
-                 
                   {parsedData && !uploading && !uploadResult && (
                     <>
-                     <button
-                    className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-                    onClick={handleUploadAnotherFile}
-                  >
-                    <X className="h-5 w-5 mr-2" />
-                    Cancel Upload
-                  </button>
-                    
-                     <button
-                      onClick={handleSaveToDatabase}
-                      disabled={uploading}
-                      className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-                    >
-                      {uploading ? (
-                        <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin inline" />
-                          Saving to database...
-                        </>
-                      ) : (
-                        <div className="w-full flex items-center">
-                          <UploadIcon className="h-5 w-5 mr-2" />
-                          <span className="min-w-min whitespace-nowrap">
-                            Save {parsedData.length} Programs
-                          </span>
-                        </div>
-                      )}
-                    </button>
+                      <button
+                        className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                        onClick={handleUploadAnotherFile}
+                      >
+                        <X className="h-5 w-5 mr-2" />
+                        Cancel Upload
+                      </button>
+
+                      <button
+                        onClick={handleSaveToDatabase}
+                        disabled={uploading}
+                        className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin inline" />
+                            Saving to database...
+                          </>
+                        ) : (
+                          <div className="w-full flex items-center">
+                            <UploadIcon className="h-5 w-5 mr-2" />
+                            <span className="min-w-min whitespace-nowrap">
+                              Save {parsedData.length} Programs
+                            </span>
+                          </div>
+                        )}
+                      </button>
                     </>
-                   
                   )}
                 </div>
               </div>
@@ -680,8 +679,6 @@ export default function BulkUploadPage() {
             )}
           </div>
         )}
-
-      
       </div>
     </div>
   );

@@ -14,9 +14,9 @@ export default function AdminLayout({
   const { logout, isAuthenticated } = useAuth();
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser]  = useState("")
+  const [user, setUser] = useState("");
 
-   const [isWelcome, setIsWelcome] = useState<string | null>(null);
+  const [isWelcome, setIsWelcome] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -36,7 +36,7 @@ export default function AdminLayout({
       const data = await fetchUser();
       if (data) {
         setUserRole(data.userDetails.role);
-        setUser(data.userDetails)
+        setUser(data.userDetails);
         setTimeout(() => {
           setIsLoading(false);
         }, 1000);
@@ -57,12 +57,12 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     logout();
-     if (typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       localStorage.removeItem("showedWelcome");
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (!isLoading && isWelcome === "false" && typeof window !== "undefined") {
       setTimeout(() => {
         setIsWelcome("true");
@@ -74,7 +74,7 @@ export default function AdminLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 overflow-hidden flex justify-center items-center">
-        <Loader2 className="animate-spin text-indigo-600 h-12 w-12" />
+        <Loader2 className="animate-spin text-[#F97316] h-12 w-12" />
       </div>
     );
   }
