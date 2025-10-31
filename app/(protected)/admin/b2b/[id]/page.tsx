@@ -225,35 +225,39 @@ export default function UserUpdatePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs disabledItemIndex={2} />
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-[#3a3886] mb-8">
+          <h1 className="text-4xl font-bold text-[#3a3886] mb-8">
             Edit B2B Partner
           </h1>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="mb-4  w-full">
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Email</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Email
+              </label>
               <input
                 type="email"
                 value={user.email}
                 onChange={(e) => setUser({ ...user, email: e.target.value })}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl  border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
 
             {/* Full Name */}
             <div className="mb-4  w-full">
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Full Name</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Full Name
+              </label>
               <input
                 type="text"
                 value={user.full_name || ""}
                 onChange={(e) =>
                   setUser({ ...user, full_name: e.target.value })
                 }
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
           </div>
@@ -261,27 +265,31 @@ export default function UserUpdatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Phone */}
             <div className="mb-4 w-full">
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Phone</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Phone
+              </label>
               <input
                 type="text"
                 value={user.phone_number || ""}
                 onChange={(e) =>
                   setUser({ ...user, phone_number: e.target.value })
                 }
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
 
             {/* Organization */}
             <div className="mb-4 w-full">
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Organization</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Organization
+              </label>
               <input
                 type="text"
                 value={user.organization || ""}
                 onChange={(e) =>
                   setUser({ ...user, organization: e.target.value })
                 }
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
           </div>
@@ -321,12 +329,15 @@ export default function UserUpdatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Role */}
             <div className="mb-4 w-full">
-              {/* <label className="block text-sm font-semibold text-[#3a3886] mb-2">Role</label> */}
-               <SearchSelect
+              {/* <label className="block text-xl font-semibold text-[#3a3886] mb-2">Role</label> */}
+              <SearchSelect
                 label="Role"
                 name="role"
                 value={user.role || ""}
-                options={[{value:"user", label:"User"}, {"value":"admin", label:"Admin"}]}
+                options={[
+                  { value: "user", label: "User" },
+                  { value: "admin", label: "Admin" },
+                ]}
                 onChange={(value) => setUser({ ...user, role: value })}
                 placeholder="Select user role"
                 allowCreate={false}
@@ -343,13 +354,15 @@ export default function UserUpdatePage() {
 
             {/* Password */}
             <div className="mb-4 w-full">
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Password</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Password
+              </label>
               <div className="flex gap-2 items-center mt-1">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={user.password || ""}
                   readOnly
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                  className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
                 />
                 <button
                   onClick={fetchPassword}
@@ -384,7 +397,9 @@ export default function UserUpdatePage() {
           {/* Metadata */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Created At</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Created At
+              </label>
               <input
                 type="text"
                 readOnly
@@ -393,11 +408,13 @@ export default function UserUpdatePage() {
                     ? new Date(user.created_at).toLocaleString()
                     : ""
                 }
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Updated At</label>
+              <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+                Updated At
+              </label>
               <input
                 type="text"
                 readOnly
@@ -406,13 +423,16 @@ export default function UserUpdatePage() {
                     ? new Date(user.updated_at).toLocaleString()
                     : ""
                 }
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
 
             {/* Status */}
             <div className="mb-4 flex items-center justify-start gap-5 ">
-              <label htmlFor="status" className="block text-sm font-semibold text-[#3a3886] mb-2">
+              <label
+                htmlFor="status"
+                className="block text-xl font-semibold text-[#3a3886] mb-2"
+              >
                 Status
               </label>
               <div className="flex items-center gap-3">
@@ -430,7 +450,7 @@ export default function UserUpdatePage() {
                     }`}
                   />
                 </Switch.Root>
-                <span className="text-sm text-gray-700">
+                <span className="text-xl text-gray-700">
                   {user.is_active ? "Active" : "Inactive"}
                 </span>
               </div>
@@ -440,7 +460,7 @@ export default function UserUpdatePage() {
           <div className="flex justify-end gap-2">
             <Link
               href="/admin/b2b"
-              className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              className="inline-flex items-center px-4 py-2.5 text-xl bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               Cancel
             </Link>
@@ -448,7 +468,7 @@ export default function UserUpdatePage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               <Save size={18} />
               {saving ? "Saving..." : "Save Changes"}
