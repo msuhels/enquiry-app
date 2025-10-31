@@ -94,6 +94,28 @@ export async function PATCH(
     if (!result.success) {
       console.error("LOGGING : Failed to update program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
+    } else {
+      if (!result.data) {
+        return NextResponse.json(
+          { error: "Program update failed" },
+          { status: 500 }
+        );
+      }
+      const data = await saveNotification({
+        program_id: result.data.id,
+        title: `A Program Has Been Updated - ${result?.data.course_name}`,
+        description: `A program has been updated.
+
+        Program Details:
+        - University: ${result.data.university}
+        - Previous/Current Study: ${result.data.previous_or_current_study}
+        - Degree Going For: ${result.data.degree_going_for}
+        - Course Name: ${result.data.course_name}
+        - IELTS Requirement: ${result.data.ielts_requirement}
+        - Special Requirements: ${result.data.special_requirements || "None"}
+        - Remarks: ${result.data.remarks || "None"}
+        - Updated At: ${new Date().toLocaleString()}`,
+      });
     }
 
     console.log("LOGGING : Program updated successfully via API");
@@ -314,8 +336,11 @@ export async function DELETE(
       console.error("LOGGING : Failed to delete program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
     } else {
-      if(!result.data) {
-        return NextResponse.json({ error: "Program creation failed" }, { status: 500 });
+      if (!result.data) {
+        return NextResponse.json(
+          { error: "Program creation failed" },
+          { status: 500 }
+        );
       }
       const data = await saveNotification({
         program_id: result.data.id,
