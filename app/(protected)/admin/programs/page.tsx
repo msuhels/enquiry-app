@@ -10,6 +10,7 @@ import { useFetch } from "@/hooks/api/useFetch";
 import { useDelete } from "@/hooks/api/useDelete";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { Program } from "@/lib/types";
+import { usePatch } from "@/hooks/api/usePatch";
 
 export default function ProgramsPage() {
   const router = useRouter();
@@ -24,20 +25,31 @@ export default function ProgramsPage() {
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [debouncedSearch] = useDebounce(search, 400);
+  const [fieldsSwitches, setFieldsSwitches] = useState([
+    { key: "is_special_requirements_enabled", value: false },
+    { key: "is_remarks_enabled", value: false },
+  ]);
 
   const offset = (page - 1) * itemsPerPage;
-
   const apiUrl = `/api/admin/programs?search=${encodeURIComponent(
     debouncedSearch
   )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
-
   const { data, isLoading } = useFetch(apiUrl);
-
+  const { data: settings } = useFetch("/api/admin/settings");
+  const { patch} = usePatch();
   useEffect(() => {
     if (data?.success) {
       setPrograms(data.data);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (settings?.data) {
+      setFieldsSwitches((prev) =>
+        prev.map((f) => ({ ...f, value: settings.data[f.key] }))
+      );
+    }
+  }, [settings]);
 
   const handleDelete = (program: Program) => {
     const modalId = openModal(
@@ -70,11 +82,7 @@ export default function ProgramsPage() {
       key: "university",
       label: "University",
       sortable: true,
-      render: (row) => (
-        <span>
-          {row.university}
-        </span>
-      ),
+      render: (row) => <span>{row.university}</span>,
     },
     { key: "course_name", label: "Course Name", sortable: true },
     // { key: "study_level", label: "Study Level" },
@@ -88,6 +96,32 @@ export default function ProgramsPage() {
     // { key: "active", label: "Active" },
     // { key: "inactive", label: "Inactive" },
   ];
+
+  const handleSwitchToggle = async (key: string, value: boolean) => {
+    try {
+      const res = await patch(`/api/admin/settings`, { [key]: value });
+
+      if (res.success) {
+        setFieldsSwitches((prev) =>
+          prev.map((f) => (f.key === key ? { ...f, value } : f))
+        );
+        toast.success("Updated successfully", {
+          richColors:true,
+          position:'top-center'
+        });
+      } else {
+        toast.error("Failed to update", {
+          richColors:true,
+          position:'top-center'
+        });
+      }
+    } catch {
+      toast.error("Server error", {
+        richColors:true,
+        position:'top-center'
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,6 +149,8 @@ export default function ProgramsPage() {
           addBulkHref="/admin/programs/upload"
           isLoading={isLoading}
           emptyMessage="No programs found."
+          fieldsSwitches={fieldsSwitches}
+          handleToggleActive={handleSwitchToggle}
         />
       </div>
     </div>

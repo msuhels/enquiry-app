@@ -6,6 +6,7 @@ import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
 import Pagination from "../ui/pagination";
 import SearchSelect from "../form/FormSearchSelect";
+import * as Switch from "@radix-ui/react-switch";
 
 export interface TableColumn<T> {
   key: string;
@@ -44,7 +45,7 @@ interface TableProps<T> {
   total?: number;
   itemsPerPage?: number;
   currentPage?: number;
-
+  fieldsSwitches?: { key: string; value: boolean }[];
   // Event Handlers
   onSearchChange?: (val: Record<string, string>) => void;
   onFilterChange?: (filterKey: string) => void;
@@ -56,6 +57,7 @@ interface TableProps<T> {
   locationFilters?: { state: string; city: string };
   onDateFilterChange?: (val: { fromDate: string; toDate: string }) => void;
   onLocationFilterChange?: (val: { state: string; city: string }) => void;
+  handleToggleActive?: (key: string, value: boolean) => void;
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
@@ -79,13 +81,14 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   total = 0,
   itemsPerPage = 10,
   currentPage = 1,
-
+  fieldsSwitches = [],
   onSearchChange,
   onFilterChange,
   onSortChange,
   onPageChange,
   onEdit,
   onDelete,
+  handleToggleActive,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -131,6 +134,38 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
               </Link>
             )}
           </div>
+        </div>
+      </div>
+      <div className="w-full flex justify-end">
+        <div>
+          {fieldsSwitches?.length > 0 && (
+            <div className="flex flex-col items-start gap-3">
+              {fieldsSwitches.map((item, index) => (
+                <div key={index} className="flex items-center justify-between w-full gap-4">
+                  <label className="text-sm text-gray-700">
+                    {item.key.replace(/_/g, " ")}
+                  </label>
+
+                  <Switch.Root
+                    checked={item.value}
+                    onClick={(e) => e.stopPropagation()}
+                    onCheckedChange={(value) =>
+                      handleToggleActive?.(item.key, value)
+                    }
+                    className={`relative w-10 h-5 rounded-full transition-colors ${
+                      item.value ? "bg-indigo-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <Switch.Thumb
+                      className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                        item.value ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                  </Switch.Root>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div className="flex w-full gap-4 items-center">
