@@ -143,10 +143,10 @@ export default function UserDashboard() {
                 </div>
               </div>
               <div>
-                <p className="text-lg text-white/80 font-medium">{card.title}</p>
+                <p className="text-3xl text-white/80 font-medium">{card.title}</p>
                 <p className="text-4xl font-bold mt-2">{card.value}</p>
                 <div className="mt-4 pt-4 border-t border-white/10">
-                  <p className="text-xs text-white/70">{card.trend}</p>
+                  <p className="text-lg text-white/70">{card.trend}</p>
                 </div>
               </div>
             </div>
@@ -173,10 +173,10 @@ export default function UserDashboard() {
                       <action.icon className="w-7 h-7 text-white" />
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
+                      <p className="text-2xl font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
                         {action.title}
                       </p>
-                      <p className="text-base text-gray-500 mt-1">Access your enquiries</p>
+                      <p className="text-lg text-gray-500 mt-1">Access your enquiries</p>
                     </div>
                   </div>
                 </div>
