@@ -31,6 +31,7 @@ export async function GET(
         "*, createdby:users!inner(id, full_name, phone_number, city, state, organization)",
         { count: "exact" }
       )
+      .eq("createdby", createdById)
       .order("created_at", { ascending: false });
 
     if (fromDate) {
