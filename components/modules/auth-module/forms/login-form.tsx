@@ -56,10 +56,11 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
         >
           {loginConfig.title?.show && (
             <CardTitle
-            style={{color:"#EE7B23"}}
+              style={{ color: "#EE7B23" }}
               className={cn(
-                authConfig.globalStyles?.title || "text-2xl",
-                loginConfig.styles?.title
+                authConfig.globalStyles?.title || "text-3xl",
+                loginConfig.styles?.title,
+                "text-3xl"
               )}
             >
               {loginConfig.title?.text || "Login"}
@@ -67,10 +68,11 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
           )}
           {loginConfig.description?.show && (
             <CardDescription
-            style={{color:"#3A3886"}}
+              style={{ color: "#3A3886" }}
               className={cn(
                 authConfig.globalStyles?.description,
-                loginConfig.styles?.description
+                loginConfig.styles?.description,
+                "text-base"
               )}
             >
               {loginConfig.description?.text ||
@@ -90,10 +92,11 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                 <div className="grid gap-2">
                   <Label
                     htmlFor="email"
-                    style={{color:"#EE7B23"}}
+                    style={{ color: "#EE7B23" }}
                     className={cn(
                       authConfig.globalStyles?.label,
-                      loginConfig.email?.styles?.label
+                      loginConfig.email?.styles?.label,
+                      "text-lg"
                     )}
                   >
                     {loginConfig.email?.label || "Email"}
@@ -110,12 +113,13 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                       updateField("email", e.target.value);
                       if (error) clearError();
                     }}
-                    style={{color:"#3A3886"}}
+                    style={{ color: "#3A3886" }}
                     className={cn(
                       authConfig.globalStyles?.input,
                       loginConfig.email?.styles?.input,
                       fieldErrors.email &&
-                        "border-red-500 focus-visible:ring-red-500"
+                        "border-red-500 focus-visible:ring-red-500",
+                      "text-lg"
                     )}
                     disabled={isLoginLoading}
                   />
@@ -138,27 +142,15 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                   <div className="flex items-center">
                     <Label
                       htmlFor="password"
-                      style={{color:"#EE7B23"}}
+                      style={{ color: "#EE7B23" }}
                       className={cn(
                         authConfig.globalStyles?.label,
-                        loginConfig.password?.styles?.label
+                        loginConfig.password?.styles?.label,
+                        "text-lg"
                       )}
                     >
                       {loginConfig.password?.label || "Password"}
                     </Label>
-                    {loginConfig.forgotPasswordLink?.show && (
-                      <Link
-                        href="/auth/forgot-password"
-                        className={cn(
-                          "ml-auto inline-block text-sm hover:underline",
-                          authConfig.globalStyles?.link,
-                          loginConfig.forgotPasswordLink?.styles?.link
-                        )}
-                      >
-                        {loginConfig.forgotPasswordLink?.text?.linkText ||
-                          "Forgot your password?"}
-                      </Link>
-                    )}
                   </div>
                   <Input
                     id="password"
@@ -170,12 +162,13 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                       updateField("password", e.target.value);
                       if (error) clearError();
                     }}
-                    style={{color:"#3A3886"}}
+                    style={{ color: "#3A3886" }}
                     className={cn(
                       authConfig.globalStyles?.input,
                       loginConfig.password?.styles?.input,
                       fieldErrors.password &&
-                        "border-red-500 focus-visible:ring-red-500"
+                        "border-red-500 focus-visible:ring-red-500 ",
+                      "text-lg"
                     )}
                     disabled={isLoginLoading}
                   />
@@ -223,9 +216,10 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                   type="submit"
                   className={cn(
                     authConfig.globalStyles?.button || "w-full",
-                    loginConfig.submitButton?.styles?.button
+                    loginConfig.submitButton?.styles?.button,
+                    "text-lg"
                   )}
-                  style={{backgroundColor:"#EE7B23"}}
+                  style={{ backgroundColor: "#EE7B23" }}
                   disabled={
                     isLoginLoading || !formData.email || !formData.password
                   }
@@ -242,22 +236,6 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                 </Button>
               )}
             </div>
-
-            {loginConfig.signUpLink?.show && (
-              <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/auth/sign-up"
-                  className={cn(
-                    authConfig.globalStyles?.link,
-                    loginConfig.signUpLink?.styles?.link
-                  )}
-                >
-                  {loginConfig.signUpLink?.text?.linkText?.split("? ")[1] ||
-                    "Sign up"}
-                </Link>
-              </div>
-            )}
           </form>
         </CardContent>
       </Card>
