@@ -209,7 +209,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         <div className="flex w-full justify-end items-center mb-4 gap-3">
           {Object.keys(dateFilters).map((key: any, index) => (
             <div key={index} className="flex flex-col">
-              <label className="text-sm font-medium text-[#3a3886] mb-1.5">
+              <label className="text-lg font-medium text-[#3a3886] mb-1.5">
                 {key == "from_date" ? "From Date" : "To Date"}
               </label>
               <input
