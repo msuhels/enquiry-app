@@ -103,11 +103,13 @@ export default function EnquirySystem() {
       <div className="max-w-full mx-auto p-6 md:p-8">
         <Breadcrumbs />
         <div className="w-full flex items-center mb-5 justify-center">
-            <span className="text-2xl font-bold text-[#3a3886]">Trusted by the Wise. Chosen by the Best.</span>
+          <span className="text-4xl pt-10 font-bold text-[#3a3886]">
+            Trusted by the Wise. Chosen by the Best.
+          </span>
         </div>
         <motion.div
           animate={{
-            y: isCentered ? "40vh" : 0,
+            y: isCentered ? "20vh" : 0,
           }}
           transition={{ duration: 0.6, type: "spring" }}
         >
@@ -169,7 +171,9 @@ export default function EnquirySystem() {
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-gray-400" />
               </div>
-              <p className="text-gray-600 text-2xl font-medium">No programs found.</p>
+              <p className="text-gray-600 text-2xl font-medium">
+                No programs found.
+              </p>
               <p className="text-gray-400 text-xl mt-2">
                 Try adjusting your search criteria
               </p>
