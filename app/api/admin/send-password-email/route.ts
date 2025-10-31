@@ -1,3 +1,4 @@
+import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
@@ -7,6 +8,20 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    const {
+      data: user,
+      error: authError,
+    } = await createServiceRoleClient()
+      .from("users")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (authError || !user) {
+      console.error("User not found:", authError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const transporter = nodemailer.createTransport({
@@ -30,7 +45,7 @@ export async function POST(request: NextRequest) {
     
     <h2 style="color:#1a73e8;">Welcome to India’s First Free Education in Italy Course Finder by Alzato Overseas</h2>
 
-    <p>Dear Partner,</p>
+    <p>Dear ${user?.organization || "Partner"},</p>
 
     <p>
       We’re thrilled to welcome you to the <b>Alzato Overseas Partner Network!</b><br/>
