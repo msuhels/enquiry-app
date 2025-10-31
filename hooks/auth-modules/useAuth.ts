@@ -59,9 +59,9 @@ export function useAuth(): UseAuthReturn {
         console.log({ data });
         console.log({ error });
         if (error) {
-          toast.error("Login failed. Please check your credentials.", {
-            id: loginToast,
-          });
+          // toast.error("Login failed. Please check your credentials.", {
+          //   id: loginToast,
+          // });
           console.log({ error });
           return false;
         }
@@ -81,9 +81,9 @@ export function useAuth(): UseAuthReturn {
           return true;
         } else {
           console.log({ result });
-          toast.error("Login failed. Please check your credentials.", {
-            id: loginToast,
-          });
+          // toast.error("Login failed. Please check your credentials.", {
+          //   id: loginToast,
+          // });
           return false;
         }
       } catch (error) {
