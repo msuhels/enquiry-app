@@ -53,13 +53,13 @@ const FormInput: React.FC<FormInputProps> = ({
     <div className="flex flex-col space-y-1 relative">
       {/* Label + NA toggle */}
       <div className="flex justify-between items-center mb-1">
-        <label className="font-medium text-[#3a3886]">
+        <label className="font-medium text-lg text-[#3a3886]">
           {label}{" "}
           {required && !isNA && <span className="text-[#F97316] ml-1">*</span>}
         </label>
 
         {naKey && (
-          <label className="flex items-center space-x-1 text-sm cursor-pointer">
+          <label className="flex items-center space-x-1 text-base cursor-pointer">
             <input
               type="checkbox"
               checked={!!isNA}
@@ -80,7 +80,7 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all resize-none h-24 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
+          className="w-full px-4 py-2.5 border-2 text-lg border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all resize-none h-24 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
         />
       ) : select ? (
         <select
@@ -89,13 +89,17 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value}
           disabled={isDisabled}
           onChange={onChange}
-          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 appearance-none cursor-pointer"
+          className="w-full px-4 py-2.5 text-lg border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 appearance-none cursor-pointer"
         >
-          <option value="" className="text-gray-500">
+          <option value="" className="text-gray-500 text-lg">
             Select {label}
           </option>
           {select.map((opt) => (
-            <option key={opt.value} value={opt.value} className="text-gray-700">
+            <option
+              key={opt.value}
+              value={opt.value}
+              className="text-gray-700 text-lg"
+            >
               {opt.label}
             </option>
           ))}
@@ -109,7 +113,7 @@ const FormInput: React.FC<FormInputProps> = ({
             disabled={isDisabled}
             checked={!!value}
             onChange={onChange}
-            className="h-5 w-5 cursor-pointer rounded border-2 border-gray-300 focus:ring-1 focus:ring-[#F97316] transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-5 w-5 cursor-pointer text-lg rounded border-2 border-gray-300 focus:ring-1 focus:ring-[#F97316] transition-all disabled:cursor-not-allowed disabled:opacity-50"
             style={{ accentColor: "#F97316" }}
           />
           <label
@@ -132,7 +136,7 @@ const FormInput: React.FC<FormInputProps> = ({
           min={min}
           max={max}
           required={required && !isNA}
-          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+          className="w-full px-4 py-2.5 border-2 text-lg border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
         />
       )}
     </div>
