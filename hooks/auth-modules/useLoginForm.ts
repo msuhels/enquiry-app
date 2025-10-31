@@ -60,6 +60,7 @@ export function useLoginForm(): UseLoginFormReturn {
     }
 
     const success = await login(formData);
+
     
     // If login failed due to validation errors, they will be handled by the auth handler
     // and reflected in the global error state
