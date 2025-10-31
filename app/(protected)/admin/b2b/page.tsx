@@ -111,10 +111,10 @@ export default function UsersPage() {
       sortable: true,
       render: (row: User) => (
         <div>
-          <div className="text-lg font-medium text-gray-900">
+          <div className="text-xl font-medium text-gray-900">
             {row.full_name}
           </div>
-          <div className="text-lg text-gray-500">{row.email}</div>
+          <div className="text-xl text-gray-500">{row.email}</div>
         </div>
       ),
     },
