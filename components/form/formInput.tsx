@@ -50,7 +50,7 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value || ''}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-[#F97316] transition-all resize-none h-24 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
+          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all resize-none h-24 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
         />
       </div>
     );
@@ -69,7 +69,7 @@ const FormInput: React.FC<FormInputProps> = ({
           value={value || ''}
           disabled={disabled}
           onChange={onChange}
-          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-[#F97316] transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 appearance-none cursor-pointer"
+          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 appearance-none cursor-pointer"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%233a3886' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
             backgroundPosition: 'right 0.5rem center',
@@ -99,7 +99,7 @@ const FormInput: React.FC<FormInputProps> = ({
           name={name}
           checked={!!value}
           onChange={onChange}
-          className="h-5 w-5 cursor-pointer rounded border-2 border-gray-300 text-[#F97316] focus:ring-2 focus:ring-[#F97316] focus:ring-offset-0 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-5 w-5 cursor-pointer rounded border-2 border-gray-300 text-[#F97316] focus:ring-1 focus:ring-[#F97316] focus:ring-offset-0 transition-all disabled:cursor-not-allowed disabled:opacity-50"
           style={{
             accentColor: '#F97316'
           }}
@@ -130,7 +130,7 @@ const FormInput: React.FC<FormInputProps> = ({
         min={min}
         max={max}
         required={required}
-        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
       />
     </div>
   );
