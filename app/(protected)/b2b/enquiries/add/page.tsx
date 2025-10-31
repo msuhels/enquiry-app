@@ -28,6 +28,7 @@ export default function EnquirySystem() {
   const { data: previousOrCurrentStudyData } = useFetch(
     `/api/admin/previous-or-current-study`
   );
+  const { data: settings, mutate } = useFetch("/api/admin/settings");
   const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
   const { post } = usePost();
 
@@ -68,7 +69,9 @@ export default function EnquirySystem() {
     try {
       setLoading(true);
       setHasSearched(false);
+      setPrograms([]);
 
+      await mutate();
       await post("/api/admin/enquiries", {
         previous_or_current_study: previousOrCurrentStudy,
         degree_going_for: degreeGoingFor,
@@ -154,7 +157,7 @@ export default function EnquirySystem() {
         {/* Result */}
         <div className="mt-6 w-full">
           {programs.length > 0 ? (
-            <ProgramsTable data={programs} />
+            <ProgramsTable data={programs} settings={settings?.data} />
           ) : hasSearched && !loading ? (
             <p className="text-gray-500 text-center">No programs found.</p>
           ) : null}
@@ -164,7 +167,10 @@ export default function EnquirySystem() {
   );
 }
 
-const ProgramsTable = ({ data }: any) => {
+const ProgramsTable = ({ data, settings }: any) => {
+  const showSpecialRequirements = settings?.is_special_requirements_enabled;
+  const showRemarks = settings?.is_remarks_enabled;
+
   return (
     <div className="bg-white w-full rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -183,20 +189,25 @@ const ProgramsTable = ({ data }: any) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Degree Going For
               </th>
-              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Duration
-              </th> */}
+
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 IELTS Requirement
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Special Requirements
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Remarks
-              </th>
+
+              {showSpecialRequirements && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Special Requirements
+                </th>
+              )}
+
+              {showRemarks && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Remarks
+                </th>
+              )}
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
             {data.map((item: any) => (
               <tr key={item.id} className="hover:bg-gray-50">
@@ -212,18 +223,21 @@ const ProgramsTable = ({ data }: any) => {
                 <td className="px-6 py-4 text-sm text-gray-900">
                   {item.degree_going_for || "-"}
                 </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.duration || "-"}
-                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.ielts_requirement || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.special_requirements || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {item.remarks || "-"}
-                </td>
+
+                {showSpecialRequirements && (
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {item.special_requirements || "-"}
+                  </td>
+                )}
+
+                {showRemarks && (
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {item.remarks || "-"}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

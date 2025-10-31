@@ -128,7 +128,6 @@ export default function EnquiriesPage() {
   ];
 
 
-    // Get all states from India (country code: IN)
   const stateOptions = useMemo(() => {
     const indianStates = State.getStatesOfCountry("IN");
     return indianStates.map((state) => ({
