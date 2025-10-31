@@ -303,9 +303,7 @@ export default function BulkUploadPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!parsedData && (
-          <>
-            <div className="mb-8">
+          <div className="mb-8">
               <Breadcrumbs />
               <h1 className="text-3xl font-bold text-gray-900">
                 Bulk Upload Programs
@@ -314,7 +312,8 @@ export default function BulkUploadPage() {
                 Upload multiple university programs using CSV or Excel files
               </p>
             </div>
-
+        {!parsedData && (
+          <>
             <div className="bg-white shadow rounded-lg p-8 mb-6">
               {/* File Upload Section */}
               <div className="mb-8">
@@ -349,7 +348,7 @@ export default function BulkUploadPage() {
                     <div>
                       <label htmlFor="file-upload" className="cursor-pointer">
                         <span className="mt-2 block text-sm font-medium text-gray-900">
-                          Click to upload or drag and drop
+                          Click to upload
                         </span>
                         <span className="mt-1 block text-sm text-gray-500">
                           CSV or Excel (.xls, .xlsx) files up to 10MB
@@ -416,8 +415,105 @@ export default function BulkUploadPage() {
           </>
         )}
 
+         {/* Upload Progress */}
+        {uploading && (
+          <div className="bg-white shadow rounded-lg p-8 mb-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                Uploading programs to database...
+              </p>
+              <p className="text-sm text-gray-500">
+                This may take a few moments. Please don't close this page.
+              </p>
+            </div>
+          </div>
+        )}
+
+          {/* Upload Result */}
+        {uploadResult && (
+          <div className="bg-white shadow rounded-lg p-8 mb-4">
+            <div
+              className={`rounded-md p-6 ${
+                uploadResult.success
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-yellow-50 border border-yellow-200"
+              }`}
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  {uploadResult.success ? (
+                    <CheckCircleIcon className="h-8 w-8 text-green-400" />
+                  ) : (
+                    <XCircleIcon className="h-8 w-8 text-yellow-400" />
+                  )}
+                </div>
+                <div className="ml-4 flex-1">
+                  <h3
+                    className={`text-lg font-medium mb-3 ${
+                      uploadResult.success
+                        ? "text-green-800"
+                        : "text-yellow-800"
+                    }`}
+                  >
+                    Upload Complete
+                  </h3>
+                  <div
+                    className={`text-sm space-y-1 mb-4 ${
+                      uploadResult.success
+                        ? "text-green-700"
+                        : "text-yellow-700"
+                    }`}
+                  >
+                   
+                    <p className="font-medium">
+                      Successfully uploaded: {uploadResult.successCount}
+                    </p>
+                    {uploadResult.failedCount > 0 && (
+                      <p className="font-medium text-red-600">
+                        Failed: {uploadResult.failedCount}
+                      </p>
+                    )}
+                  </div>
+
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-semibold text-red-800 mb-2">
+                        Error Details:
+                      </h4>
+                      <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
+                        <ul className="text-sm text-red-700 space-y-2">
+                          {uploadResult.errors.map((err, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="font-medium mr-2 flex-shrink-0">
+                                Program {err.index + 1} ({err.programme_name}):
+                              </span>
+                              <span>{err.error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadResult.success && (
+                    <div className="mt-4">
+                      <Link
+                        href="/admin/programs"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                      >
+                        Go to Programs
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Parsed Data Section */}
-        {parsedData && (
+        { !uploading && !uploadResult && parsedData && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
               <div className="w-full flex justify-between items-center">
@@ -586,102 +682,7 @@ export default function BulkUploadPage() {
           </div>
         )}
 
-        {/* Upload Progress */}
-        {uploading && (
-          <div className="bg-white shadow rounded-lg p-8 mb-6">
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">
-                Uploading programs to database...
-              </p>
-              <p className="text-sm text-gray-500">
-                This may take a few moments. Please don't close this page.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Upload Result */}
-        {uploadResult && (
-          <div className="bg-white shadow rounded-lg p-8">
-            <div
-              className={`rounded-md p-6 ${
-                uploadResult.success
-                  ? "bg-green-50 border border-green-200"
-                  : "bg-yellow-50 border border-yellow-200"
-              }`}
-            >
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {uploadResult.success ? (
-                    <CheckCircleIcon className="h-8 w-8 text-green-400" />
-                  ) : (
-                    <XCircleIcon className="h-8 w-8 text-yellow-400" />
-                  )}
-                </div>
-                <div className="ml-4 flex-1">
-                  <h3
-                    className={`text-lg font-medium mb-3 ${
-                      uploadResult.success
-                        ? "text-green-800"
-                        : "text-yellow-800"
-                    }`}
-                  >
-                    Upload Complete
-                  </h3>
-                  <div
-                    className={`text-sm space-y-1 mb-4 ${
-                      uploadResult.success
-                        ? "text-green-700"
-                        : "text-yellow-700"
-                    }`}
-                  >
-                   
-                    <p className="font-medium">
-                      Successfully uploaded: {uploadResult.successCount}
-                    </p>
-                    {uploadResult.failedCount > 0 && (
-                      <p className="font-medium text-red-600">
-                        Failed: {uploadResult.failedCount}
-                      </p>
-                    )}
-                  </div>
-
-                  {uploadResult.errors && uploadResult.errors.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-red-800 mb-2">
-                        Error Details:
-                      </h4>
-                      <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
-                        <ul className="text-sm text-red-700 space-y-2">
-                          {uploadResult.errors.map((err, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="font-medium mr-2 flex-shrink-0">
-                                Program {err.index + 1} ({err.programme_name}):
-                              </span>
-                              <span>{err.error}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-
-                  {uploadResult.success && (
-                    <div className="mt-4">
-                      <Link
-                        href="/admin/programs"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                      >
-                        Go to Programs
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      
       </div>
     </div>
   );
