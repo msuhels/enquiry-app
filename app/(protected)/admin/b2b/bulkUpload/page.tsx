@@ -14,6 +14,7 @@ import {
   ChevronRight,
   FileDown,
   Info,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import * as BulkUploadService from "@/lib/user-bulk-upload-service";
@@ -287,14 +288,17 @@ export default function BulkUploadUsersPage() {
             {/* File Upload Section */}
             <div className="mb-8">
               <div className="flex justify-between">
-                <div className="flex items-center justify-center gap-2">
+                <div className=" gap-2">
                   <h2 className="text-lg font-semibold text-gray-900">
                     Upload File
                   </h2>
-                  <Info
+                  <p className="text-xs text-[#F97316]">
+                    For file format please refer to the template
+                  </p>
+                  {/* <Info
                     onClick={handleOpenInstructions}
                     className="h-4 w-4 text-gray-600 cursor-pointer"
-                  />
+                  /> */}
                 </div>
 
                 {/* Template Download */}
@@ -352,7 +356,7 @@ export default function BulkUploadUsersPage() {
                   <button
                     onClick={handleParseFile}
                     disabled={parsing}
-                    className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                   >
                     {parsing ? (
                       <>
@@ -479,13 +483,42 @@ export default function BulkUploadUsersPage() {
           </div>
         )}
 
-        { !uploadResult && parsedData && (
+        {!uploadResult && parsedData && (
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
               <div className="w-full flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   Review Parsed Data
                 </h2>
+
+                {/* Save to Database Section */}
+                {parsedData && !uploading && !uploadResult && (
+                  <div className="w-full flex justify-end gap-3 mb-6">
+                    <Link
+                      href="/admin/b2b"
+                      className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                    >
+                      <X className="mr-1" /> Cancel Upload
+                    </Link>
+                    <button
+                      onClick={handleSaveToDatabase}
+                      disabled={uploading}
+                      className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Saving to database...
+                        </>
+                      ) : (
+                        <>
+                          <UploadIcon className="h-5 w-5 mr-2" />
+                          Save {parsedData.length} Users to Database
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
                 {/* <button
                   onClick={handleOpenGeneratePasswordModal}
                   className="inline-flex items-center p-1 border bg-indigo-600 border-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
@@ -627,29 +660,6 @@ export default function BulkUploadUsersPage() {
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Save to Database Section */}
-        {parsedData && !uploading && !uploadResult && (
-          <div className="w-full flex justify-end mb-6">
-            <button
-              onClick={handleSaveToDatabase}
-              disabled={uploading}
-              className="flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Saving to database...
-                </>
-              ) : (
-                <>
-                  <UploadIcon className="h-5 w-5 mr-2" />
-                  Save {parsedData.length} Users to Database
-                </>
-              )}
-            </button>
           </div>
         )}
       </div>

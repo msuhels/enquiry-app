@@ -51,7 +51,7 @@ export default function AdminLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 overflow-hidden flex justify-center items-center">
-        <Loader2 className="animate-spin text-indigo-600 h-12 w-12" />
+        <Loader2 className="animate-spin text-[#F97316] h-12 w-12" />
       </div>
     );
   }
