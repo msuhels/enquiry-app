@@ -214,18 +214,18 @@ export default function NewProgramPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <Breadcrumbs />
-          <h1 className="text-3xl font-bold text-[#3a3886]">Add New Program</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-4xl font-bold text-[#3a3886]">Add New Program</h1>
+          <p className="mt-2 text-xl text-gray-600">
             Enter the details for the new university program
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-3xl font-semibold text-gray-900 mb-4">
               Basic Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -256,14 +256,14 @@ export default function NewProgramPage() {
           <div className="flex justify-end space-x-4">
             <Link
               href="/admin/programs"
-              className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              className="inline-flex items-center px-4 py-2.5 text-xl bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

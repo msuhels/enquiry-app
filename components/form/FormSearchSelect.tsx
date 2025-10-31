@@ -36,7 +36,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
       {label?.trim() && (
         <label
           htmlFor={name}
-          className="block text-lg font-semibold text-[#3a3886] mb-2"
+          className="block text-xl font-semibold text-[#3a3886] mb-2"
         >
           {label}
         </label>
@@ -76,6 +76,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
               : "white",
             color: state.isSelected ? "white" : "#3a3886",
             fontWeight: state.isSelected ? "600" : "400",
+            fontSize: "1.2rem",
             cursor: "pointer",
             transition: "all 0.2s",
             "&:active": {
@@ -85,7 +86,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
           placeholder: (base) => ({
             ...base,
             color: "#9CA3AF",
-            fontSize: "1rem",
+            fontSize: "1.2rem",
           }),
           singleValue: (base) => ({
             ...base,
