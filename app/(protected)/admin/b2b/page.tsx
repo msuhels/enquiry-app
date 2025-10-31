@@ -148,7 +148,7 @@ export default function UsersPage() {
 
   // Filters for tabs
   const filterTabs = [
-    { key: "all", label: "All" },
+    // { key: "all", label: "All" },
     // { key: "active", label: "Active" },
     // { key: "inactive", label: "Inactive" },
     // { key: "admin", label: "Admins" },

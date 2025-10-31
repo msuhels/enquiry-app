@@ -92,7 +92,7 @@ export default function ProgramsPage() {
   ];
 
   const filterTabs = [
-    { key: "all", label: "All" },
+    // { key: "all", label: "All" },
     // { key: "active", label: "Active" },
     // { key: "inactive", label: "Inactive" },
   ];

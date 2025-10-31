@@ -50,7 +50,7 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
   }
 
   return (
-    <nav className="flex items-center space-x-2 text-lg text-gray-600 mb-6">
+    <nav className="flex items-center space-x-2 text-lg text-[#7773ff] mb-6">
       {breadcrumbs.map((crumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         const isDisabled = index === disabledItemIndex;
@@ -64,7 +64,7 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
             {isLast || isDisabled ? (
               <span
                 className={`font-medium ${
-                  isDisabled ? 'text-gray-400' : 'text-gray-900'
+                  isDisabled ? 'text-gray-400' : 'text-[#3a3886]'
                 }`}
               >
                 {crumb.label}
@@ -72,7 +72,7 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
             ) : (
               <Link
                 href={crumb.href}
-                className="hover:text-gray-900 transition-colors"
+                className="hover:text-[#F97316] transition-colors"
               >
                 {crumb.label}
               </Link>
