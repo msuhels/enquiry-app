@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  BookOpen,
-  Users,
-  Mail,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Mail, LogOut } from "lucide-react";
 
 export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname();
@@ -21,18 +15,18 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
   ];
 
   return (
-    <aside className="w-64 h-screen bg-gradient-to-b from-[#F97316] to-[#F97316] text-white flex flex-col justify-between">
+    <aside className="w-64 h-screen bg-[#F97316] text-white flex flex-col justify-between">
       <div>
         <div className="p-6 flex items-center gap-3 border-b border-white/20">
-          {/* <div className="h-10 w-10 bg-[#3a3886] flex items-center justify-center rounded-lg font-bold text-lg">
-            A
-          </div> */}
           <h1 className="text-lg font-bold">Admin Panel</h1>
         </div>
 
         <nav className="mt-6 space-y-1">
           {menuItems.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
             const Icon = item.icon;
 
             return (
