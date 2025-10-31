@@ -301,13 +301,13 @@ export default function BulkUploadPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <Breadcrumbs />
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-gray-900">
             Bulk Upload Programs
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-xl text-gray-600">
             Upload multiple university programs using CSV or Excel files
           </p>
         </div>
@@ -318,10 +318,10 @@ export default function BulkUploadPage() {
               <div className="mb-8">
                 <div className="flex justify-between">
                   <div className=" gap-2">
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-2xl font-semibold text-gray-900">
                       Upload File
                     </h2>
-                    <p className="text-xs text-[#F97316]">
+                    <p className="text-base mb-2 text-[#F97316]">
                       For file format please refer to the template
                     </p>
                     {/* <Info
@@ -332,7 +332,7 @@ export default function BulkUploadPage() {
 
                   {/* Template Download */}
                   <div className="mb-8 flex items-center gap-2 justify-center">
-                    <h3 className="text-md font-medium text-gray-900">
+                    <h3 className="text-xl font-medium text-gray-900">
                       Need a template?
                     </h3>
                     <button
@@ -349,10 +349,10 @@ export default function BulkUploadPage() {
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-gray-900">
+                        <span className="mt-2 block text-lg font-medium text-gray-900">
                           Click to upload
                         </span>
-                        <span className="mt-1 block text-sm text-gray-500">
+                        <span className="mt-1 block text-base text-gray-500">
                           CSV or Excel (.xls, .xlsx) files up to 10MB
                         </span>
                       </label>
@@ -369,7 +369,7 @@ export default function BulkUploadPage() {
                     </div>
 
                     {selectedFile && (
-                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                      <div className="flex items-center justify-center space-x-2 text-base text-gray-600">
                         <FileIcon className="h-4 w-4 text-blue-500" />
                         <span className="font-medium">{selectedFile.name}</span>
                         <span className="text-gray-400">
@@ -385,11 +385,11 @@ export default function BulkUploadPage() {
                     <button
                       onClick={handleParseFile}
                       disabled={parsing}
-                      className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                      className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                     >
                       {parsing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin inline  text-[#F97316]" />
                           Parsing...
                         </>
                       ) : (
@@ -406,7 +406,7 @@ export default function BulkUploadPage() {
                   <div className="flex">
                     <XCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">
+                      <p className="text-base font-medium text-red-800">
                         {error}
                       </p>
                     </div>
@@ -422,10 +422,10 @@ export default function BulkUploadPage() {
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">
+              <p className="text-xl font-medium text-gray-900 mb-2">
                 Uploading programs to database...
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-base text-gray-500">
                 This may take a few moments. Please don't close this page.
               </p>
             </div>
@@ -451,7 +451,7 @@ export default function BulkUploadPage() {
                 </div>
                 <div className="ml-4 flex-1">
                   <h3
-                    className={`text-lg font-medium mb-3 ${
+                    className={`text-xl font-medium mb-3 ${
                       uploadResult.success
                         ? "text-green-800"
                         : "text-yellow-800"
@@ -460,7 +460,7 @@ export default function BulkUploadPage() {
                     Upload Complete
                   </h3>
                   <div
-                    className={`text-sm space-y-1 mb-4 ${
+                    className={`text-base space-y-1 mb-4 ${
                       uploadResult.success
                         ? "text-green-700"
                         : "text-yellow-700"
@@ -478,11 +478,11 @@ export default function BulkUploadPage() {
 
                   {uploadResult.errors && uploadResult.errors.length > 0 && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-red-800 mb-2">
+                      <h4 className="text-base font-semibold text-red-800 mb-2">
                         Error Details:
                       </h4>
                       <div className="max-h-64 overflow-y-auto bg-white rounded p-3 border border-red-200">
-                        <ul className="text-sm text-red-700 space-y-2">
+                        <ul className="text-base text-red-700 space-y-2">
                           {uploadResult.errors.map((err, idx) => (
                             <li key={idx} className="flex items-start">
                               <span className="font-medium mr-2 flex-shrink-0">
@@ -500,7 +500,7 @@ export default function BulkUploadPage() {
                     <div className="mt-4">
                       <Link
                         href="/admin/programs"
-                        className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                        className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                       >
                         Go to Programs
                       </Link>
@@ -517,7 +517,7 @@ export default function BulkUploadPage() {
           <div className="bg-white shadow rounded-lg p-8 mb-6">
             <div className="mb-6">
               <div className="w-full flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
                   Review Parsed Data
                 </h2>
 
@@ -525,7 +525,7 @@ export default function BulkUploadPage() {
                   {parsedData && !uploading && !uploadResult && (
                     <>
                       <button
-                        className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                        className="inline-flex items-center px-4 py-2.5 text-xl bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                         onClick={handleUploadAnotherFile}
                       >
                         <X className="h-5 w-5 mr-2" />
@@ -535,11 +535,11 @@ export default function BulkUploadPage() {
                       <button
                         onClick={handleSaveToDatabase}
                         disabled={uploading}
-                        className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                        className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                       >
                         {uploading ? (
                           <>
-                            <Loader2 className="h-5 w-5 mr-2 animate-spin inline" />
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin inline text-[#F97316]" />
                             Saving to database...
                           </>
                         ) : (
@@ -560,7 +560,7 @@ export default function BulkUploadPage() {
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-800">
+                    <p className="text-lg font-medium text-blue-800">
                       Successfully parsed {parsedData.length} programs from file
                     </p>
                   </div>
@@ -573,22 +573,22 @@ export default function BulkUploadPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       S. No.
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       University
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       Previous / Current Study
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       Degree Going For
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       Courses Name
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
                       IELTS Requirment
                     </th>
                   </tr>
@@ -596,22 +596,22 @@ export default function BulkUploadPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentItems.map((program, idx) => (
                     <tr key={startIndex + idx} className="hover:bg-gray-50">
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
                         {startIndex + idx + 1}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-3 py-4 whitespace-nowrap text-lg font-medium text-gray-900">
                         {program.university || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
                         {program.previous_or_current_study || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
                         {program.degree_going_for || "-"}
                       </td>
-                      <td className="px-3 py-4 text-sm text-gray-900">
+                      <td className="px-3 py-4 text-lg text-gray-900">
                         {program.course_name || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
                         {program.ielts_requirement || "-"}
                       </td>
                     </tr>

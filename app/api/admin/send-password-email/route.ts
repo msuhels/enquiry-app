@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const {
-      data: user,
-      error: authError,
-    } = await createServiceRoleClient()
+    const { data: user, error: authError } = await createServiceRoleClient()
       .from("users")
       .select("*")
       .eq("email", email)
@@ -79,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     <p>
       You can log in here: 
-      <a href=${process.env.FRONTEND_URL} style="color:#1a73e8;">Click here to login</a>
+      <a href="http://bog4kwkws804gk44wk048sko.217.76.57.190.sslip.io/" style="color:#1a73e8;">Click here to login</a>
     </p>
 
     <p>

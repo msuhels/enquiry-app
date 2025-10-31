@@ -67,7 +67,7 @@ export default function AdminLayout({
       setTimeout(() => {
         setIsWelcome("true");
         localStorage.setItem("showedWelcome", "true");
-      }, 3000);
+      }, 6000);
     }
   }, [isLoading, isWelcome]);
 
@@ -92,7 +92,7 @@ export default function AdminLayout({
 function WelcomePopup({ user }) {
   return (
     <div className="absolute inset-0 bg-[#F97316] text-white z-50 flex items-center justify-center p-4">
-      <div className="relative max-w-2xl w-full rounded-3xl">
+      <div className="relative max-w-3xl w-full rounded-3xl">
         <div className="flex justify-center mb-6">
           <div className="bg-white bg-opacity-20 rounded-full p-4 backdrop-blur-sm">
             <svg
@@ -113,11 +113,11 @@ function WelcomePopup({ user }) {
 
         {/* Welcome text */}
         <div className="text-center space-y-4">
-          <h2 className="text-3xl  font-light tracking-wide">
-            <span className="font-bold"> Hello {user?.full_name}</span>
+          <h2 className="text-4xl  font-light tracking-wide">
+            <span className="font-bold"> Hiii {user?.organization}</span>
           </h2>
-          <h1 className="text-2xl  font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-orange-100">
-            Welcome to Free Education in Italy Course Finder
+          <h1 className="text-3xl  font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-orange-100">
+            Welcome to India's 1st Italy Course Finder
           </h1>
         </div>
       </div>

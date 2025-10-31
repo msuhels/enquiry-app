@@ -36,7 +36,7 @@ export default function ProgramsPage() {
   )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
   const { data, isLoading } = useFetch(apiUrl);
   const { data: settings } = useFetch("/api/admin/settings");
-  const { patch} = usePatch();
+  const { patch } = usePatch();
   useEffect(() => {
     if (data?.success) {
       setPrograms(data.data);
@@ -106,26 +106,26 @@ export default function ProgramsPage() {
           prev.map((f) => (f.key === key ? { ...f, value } : f))
         );
         toast.success("Updated successfully", {
-          richColors:true,
-          position:'top-center'
+          richColors: true,
+          position: "top-center",
         });
       } else {
         toast.error("Failed to update", {
-          richColors:true,
-          position:'top-center'
+          richColors: true,
+          position: "top-center",
         });
       }
     } catch {
       toast.error("Server error", {
-        richColors:true,
-        position:'top-center'
+        richColors: true,
+        position: "top-center",
       });
     }
   };
 
   return (
     <div className="min-h-screen overflow-auto bg-gray-50">
-      <div className="max-w-7xl mx-auto p-8">
+      <div className="max-w-full mx-auto p-8">
         <AdvancedDataTable
           title="Programs"
           columns={columns}
