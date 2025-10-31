@@ -100,9 +100,11 @@ export default function EnquirySystem() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      <div className="max-w-7xl mx-auto p-6 md:p-8">
+      <div className="max-w-full mx-auto p-6 md:p-8">
         <Breadcrumbs />
-
+        <div className="w-full flex items-center mb-5 justify-center">
+            <span className="text-2xl font-bold text-[#3a3886]">Trusted by the Wise. Chosen by the Best.</span>
+        </div>
         <motion.div
           animate={{
             y: isCentered ? "40vh" : 0,
@@ -149,7 +151,7 @@ export default function EnquirySystem() {
             </div>
 
             <div className="bg-[#F97316]/5 border-l-4 border-[#F97316] rounded-lg p-4">
-              <p className="text-[#F97316] font-semibold text-sm">
+              <p className="text-[#F97316] font-semibold text-xl">
                 <span className="font-bold">*Note:</span> This course finder is
                 for counselling purposes only. Final course options will be
                 provided by our subject matter experts after a detailed analysis
@@ -167,8 +169,8 @@ export default function EnquirySystem() {
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-gray-400" />
               </div>
-              <p className="text-gray-600 font-medium">No programs found.</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className="text-gray-600 text-2xl font-medium">No programs found.</p>
+              <p className="text-gray-400 text-xl mt-2">
                 Try adjusting your search criteria
               </p>
             </div>
@@ -197,7 +199,7 @@ const ProgramsTable = ({ data }: any) => {
               ].map((head) => (
                 <th
                   key={head}
-                  className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider"
                 >
                   {head}
                 </th>
@@ -208,25 +210,25 @@ const ProgramsTable = ({ data }: any) => {
           <tbody className="bg-white divide-y divide-gray-100">
             {data.map((item: any) => (
               <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#3a3886]">
+                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#3a3886]">
                   {item.university || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
+                <td className="px-6 py-4 text-xl text-gray-900">
                   {item.course_name || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.previous_or_current_study || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#F97316]">
+                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
                   {item.ielts_requirement || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.special_requirements || "-"}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
+                <td className="px-6 py-4 text-xl text-gray-700">
                   {item.remarks || "-"}
                 </td>
               </tr>

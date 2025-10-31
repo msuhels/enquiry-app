@@ -35,7 +35,7 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-6 py-3 text-lg font-medium transition-all ${
+                className={`flex items-center gap-3 px-6 py-3 text-xl font-medium transition-all ${
                   active
                     ? "bg-white text-[#3a3886] shadow-lg"
                     : "hover:bg-white/20"
