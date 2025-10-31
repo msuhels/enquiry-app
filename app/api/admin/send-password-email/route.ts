@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
       .eq("email", email)
       .single();
 
-    console.log("User:", user);
     if (authError || !user) {
       console.error("User not found:", authError);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
