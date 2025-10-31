@@ -83,39 +83,41 @@ export default function EnquiriesPage() {
       key: "createdby",
       label: "Created By",
       render: (row: Enquiry) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900">
+        <div className="w-36">
+          <div className="text-lg font-medium text-gray-900">
             {row.createdby.full_name}
           </div>
         </div>
       ),
     },
     {
-      key:'organisation',
+      key: "organisation",
       label: "Organisation",
       render: (row: Enquiry) => (
-        <span>{row.createdby.organization || "-"}</span>
+        <div>
+          <div>{row.createdby.organization || "-"}</div>
+        </div>
       ),
     },
     {
       key: "state",
       label: "State",
       render: (row: Enquiry) => (
-        <span>{row.createdby.state || "-"}</span>
+        <div>{row.createdby.state || "-"}</div>
       ),
     },
     {
       key: "city",
       label: "City",
       render: (row: Enquiry) => (
-        <span>{row.createdby.city || "-"}</span>
+        <div>{row.createdby.city || "-"}</div>
       ),
     },
     {
       key: "phone_number",
       label: "Phone",
       render: (row: Enquiry) => (
-        <span>{row.createdby.phone_number || "-"}</span>
+        <div>{row.createdby.phone_number || "-"}</div>
       ),
     },
     { key: "degree_going_for", label: "Program Interest" },
@@ -126,7 +128,6 @@ export default function EnquiriesPage() {
       render: (row: Enquiry) => new Date(row.created_at).toLocaleDateString(),
     },
   ];
-
 
   const stateOptions = useMemo(() => {
     const indianStates = State.getStatesOfCountry("IN");
@@ -169,7 +170,7 @@ export default function EnquiriesPage() {
     });
   };
 
-    const searchSelectFilters = [
+  const searchSelectFilters = [
     {
       key: "state",
       label: "State",
@@ -182,10 +183,9 @@ export default function EnquiriesPage() {
     },
   ];
 
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Table
           title="Enquiries"
           columns={columns}
