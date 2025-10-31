@@ -77,8 +77,8 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: "Add Vendor",
-      link: "/admin/users/addUser",
+      title: "Add B2B Partner",
+      link: "/admin/b2b/addUser",
       icon: UserPlusIcon,
     },
     {
@@ -96,7 +96,6 @@ export default function AdminDashboard() {
   return (
     <div className="bg-gray-50">
       <div className="max-w-full mx-auto p-6 md:p-8">
-
         {/* HEADER */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
           <div className="flex justify-between items-start">
@@ -138,7 +137,9 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <p className="text-sm text-white/80 font-medium">{card.title}</p>
+                <p className="text-sm text-white/80 font-medium">
+                  {card.title}
+                </p>
                 <p className="text-4xl font-bold mt-2">{card.value}</p>
               </div>
             </div>
@@ -146,16 +147,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* QUICK ACTIONS + RECENT */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+        <div className=" gap-8 ">
           {/* QUICK ACTIONS */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#3a3886]">Quick Actions</h2>
+          <div className="lg:col-span-2 w-full ">
+            <div className="flex items-center justify-between mb-6 w-[50%]">
+              <h2 className="text-xl font-bold text-[#3a3886]">
+                Quick Actions
+              </h2>
               <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {quickActions.map((action, idx) => (
                 <div
                   key={idx}
@@ -171,41 +173,45 @@ export default function AdminDashboard() {
                       <p className="text-base font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
                         {action.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">Click to open</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Click to open
+                      </p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* RECENT ENQUIRIES */}
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#3a3886]">Recent Activity</h2>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              {filterEnquiries?.length ? (
-                <div className="max-h-[250px] overflow-y-auto">
-                  {filterEnquiries.slice(0, 5).map((e: Enquiry) => (
-                    <RecentEnquiryItem
-                      key={e.id}
-                      name={e.createdby.full_name}
-                      context={e.created_at.slice(0, 10)}
-                      course={e.degree_going_for}
-                      id={e.id}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center text-gray-600 text-sm">
-                  No recent enquiries…
-                </div>
-              )}
-            </div>
+        {/* RECENT ENQUIRIES */}
+        <div className="w-[50%]">
+          <div className="flex items-center justify-between my-6">
+            <h2 className="text-xl font-bold text-[#3a3886]">
+              Recent Activity
+            </h2>
+            <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
           </div>
 
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {filterEnquiries?.length ? (
+              <div className="max-h-[250px] overflow-y-auto">
+                {filterEnquiries.slice(0, 5).map((e: Enquiry) => (
+                  <RecentEnquiryItem
+                    key={e.id}
+                    name={e.createdby.full_name}
+                    context={e.created_at.slice(0, 10)}
+                    course={e.degree_going_for}
+                    id={e.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-600 text-sm">
+                No recent enquiries…
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
