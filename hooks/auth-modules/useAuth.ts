@@ -44,29 +44,30 @@ export function useAuth(): UseAuthReturn {
 
       try {
         const result = await authHandlers.login(credentials);
-        const supabase = createClient();
-        const { data, error } = await supabase.from("users").upsert(
-          {
-            last_login_at: new Date(),
-            last_login_ip: "this would be the ip of the request", //get the ip of the request
-            email: credentials.email,
-            id: result.user?.id,
-          },
-          {
-            onConflict: "email",
-          }
-        );
-        console.log({ data });
-        console.log({ error });
-        if (error) {
-          // toast.error("Login failed. Please check your credentials.", {
-          //   id: loginToast,
-          // });
-          console.log({ error });
-          return false;
-        }
+        // const supabase = createClient();
+        // const { data, error } = await supabase.from("users").upsert(
+        //   {
+        //     last_login_at: new Date(),
+        //     last_login_ip: "this would be the ip of the request", //get the ip of the request
+        //     email: credentials.email,
+        //     id: result.user?.id,
+        //   },
+        //   {
+        //     onConflict: "email",
+        //   }
+        // );
+        // console.log({ data });
+        // console.log({ error });
+        // if (error) {
+        //   // toast.error("Login failed. Please check your credentials.", {
+        //   //   id: loginToast,
+        //   // });
+        //   console.log({ error });
+        //   return false;
+        // }
         if (result.success) {
-          toast.success("Login successful! Redirecting...", { id: loginToast });
+          toast.dismiss(loginToast)
+          toast.success("Login successful! Redirecting...", );
           // const res = await fetch("/api/admin/users/getAuthUser");
           // const data = await res.json();
           // if(data.userDetails.role === "admin") {
@@ -81,9 +82,10 @@ export function useAuth(): UseAuthReturn {
           return true;
         } else {
           console.log({ result });
-          // toast.error("Login failed. Please check your credentials.", {
-          //   id: loginToast,
-          // });
+           toast.dismiss(loginToast)
+          toast.error("Login failed. Please check your credentials.", {
+            id: loginToast,
+          });
           return false;
         }
       } catch (error) {
