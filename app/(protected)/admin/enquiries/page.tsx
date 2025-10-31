@@ -85,8 +85,8 @@ export default function EnquiriesPage() {
       key: "createdby",
       label: "Created By",
       render: (row: Enquiry) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900">
+        <div className="w-52">
+          <div className="text-lg font-medium text-gray-900">
             {row?.createdby?.full_name}
           </div>
         </div>
