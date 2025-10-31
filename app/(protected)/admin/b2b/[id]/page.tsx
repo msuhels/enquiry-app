@@ -224,191 +224,166 @@ export default function UserUpdatePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs disabledItemIndex={2} />
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          <h1 className="text-3xl font-bold text-[#3a3886] mb-8">
             Edit B2B Partner
           </h1>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="mb-4">
-            <label className="block font-medium">Email</label>
-            <input
-              type="email"
-              value={user.email}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="mb-4  w-full">
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Email</label>
+              <input
+                type="email"
+                value={user.email}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+              />
+            </div>
 
-          {/* Status */}
-          <div className="mb-4 flex items-center justify-start gap-5 ">
-            <label htmlFor="status" className="font-bold">
-              Status
-            </label>
-            <div className="flex items-center gap-3">
-              <Switch.Root
-                checked={user.is_active}
-                onClick={(e) => e.stopPropagation()}
-                onCheckedChange={() => handleToggleActive(user)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${
-                  user.is_active ? "bg-indigo-600" : "bg-gray-300"
-                }`}
-              >
-                <Switch.Thumb
-                  className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                    user.is_active ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </Switch.Root>
-              <span className="text-sm text-gray-700">
-                {user.is_active ? "Active" : "Inactive"}
-              </span>
+            {/* Full Name */}
+            <div className="mb-4  w-full">
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Full Name</label>
+              <input
+                type="text"
+                value={user.full_name || ""}
+                onChange={(e) =>
+                  setUser({ ...user, full_name: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+              />
             </div>
           </div>
 
-          {/* Full Name */}
-          <div className="mb-4">
-            <label className="block font-medium">Full Name</label>
-            <input
-              type="text"
-              value={user.full_name || ""}
-              onChange={(e) => setUser({ ...user, full_name: e.target.value })}
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </div>
-
-          {/* Phone */}
-          <div className="mb-4">
-            <label className="block font-medium">Phone</label>
-            <input
-              type="text"
-              value={user.phone_number || ""}
-              onChange={(e) =>
-                setUser({ ...user, phone_number: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </div>
-
-          {/* Organization */}
-          <div className="mb-4">
-            <label className="block font-medium">Organization</label>
-            <input
-              type="text"
-              value={user.organization || ""}
-              onChange={(e) =>
-                setUser({ ...user, organization: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </div>
-
-          {/* State */}
-          <div className="mb-4">
-            <SearchSelect
-              label="State"
-              name="state"
-              value={user.state || ""}
-              options={stateOptions}
-              onChange={(value) => handleSelectChange("state", value)}
-              placeholder="Select a state..."
-              allowCreate={false}
-            />
-          </div>
-
-          {/* City */}
-          <div className="mb-4">
-            <SearchSelect
-              label="City"
-              name="city"
-              value={user.city || ""}
-              options={cityOptions}
-              onChange={(value) => handleSelectChange("city", value)}
-              placeholder={
-                user.state ? "Select a city..." : "Please first select a state"
-              }
-              allowCreate={false}
-            />
-          </div>
-
-          {/* Role */}
-          <div className="mb-4">
-            <label className="block font-medium">Role</label>
-            <select
-              value={user.role}
-              onChange={(e) => setUser({ ...user, role: e.target.value })}
-              className="mt-1 p-2 border rounded w-full"
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          {/* Profile Picture */}
-          <div className="mb-4">
-            <label className="block font-medium">Profile Picture URL</label>
-            <input
-              type="text"
-              value={user.profile_picture_url || ""}
-              onChange={(e) =>
-                setUser({ ...user, profile_picture_url: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full"
-            />
-            {user.profile_picture_url && (
-              <img
-                src={user.profile_picture_url}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mt-2 object-cover border"
-              />
-            )}
-          </div>
-
-          {/* Password */}
-          <div className="mb-4">
-            <label className="block font-medium">Password</label>
-            <div className="flex gap-2 items-center mt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Phone */}
+            <div className="mb-4 w-full">
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Phone</label>
               <input
-                type={showPassword ? "text" : "password"}
-                value={user.password || ""}
-                readOnly
-                className="p-2 border rounded flex-1"
+                type="text"
+                value={user.phone_number || ""}
+                onChange={(e) =>
+                  setUser({ ...user, phone_number: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
-              <button
-                onClick={fetchPassword}
-                disabled={loadingPassword}
-                className="p-2 bg-gray-200 rounded hover:bg-gray-300"
-                title="Show password"
+            </div>
+
+            {/* Organization */}
+            <div className="mb-4 w-full">
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Organization</label>
+              <input
+                type="text"
+                value={user.organization || ""}
+                onChange={(e) =>
+                  setUser({ ...user, organization: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* State */}
+            <div className="mb-4 w-full">
+              <SearchSelect
+                label="State"
+                name="state"
+                value={user.state || ""}
+                options={stateOptions}
+                onChange={(value) => handleSelectChange("state", value)}
+                placeholder="Select a state..."
+                allowCreate={false}
+              />
+            </div>
+
+            {/* City */}
+            <div className="mb-4 w-full">
+              <SearchSelect
+                label="City"
+                name="city"
+                value={user.city || ""}
+                options={cityOptions}
+                onChange={(value) => handleSelectChange("city", value)}
+                placeholder={
+                  user.state
+                    ? "Select a city..."
+                    : "Please first select a state"
+                }
+                allowCreate={false}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Role */}
+            <div className="mb-4 w-full">
+              {/* <label className="block text-sm font-semibold text-[#3a3886] mb-2">Role</label> */}
+               <SearchSelect
+                label="Role"
+                name="role"
+                value={user.role || ""}
+                options={[{value:"user", label:"User"}, {"value":"admin", label:"Admin"}]}
+                onChange={(value) => setUser({ ...user, role: value })}
+                placeholder="Select user role"
+                allowCreate={false}
+              />
+              {/* <select
+                value={user.role}
+                onChange={(e) => setUser({ ...user, role: e.target.value })}
+                className="mt-1 p-2 border rounded w-full"
               >
-                <Eye size={18} />
-              </button>
-              {showPassword && (
-                <>
-                  <button
-                    onClick={copyPassword}
-                    className="p-2 bg-gray-200 rounded hover:bg-gray-300"
-                    title="Copy password"
-                  >
-                    <Copy size={18} />
-                  </button>
-                  <button
-                    onClick={sendPasswordEmail}
-                    className="p-2 bg-gray-200 rounded hover:bg-gray-300"
-                    title="Send via email"
-                  >
-                    <Mail size={18} />
-                  </button>
-                </>
-              )}
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select> */}
+            </div>
+
+            {/* Password */}
+            <div className="mb-4 w-full">
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Password</label>
+              <div className="flex gap-2 items-center mt-1">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={user.password || ""}
+                  readOnly
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                />
+                <button
+                  onClick={fetchPassword}
+                  disabled={loadingPassword}
+                  className="p-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                  title="Show password"
+                >
+                  <Eye size={18} />
+                </button>
+                {showPassword && (
+                  <>
+                    <button
+                      onClick={copyPassword}
+                      className="px-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                      title="Copy password"
+                    >
+                      <Copy size={18} />
+                    </button>
+                    <button
+                      onClick={sendPasswordEmail}
+                      className="p-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                      title="Send via email"
+                    >
+                      <Mail size={18} />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Metadata */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
-              <label className="block font-medium">Created At</label>
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Created At</label>
               <input
                 type="text"
                 readOnly
@@ -417,11 +392,11 @@ export default function UserUpdatePage() {
                     ? new Date(user.created_at).toLocaleString()
                     : ""
                 }
-                className="mt-1 p-2 border rounded w-full bg-gray-100"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
             </div>
             <div>
-              <label className="block font-medium">Updated At</label>
+              <label className="block text-sm font-semibold text-[#3a3886] mb-2">Updated At</label>
               <input
                 type="text"
                 readOnly
@@ -430,15 +405,41 @@ export default function UserUpdatePage() {
                     ? new Date(user.updated_at).toLocaleString()
                     : ""
                 }
-                className="mt-1 p-2 border rounded w-full bg-gray-100"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
               />
+            </div>
+
+            {/* Status */}
+            <div className="mb-4 flex items-center justify-start gap-5 ">
+              <label htmlFor="status" className="block text-sm font-semibold text-[#3a3886] mb-2">
+                Status
+              </label>
+              <div className="flex items-center gap-3">
+                <Switch.Root
+                  checked={user.is_active}
+                  onClick={(e) => e.stopPropagation()}
+                  onCheckedChange={() => handleToggleActive(user)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    user.is_active ? "bg-indigo-600" : "bg-gray-300"
+                  }`}
+                >
+                  <Switch.Thumb
+                    className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      user.is_active ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </Switch.Root>
+                <span className="text-sm text-gray-700">
+                  {user.is_active ? "Active" : "Inactive"}
+                </span>
+              </div>
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
             <Link
               href="/admin/b2b"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               Cancel
             </Link>
@@ -446,7 +447,7 @@ export default function UserUpdatePage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
             >
               <Save size={18} />
               {saving ? "Saving..." : "Save Changes"}

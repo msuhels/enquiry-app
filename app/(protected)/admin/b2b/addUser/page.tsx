@@ -8,6 +8,7 @@ import { State, City } from "country-state-city";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import FormInput from "@/components/form/formInput";
 import SearchSelect from "@/components/form/FormSearchSelect";
+import * as Switch from "@radix-ui/react-switch";
 
 export default function NewUserPage() {
   const router = useRouter();
@@ -64,6 +65,14 @@ export default function NewUserPage() {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+  const handleStatusChange = (checked) => {
+    setFormData((prev) => (
+      {
+        ...prev, is_active:checked
+      }
+    ))
+  }
 
   // Handle SearchSelect change
   const handleSelectChange = (name: string, value: string) => {
@@ -123,10 +132,10 @@ export default function NewUserPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs />
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-[#3a3886]">
             Create New B2B Partner
           </h1>
           <p className="mt-2 text-gray-600">
@@ -179,7 +188,36 @@ export default function NewUserPage() {
                 allowCreate={false}
               />
 
-              <div className="flex items-center space-x-2 mt-2 md:col-span-2">
+              {/* Status */}
+              <div className="mb-4 flex items-center justify-start gap-5 ">
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-semibold text-[#3a3886] mb-2"
+                >
+                  Status
+                </label>
+                <div className="flex items-center gap-3">
+                  <Switch.Root
+                    checked={formData.is_active}
+                    onClick={(e) => e.stopPropagation()}
+                    onCheckedChange={(checked) => handleStatusChange(checked)}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${
+                      formData.is_active ? "bg-indigo-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <Switch.Thumb
+                      className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                        formData.is_active ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                  </Switch.Root>
+                  <span className="text-sm text-gray-700">
+                    {formData.is_active ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+
+              {/* <div className="flex items-center space-x-2 mt-2 md:col-span-2">
                 <input
                   id="is_active"
                   name="is_active"
@@ -194,31 +232,32 @@ export default function NewUserPage() {
                 >
                   Active
                 </label>
-              </div>
+              </div> */}
+            </div>
+
+            <div className="flex justify-end space-x-4">
+              <Link
+                href="/admin/b2b"
+                className="inline-flex items-center px-4 py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <SaveIcon className="h-4 w-4 mr-2" />
+                )}
+                {loading ? "Creating..." : "Create B2B Partner"}
+              </button>
             </div>
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end space-x-4">
-            <Link
-              href="/admin/b2b"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              ) : (
-                <SaveIcon className="h-4 w-4 mr-2" />
-              )}
-              {loading ? "Creating..." : "Create B2B Partner"}
-            </button>
-          </div>
         </form>
       </div>
     </div>
