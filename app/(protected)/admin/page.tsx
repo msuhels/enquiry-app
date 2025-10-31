@@ -77,8 +77,8 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: "Add Vendor",
-      link: "/admin/users/addUser",
+      title: "Add B2B Partner",
+      link: "/admin/b2b/addUser",
       icon: UserPlusIcon,
     },
     {
