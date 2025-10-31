@@ -119,6 +119,9 @@ export default function UsersPage() {
       ),
     },
     { key: "phone_number", label: "Phone" },
+    { key: "organization", label: "Organization" },
+    { key: "city", label: "City" },
+    { key: "state", label: "State" },
     {
       key: "is_active",
       label: "Status",
