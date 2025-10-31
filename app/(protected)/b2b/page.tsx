@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ClipboardList as ClipboardListIcon,
-  Eye as EyeIcon,
-  Plus as PlusIcon,
-  Bell as BellIcon,
+  ClipboardList,
+  Eye,
+  Plus,
+  Bell,
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
@@ -27,11 +27,11 @@ const RecentEnquiryItem = ({
   return (
     <div
       onClick={() => router.push(`/user/enquiries/${id}`)}
-      className="px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer transition"
+      className="px-5 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
-      <p className="text-sm font-semibold text-gray-800">{name}</p>
-      <p className="text-xs text-gray-500">{context}</p>
-      <p className="text-xs text-gray-600 mt-1">{course || "-"}</p>
+      <p className="text-sm font-semibold text-[#3a3886]">{name}</p>
+      <p className="text-xs text-gray-600 mt-1">{context}</p>
+      <p className="text-xs text-[#F97316] mt-1 font-medium">{course || "-"}</p>
     </div>
   );
 };
@@ -40,10 +40,12 @@ export default function UserDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
+  const [enquiriesCount, setEnquiriesCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  const { data: enquiries } = useFetch("/api/user/enquiries");
   const { data: user } = useFetch("/api/admin/users/getAuthUser");
+  const userId = user?.userDetails?.id;
+  const { data: enquiries } = useFetch(`/api/admin/myenquiries/${userId}`);
   const { data: notifications } = useFetch("/api/admin/notifications");
 
   useEffect(() => {
@@ -51,6 +53,13 @@ export default function UserDashboard() {
       setNotificationCount(notifications?.data?.length || 0);
     }
   }, [notifications]);
+
+  useEffect(() => {
+    if (enquiries) {
+      setEnquiriesCount(enquiries?.data?.length || 0);
+    }
+  }, [enquiries]);
+  
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
       enquiry?.academic_entries?.data?.length > 0 &&
@@ -70,90 +79,76 @@ export default function UserDashboard() {
   const statCards = [
     {
       title: "My Enquiries",
-      value: filterEnquiries?.length || 0,
-      icon: ClipboardListIcon,
-      bg: "bg-gradient-to-r from-orange-400 to-yellow-400",
-      trend: `+${filterEnquiries?.length || 0} total submitted`,
+      value: enquiriesCount || 0,
+      icon: ClipboardList,
+      // trend: `${filterEnquiries?.length || 0} Total Submitted`,
     },
   ];
 
   const quickActions = [
-    // { title: "Add Enquiry", link: "/vendor/enquiries/add", icon: PlusIcon, color: "bg-purple-100" },
     {
       title: "View Enquiries",
       link: "/b2b/enquiries",
-      icon: EyeIcon,
-      color: "bg-green-100",
+      icon: Eye,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <div className="p-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-full mx-auto p-6 md:p-8">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-5">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Hello Mr.{" "}
-              <span className="text-purple-600 font-extrabold">{userName}</span>
-            </h1>
-            {/* <p className="text-gray-500 text-sm mt-1">
-              Here’s your enquiry overview.
-            </p> */}
-          </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#3a3886]">
+                Welcome back, {userName}
+              </h1>
+              {/* <p className="text-gray-600 text-sm mt-2">
+                Manage your enquiries and track your applications
+              </p> */}
+            </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative inline-block">
-              {/* bell / icon / button goes here */}
-              <BellIcon
+            <div className="flex items-center gap-4">
+              <div 
+                className="relative inline-block cursor-pointer group"
                 onClick={() => router.push("/b2b/notifications")}
-                className="w-6 h-6 cursor-pointer hover:text-gray-600"
-              />
+              >
+                <div className="p-2.5 rounded-full bg-gray-50 group-hover:bg-[#F97316]/10 transition-all duration-200">
+                  <Bell className="w-5 h-5 text-[#3a3886] group-hover:text-[#F97316] transition-colors" />
+                </div>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-[#F97316] text-white text-[10px] font-semibold flex items-center justify-center rounded-full px-1.5 shadow-lg">
+                    {notificationCount}
+                  </span>
+                )}
+              </div>
 
-              {notificationCount > 0 && (
-                <span
-                  className="
-      absolute -top-1 -right-1 
-      min-w-4 h-4 
-      bg-red-600 text-white text-[10px] 
-      flex items-center justify-center 
-      rounded-full px-1
-    "
-                >
-                  {notificationCount}
-                </span>
-              )}
-            </div>
-
-            <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
-              {userName.slice(0, 1)}
+              {/* <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#F97316] to-[#3a3886] flex items-center justify-center text-white font-bold text-lg shadow-md">
+                {userName.slice(0, 1).toUpperCase()}
+              </div> */}
             </div>
           </div>
         </div>
 
-        <div className="mb-10 w-full flex items-center justify-center text-[#000000] font-bold">
-          {/* <h2 className="text-xl">Welcome to Free Education in Italy Course Finder</h2> */}
-        </div>
-
-        {/* USER STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* STATS CARD */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {statCards.map((card, idx) => (
             <div
               key={idx}
-              className={`${card.bg} text-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition`}
+              className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm text-white opacity-90">{card.title}</p>
-                  <p className="text-4xl text-white font-bold mt-2">
-                    {card.value}
-                  </p>
-                </div>
-                <div className="bg-white/30 p-2 rounded-lg">
-                  <card.icon className="w-6 h-6 text-white" />
+              <div className="flex justify-between items-start mb-4">
+                <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                  <card.icon className="w-7 h-7 text-white" />
                 </div>
               </div>
-              <p className="text-xs mt-3 opacity-90">{card.trend}</p>
+              <div>
+                <p className="text-sm text-white/80 font-medium">{card.title}</p>
+                <p className="text-4xl font-bold mt-2">{card.value}</p>
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/70">{card.trend}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -162,20 +157,28 @@ export default function UserDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* QUICK ACTIONS */}
           <div className="lg:col-span-2">
-            <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-[#3a3886]">Quick Actions</h2>
+              <div className="h-1 flex-1 ml-4 bg-gradient-to-r from-[#F97316] to-transparent rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {quickActions.map((action, idx) => (
                 <div
                   key={idx}
                   onClick={() => router.push(action.link)}
-                  className={`${action.color} rounded-xl flex flex-col items-center justify-center p-6 shadow hover:shadow-md transition cursor-pointer`}
+                  className="group bg-white rounded-2xl p-8 shadow-sm border-2 border-gray-100 hover:border-[#F97316] transition-all duration-300 cursor-pointer hover:shadow-lg"
                 >
-                  <div className="p-3 bg-white rounded-full shadow-sm">
-                    <action.icon className="w-6 h-6 text-gray-700" />
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 bg-gradient-to-br from-[#F97316] to-[#ff8c42] rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <action.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-[#3a3886] group-hover:text-[#F97316] transition-colors">
+                        {action.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Access your enquiries</p>
+                    </div>
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-gray-800">
-                    {action.title}
-                  </p>
                 </div>
               ))}
             </div>
@@ -183,24 +186,32 @@ export default function UserDashboard() {
 
           {/* RECENT ENQUIRIES */}
           {/* <div>
-            <h2 className="text-lg font-bold mb-4">My Recent Enquiries</h2>
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden max-h-[85%] h-[85%]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-[#3a3886]">Recent Activity</h2>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {filterEnquiries?.length ? (
-                filterEnquiries.slice(0, 3).map((enquiry: Enquiry) => (
-                  <RecentEnquiryItem
-                    key={enquiry.id}
-                    name={enquiry.student_name}
-                    context={enquiry.email}
-                    course={
-                      enquiry.academic_entries?.data?.[0]?.course?.course_name ||
-                      "-"
-                    }
-                    id={enquiry.id}
-                  />
-                ))
+                <div className="max-h-[400px] overflow-y-auto">
+                  {filterEnquiries.slice(0, 5).map((enquiry: Enquiry) => (
+                    <RecentEnquiryItem
+                      key={enquiry.id}
+                      name={enquiry.student_name}
+                      context={enquiry.email}
+                      course={
+                        enquiry.academic_entries?.data?.[0]?.course?.course_name ||
+                        "-"
+                      }
+                      id={enquiry.id}
+                    />
+                  ))}
+                </div>
               ) : (
-                <div className="p-4 text-center text-gray-500 text-sm">
-                  No recent enquiries found.
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ClipboardList className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 text-sm font-medium">No enquiries yet</p>
+                  <p className="text-gray-400 text-xs mt-1">Your recent enquiries will appear here</p>
                 </div>
               )}
             </div>

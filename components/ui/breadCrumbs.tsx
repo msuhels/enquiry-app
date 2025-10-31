@@ -50,7 +50,7 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
   }
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+    <nav className="flex items-center space-x-2 text-lg text-gray-600 mb-6">
       {breadcrumbs.map((crumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         const isDisabled = index === disabledItemIndex;

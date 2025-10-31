@@ -28,12 +28,9 @@ export async function GET(
     let query = supabase
       .from("enquiries")
       .select(
-        "*, createdby:users(id, full_name, phone_number, city, state, organization)",
-        {
-          count: "exact",
-        }
+        "*, createdby:users!inner(id, full_name, phone_number, city, state, organization)",
+        { count: "exact" }
       )
-      .eq("createdby", createdById)
       .order("created_at", { ascending: false });
 
     if (fromDate) {
@@ -44,25 +41,17 @@ export async function GET(
       query = query.lte("created_at", `${toDate}T23:59:59.999Z`);
     }
 
-    const orFilters: string[] = [];
-
     if (name) {
-      orFilters.push(`createdby.full_name.ilike.%${name}%`);
+      query = query.ilike("createdby.full_name", `%${name}%`);
     }
     if (organisation) {
-      orFilters.push(`createdby.organization.ilike.%${organisation}%`);
+      query = query.ilike("createdby.organization", `%${organisation}%`);
     }
     if (city) {
-      orFilters.push(`createdby.city.ilike.%${city}%`);
+      query = query.ilike("createdby.city", `%${city}%`);
     }
     if (state) {
-      orFilters.push(`createdby.state.ilike.%${state}%`);
-    }
-
-    if (orFilters.length > 0) {
-      query = query.or(orFilters.join(","), {
-        foreignTable: "users",
-      });
+      query = query.ilike("createdby.state", `%${state}%`);
     }
 
     query = query.range(offset, offset + limit - 1);
