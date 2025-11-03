@@ -176,3 +176,13 @@ export interface AcademicEntry {
   score?: number;
   completion_date: string;
 }
+
+export interface IDocument {
+  id: string;
+  title: string;
+  description?: string | null;
+  file_path: string;
+  file_type: string | null;
+  created_at: string;
+  updated_at: string;
+}
