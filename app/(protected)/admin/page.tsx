@@ -28,9 +28,9 @@ const RecentEnquiryItem = ({
   return (
     <div
       // onClick={() => router.push(`/admin/enquiries/${id}`)}
-      className="px-5 flex w-full items-center gap-10 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
+      className="px-5 flex w-full items-center justify-between gap-10 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
-      <p className="text-lg font-semibold text-[#3a3886]">{name}</p>
+      <p className="text-lg max-w-[200px] min-w-[200px] font-semibold text-[#3a3886]">{name}</p>
       <p className="text-base text-gray-600 mt-1">{context}</p>
       <p className="text-base text-[#F97316] mt-1 font-medium">{course || "-"}</p>
     </div>
