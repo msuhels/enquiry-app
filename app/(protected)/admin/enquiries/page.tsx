@@ -12,6 +12,7 @@ import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
 import { useDelete } from "@/hooks/api/useDelete";
 import { toast } from "sonner";
 import { State, City } from "country-state-city";
+import * as XLSX from "xlsx";
 
 export default function EnquiriesPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function EnquiriesPage() {
     to_date: new Date().toISOString().slice(0, 10),
   });
   const [debouncedSearch] = useDebounce(search, 400);
+  const [activeTab, setActiveTab] = useState("all");
   const { del } = useDelete();
   const { data: user } = useFetch("/api/admin/users/getAuthUser");
 
@@ -41,17 +43,21 @@ export default function EnquiriesPage() {
     if (v) queryParams.append(k, v);
   });
 
+  queryParams.append("tab", activeTab);
+
   const apiUrl = `/api/admin/enquiries/?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data: enquiriesData, isLoading } = useFetch(apiUrl, {
     enabled: !!userId,
   });
 
-  console.log("enquiriesData", enquiriesData);
-
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     if (enquiriesData?.success) {
@@ -80,6 +86,52 @@ export default function EnquiriesPage() {
     closeModal(modalId);
   };
 
+  const handleExportToExcel = async () => {
+    const exportUrl = `/api/admin/enquiries/?${queryParams.toString()}&export=true`;
+    const res = await fetch(exportUrl);
+    const { data } = await res.json();
+
+    try {
+      const exportData = data.map((enquiry) => ({
+        "Created By": `${enquiry?.createdby?.full_name}` || "-",
+        email: enquiry?.createdby?.email || "-",
+        Organisation: enquiry?.createdby?.organization || "-",
+        State: enquiry?.createdby?.state || "-",
+        City: enquiry?.createdby?.city || "-",
+        Phone: enquiry?.createdby?.phone_number || "-",
+        "Program Interest": enquiry?.degree_going_for || "-",
+        "Previous/Current Degree": enquiry?.previous_or_current_study || "-",
+        Date: new Date(enquiry.created_at).toLocaleDateString(),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Enquiries");
+
+      const maxWidth = 30;
+      worksheet["!cols"] = [
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 15 },
+      ];
+
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `Enquiries_${timestamp}.xlsx`;
+
+      XLSX.writeFile(workbook, filename);
+
+      toast.success("Excel file exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export Excel file");
+    }
+  };
+
   const columns = [
     {
       key: "createdby",
@@ -93,7 +145,7 @@ export default function EnquiriesPage() {
       ),
     },
     {
-      key:'organisation',
+      key: "organisation",
       label: "Organisation",
       render: (row: Enquiry) => (
         <span>{row?.createdby?.organization || "-"}</span>
@@ -102,16 +154,12 @@ export default function EnquiriesPage() {
     {
       key: "state",
       label: "State",
-      render: (row: Enquiry) => (
-        <span>{row?.createdby?.state || "-"}</span>
-      ),
+      render: (row: Enquiry) => <span>{row?.createdby?.state || "-"}</span>,
     },
     {
       key: "city",
       label: "City",
-      render: (row: Enquiry) => (
-        <span>{row?.createdby?.city || "-"}</span>
-      ),
+      render: (row: Enquiry) => <span>{row?.createdby?.city || "-"}</span>,
     },
     {
       key: "phone_number",
@@ -129,8 +177,6 @@ export default function EnquiriesPage() {
     },
   ];
 
-
-    // Get all states from India (country code: IN)
   const stateOptions = useMemo(() => {
     const indianStates = State.getStatesOfCountry("IN");
     return indianStates.map((state) => ({
@@ -172,7 +218,7 @@ export default function EnquiriesPage() {
     });
   };
 
-    const searchSelectFilters = [
+  const searchSelectFilters = [
     {
       key: "state",
       label: "State",
@@ -185,6 +231,11 @@ export default function EnquiriesPage() {
     },
   ];
 
+  const filterTabs = [
+    { key: "all", label: "All", count: enquiriesData?.pagination?.total },
+    { key: "admin", label: "Admin", count: enquiriesData?.pagination?.total },
+    { key: "user", label: "Vendor", count: enquiriesData?.pagination?.total },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -206,6 +257,10 @@ export default function EnquiriesPage() {
           searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
           onDelete={handleDelete}
+          onExport={handleExportToExcel}
+          filterTabs={filterTabs}
+          activeFilter={activeTab}
+          onFilterChange={setActiveTab}
         />
       </div>
     </div>

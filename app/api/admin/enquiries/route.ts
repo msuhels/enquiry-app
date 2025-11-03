@@ -15,14 +15,16 @@ export async function GET(
     const name = searchParams.get("name") ?? "";
     const organisation = searchParams.get("organisation") ?? "";
     const city = searchParams.get("city") ?? "";
+    const exportFile = searchParams.get("export");
     const state = searchParams.get("state") ?? "";
     const fromDate = searchParams.get("from_date") ?? "";
     const toDate = searchParams.get("to_date") ?? "";
+    const userType = searchParams.get("tab") ?? "all";
 
     let query = supabase
       .from("enquiries")
       .select(
-        "*, createdby:users!inner(id, full_name, phone_number, city, state, organization)",
+        "*, createdby:users!inner(id, full_name, email, phone_number, city, state, organization, role)",
         { count: "exact" }
       )
       .order("created_at", { ascending: false });
@@ -48,7 +50,16 @@ export async function GET(
       query = query.ilike("createdby.state", `%${state}%`);
     }
 
-    query = query.range(offset, offset + limit - 1);
+    // Filter by user type
+    if (userType && userType !== "all") {
+      query = query.eq("createdby.role", userType);
+    }
+
+    if (!exportFile) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    // query = query.range(offset, offset + limit - 1);
 
     const { data, error, count } = await query;
 

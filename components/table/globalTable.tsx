@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Edit, Trash2, Search, PlusIcon, Folder, Loader2 } from "lucide-react";
+import { Edit, Trash2, Search, PlusIcon, Folder, Loader2, Download } from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
 import Pagination from "../ui/pagination";
@@ -53,6 +53,7 @@ interface TableProps<T> {
   onPageChange?: (page: number) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
+  onExport?: () => void;
   dateFilters?: { from_date: string; to_date: string };
   locationFilters?: { state: string; city: string };
   onDateFilterChange?: (val: { fromDate: string; toDate: string }) => void;
@@ -88,11 +89,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   onPageChange,
   onEdit,
   onDelete,
+  onExport,
   handleToggleActive,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
-
-  console.log("totalPages", total, itemsPerPage, totalPages);
 
   const handleSortClick = (key: string, sortable?: boolean) => {
     if (!sortable || !onSortChange) return;
@@ -108,6 +108,15 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         <div className="flex justify-between items-center mt-4">
           <h1 className="text-4xl font-bold text-[#3a3886]">{title}</h1>
           <div className="flex gap-3">
+            {onExport && data.length > 0 && (
+              <button
+                onClick={onExport}
+                className="inline-flex text-2xl items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Excel
+              </button>
+            )}
             {addHref && (
               <Link
                 href={addHref}
@@ -135,7 +144,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         <div className="mb-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex flex-col items-start gap-4">
             {fieldsSwitches.map((item, index) => (
-              <div key={index} className="flex items-center justify-between w-full gap-4">
+              <div
+                key={index}
+                className="flex items-center justify-between w-full gap-4"
+              >
                 <label className="text-2xl font-medium text-[#3a3886] capitalize">
                   {item.key.replace(/_/g, " ")}
                 </label>
@@ -178,7 +190,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     [param]: e.target.value,
                   })
                 }
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
+                className="w-full pl-10 min-h-[52px] pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
               />
             </div>
           ))}
@@ -236,20 +248,17 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${
                   activeFilter === tab.key
                     ? "border-[#F97316] text-[#F97316]"
                     : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
                 }`}
               >
                 {tab.label}
-                {tab.count !== undefined && (
+
+                {activeFilter === tab.key && tab.count !== undefined && (
                   <span
-                    className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      activeFilter === tab.key
-                        ? "bg-[#F97316]/10 text-[#F97316]"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                    className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${"bg-[#F97316]/10 text-[#F97316]"}`}
                   >
                     {tab.count}
                   </span>
@@ -313,7 +322,9 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                         <Search className="w-8 h-8 text-gray-400" />
                       </div>
-                      <p className="font-medium text-gray-600">{emptyMessage}</p>
+                      <p className="font-medium text-gray-600">
+                        {emptyMessage}
+                      </p>
                     </div>
                   </td>
                 </tr>
