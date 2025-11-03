@@ -108,7 +108,7 @@ export default function EnquirySystem() {
       <div className="max-w-full mx-auto p-6 md:p-8">
         <Breadcrumbs />
         <div className="w-full flex items-center mb-5 justify-center">
-          <span className="text-6xl pt-10 font-bold text-[#3a3886]">
+          <span className="text-5xl pt-10 font-bold text-[#3a3886]">
             “Trusted by the Wise. Chosen by the Best”
           </span>
         </div>
