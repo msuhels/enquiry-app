@@ -32,10 +32,14 @@ const DocumentsPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [debouncedSearch] = useDebounce(search, 400);
 
+  console.log("debouncedSearch 🚀🚀", debouncedSearch);
+
   const offset = (page - 1) * itemsPerPage;
 
   const apiUrl = `/api/admin/documents?search=${encodeURIComponent(
-    debouncedSearch
+    debouncedSearch["title and description"]
+      ? debouncedSearch["title and description"]
+      : ""
   )}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
@@ -186,28 +190,41 @@ const DocumentsPage = () => {
   const columns = [
     {
       key: "name",
-      label: "Name",
+      label: "Title",
       render: (row: IDocument) => (
         <div>
           <div className="text-xl font-medium text-gray-900">{row.title}</div>
-          <div className="text-xl text-gray-500">{row.description}</div>
         </div>
       ),
     },
     {
-      key: "file_type",
-      label: "File Type",
+      key: "name",
+      label: "Description",
       render: (row: IDocument) => (
         <div>
-          <div className="text-xl font-medium text-gray-900">
-            {
-              //@ts-ignore
-              mimeToType[row.file_type]
-            }
+          <div
+            title={row?.description as string}
+            className="text-xl text-gray-500 w-72 truncate"
+          >
+            {row.description}
           </div>
         </div>
       ),
     },
+    // {
+    //   key: "file_type",
+    //   label: "File Type",
+    //   render: (row: IDocument) => (
+    //     <div>
+    //       <div className="text-xl font-medium text-gray-900">
+    //         {
+    //           //@ts-ignore
+    //           mimeToType[row.file_type]
+    //         }
+    //       </div>
+    //     </div>
+    //   ),
+    // },
     {
       key: "download",
       label: "Download",
@@ -231,7 +248,9 @@ const DocumentsPage = () => {
           activeFilter={filter}
           sortKey={sortKey}
           sortDir={sortDir}
+          searchQuery={search}
           onSearchChange={setSearch}
+          searchParameters={["title and description"]}
           onFilterChange={setFilter}
           onSortChange={(key, dir) => {}}
           onPageChange={setPage}
