@@ -92,8 +92,6 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
-  console.log("totalPages", total, itemsPerPage, totalPages);
-
   const handleSortClick = (key: string, sortable?: boolean) => {
     if (!sortable || !onSortChange) return;
     const nextDir = sortKey === key && sortDir === "asc" ? "desc" : "asc";
@@ -135,7 +133,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         <div className="mb-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex flex-col items-start gap-4">
             {fieldsSwitches.map((item, index) => (
-              <div key={index} className="flex items-center justify-between w-full gap-4">
+              <div
+                key={index}
+                className="flex items-center justify-between w-full gap-4"
+              >
                 <label className="text-2xl font-medium text-[#3a3886] capitalize">
                   {item.key.replace(/_/g, " ")}
                 </label>
@@ -178,7 +179,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                     [param]: e.target.value,
                   })
                 }
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
+                className="w-full pl-10 min-h-[52px] pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
               />
             </div>
           ))}
@@ -243,13 +244,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 }`}
               >
                 {tab.label}
-                {tab.count !== undefined && (
+
+                {activeFilter === tab.key && tab.count !== undefined && (
                   <span
-                    className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      activeFilter === tab.key
-                        ? "bg-[#F97316]/10 text-[#F97316]"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                    className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${"bg-[#F97316]/10 text-[#F97316]"}`}
                   >
                     {tab.count}
                   </span>
@@ -313,7 +311,9 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                         <Search className="w-8 h-8 text-gray-400" />
                       </div>
-                      <p className="font-medium text-gray-600">{emptyMessage}</p>
+                      <p className="font-medium text-gray-600">
+                        {emptyMessage}
+                      </p>
                     </div>
                   </td>
                 </tr>

@@ -21,7 +21,7 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
     { name: "B2B Partner", icon: Users, href: "/admin/b2b" },
     { name: "Enquiries", icon: Mail, href: "/admin/enquiries" },
     { name: "Documents", icon: FileText, href: "/admin/documents" },
-    { name: "B2B Logs", icon: Logs, href: "/admin/b2b-logs" },
+    { name: "B2B Logs", icon: Logs, href: "/admin/logs" },
   ];
 
   return (
