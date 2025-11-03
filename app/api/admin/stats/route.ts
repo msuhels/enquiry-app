@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       (count) => count.data?.length || 0
     );
 
-    console.log("LOGGING : Supabase stats:", { users, enquiries, programs });
+    // console.log("LOGGING : Supabase stats:", { users, enquiries, programs });
 
     return NextResponse.json({
       data: { users : usersCount, enquiries : enquiriesCount, programs: programsCount },

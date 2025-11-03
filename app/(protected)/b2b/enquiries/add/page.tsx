@@ -73,11 +73,23 @@ export default function EnquirySystem() {
       setPrograms([]);
 
       await mutate();
-      await post("/api/admin/enquiries", {
+      const enquiryResponse = await post("/api/admin/enquiries", {
         previous_or_current_study: previousOrCurrentStudy,
         degree_going_for: degreeGoingFor,
         userId: user.userDetails.id,
       });
+
+      if (enquiryResponse?.data?.id) {
+        try {
+          await post("/api/admin/record-login", {
+            event_type: "enquiry_created",
+            user_id: user.userDetails.id,
+            enquiry_id: enquiryResponse.data.id,
+          });
+        } catch (e) {
+          console.error("Failed to log enquiry creation:", e);
+        }
+      }
       const params = new URLSearchParams();
       if (previousOrCurrentStudy) {
         params.append("previous_or_current_study", previousOrCurrentStudy);

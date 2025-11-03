@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Edit, Trash2, Search, PlusIcon, Folder, Loader2 } from "lucide-react";
+import { Edit, Trash2, Search, PlusIcon, Folder, Loader2, Download } from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
 import Pagination from "../ui/pagination";
@@ -53,6 +53,7 @@ interface TableProps<T> {
   onPageChange?: (page: number) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
+  onExport?: () => void;
   dateFilters?: { from_date: string; to_date: string };
   locationFilters?: { state: string; city: string };
   onDateFilterChange?: (val: { fromDate: string; toDate: string }) => void;
@@ -88,6 +89,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   onPageChange,
   onEdit,
   onDelete,
+  onExport,
   handleToggleActive,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
@@ -106,6 +108,15 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         <div className="flex justify-between items-center mt-4">
           <h1 className="text-4xl font-bold text-[#3a3886]">{title}</h1>
           <div className="flex gap-3">
+            {onExport && data.length > 0 && (
+              <button
+                onClick={onExport}
+                className="inline-flex text-2xl items-center px-4 py-2.5 bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Excel
+              </button>
+            )}
             {addHref && (
               <Link
                 href={addHref}
@@ -237,7 +248,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${
                   activeFilter === tab.key
                     ? "border-[#F97316] text-[#F97316]"
                     : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
