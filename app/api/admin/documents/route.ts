@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const search = searchParams.get("search");
 
     if (id) {
       const { data, error } = await supabase
@@ -37,18 +38,31 @@ export async function GET(request: NextRequest) {
     const limit = Number(searchParams.get("limit")) || 10;
     const offset = Number(searchParams.get("offset")) || 0;
 
-    const { count: totalRecords, error: countError } = await supabase
+    // Build the base query
+    let countQuery = supabase
       .from("documents")
       .select("*", { count: "exact", head: true });
+    let dataQuery = supabase.from("documents").select("*");
+
+    // Apply search filter if search param exists
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      countQuery = countQuery.or(
+        `title.ilike.${searchTerm},description.ilike.${searchTerm}`
+      );
+      dataQuery = dataQuery.or(
+        `title.ilike.${searchTerm},description.ilike.${searchTerm}`
+      );
+    }
+
+    const { count: totalRecords, error: countError } = await countQuery;
 
     if (countError) {
       console.error("Count error:", countError);
       throw countError;
     }
 
-    const { data, error } = await supabase
-      .from("documents")
-      .select("*")
+    const { data, error } = await dataQuery
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -80,6 +94,86 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// export async function GET(request: NextRequest) {
+//   try {
+//     const supabase = createServiceRoleClient();
+
+//     const { searchParams } = new URL(request.url);
+//     const id = searchParams.get("id");
+
+//     if (id) {
+//       const { data, error } = await supabase
+//         .from("documents")
+//         .select("*")
+//         .eq("id", id)
+//         .single();
+
+//       if (error) {
+//         console.error("Error fetching document:", error);
+
+//         if (error.code === "PGRST116") {
+//           return NextResponse.json(
+//             { success: false, error: "Document not found" },
+//             { status: 404 }
+//           );
+//         }
+
+//         throw error;
+//       }
+
+//       return NextResponse.json({
+//         success: true,
+//         data,
+//       });
+//     }
+
+//     const limit = Number(searchParams.get("limit")) || 10;
+//     const offset = Number(searchParams.get("offset")) || 0;
+
+//     const { count: totalRecords, error: countError } = await supabase
+//       .from("documents")
+//       .select("*", { count: "exact", head: true });
+
+//     if (countError) {
+//       console.error("Count error:", countError);
+//       throw countError;
+//     }
+
+//     const { data, error } = await supabase
+//       .from("documents")
+//       .select("*")
+//       .order("created_at", { ascending: false })
+//       .range(offset, offset + limit - 1);
+
+//     if (error) {
+//       console.error("Error fetching documents:", error);
+//       throw error;
+//     }
+
+//     const totalPages = Math.ceil((totalRecords || 0) / limit);
+//     const currentPage = Math.floor(offset / limit) + 1;
+
+//     return NextResponse.json({
+//       success: true,
+//       data,
+//       pagination: {
+//         total: totalRecords || 0,
+//         limit,
+//         offset,
+//         totalPages,
+//         currentPage,
+//         hasMore: offset + limit < (totalRecords || 0),
+//       },
+//     });
+//   } catch (error) {
+//     console.error("API document fetch error:", error);
+//     return NextResponse.json(
+//       { success: false, error: "Internal server error" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
 // POST - Create new document
 export async function POST(request: NextRequest) {
