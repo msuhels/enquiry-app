@@ -22,6 +22,7 @@ export async function GET(
     const state = searchParams.get("state") ?? "";
     const fromDate = searchParams.get("from_date") ?? "";
     const toDate = searchParams.get("to_date") ?? "";
+    const exportFile = searchParams.get("export");
 
     console.log("LOGGING : API received enquiries for creator:", createdById);
 
@@ -55,7 +56,9 @@ export async function GET(
       query = query.ilike("createdby.state", `%${state}%`);
     }
 
-    query = query.range(offset, offset + limit - 1);
+    if (!exportFile) {
+      query = query.range(offset, offset + limit - 1);
+    }
 
     const { data, error, count } = await query;
 
