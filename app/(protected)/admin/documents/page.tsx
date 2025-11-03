@@ -51,7 +51,7 @@ const DocumentsPage = () => {
   }, [data]);
 
   const handleEdit = (doc: IDocument) => {
-    router.push(`/admin/documents/${doc.id}`);
+    router.push(`/admin/documents/update/${doc.id}`);
   };
 
   const handleDelete = (doc: IDocument) => {

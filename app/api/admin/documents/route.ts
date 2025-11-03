@@ -1,17 +1,42 @@
 import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - Fetch documents
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceRoleClient();
 
-    // Parse query params
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (id) {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching document:", error);
+
+        if (error.code === "PGRST116") {
+          return NextResponse.json(
+            { success: false, error: "Document not found" },
+            { status: 404 }
+          );
+        }
+
+        throw error;
+      }
+
+      return NextResponse.json({
+        success: true,
+        data,
+      });
+    }
+
     const limit = Number(searchParams.get("limit")) || 10;
     const offset = Number(searchParams.get("offset")) || 0;
 
-    // Fetch total count first
     const { count: totalRecords, error: countError } = await supabase
       .from("documents")
       .select("*", { count: "exact", head: true });
@@ -21,7 +46,6 @@ export async function GET(request: NextRequest) {
       throw countError;
     }
 
-    // Fetch paginated data
     const { data, error } = await supabase
       .from("documents")
       .select("*")
@@ -51,7 +75,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("API document fetch error:", error);
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

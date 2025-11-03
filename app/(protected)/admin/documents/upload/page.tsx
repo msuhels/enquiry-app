@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { SaveIcon, Upload, X, FileText } from "lucide-react";
+import { SaveIcon, Upload, X, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
@@ -304,7 +304,7 @@ export default function UploadDocumentPage() {
                 className="inline-flex items-center px-4 py-2.5 text-xl bg-[#3a3886] text-white rounded-lg hover:bg-[#2d2b6b] transition-all duration-200 shadow-sm hover:shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <Loader2 className="animate-spin mr-2" />
                 ) : (
                   <SaveIcon className="h-4 w-4 mr-2" />
                 )}
