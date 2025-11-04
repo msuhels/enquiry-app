@@ -8,7 +8,10 @@ import SearchSelect from "@/components/form/FormSearchSelect";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { usePost } from "@/hooks/api/usePost";
-import { Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Program } from "@/lib/types";
 
 export default function EnquirySystem() {
   const router = useRouter();
@@ -19,7 +22,7 @@ export default function EnquirySystem() {
 
   const [degreeGoingFor, setDegreeGoingFor] = useState("");
   const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
-
+  const [enquiry, setEnquiry] = useState({});
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
@@ -80,6 +83,7 @@ export default function EnquirySystem() {
       });
 
       if (enquiryResponse?.data?.id) {
+        setEnquiry(enquiryResponse.data);
         try {
           await post("/api/admin/record-login", {
             event_type: "enquiry_created",
@@ -112,6 +116,83 @@ export default function EnquirySystem() {
       toast.error(error.message || "Failed to fetch programs");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPrograms = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (previousOrCurrentStudy) {
+        params.append("previous_or_current_study", previousOrCurrentStudy);
+      }
+      if (degreeGoingFor) {
+        params.append("degree_going_for", degreeGoingFor);
+      }
+
+      const response = await fetch(
+        `/api/admin/programs/suggestions?${params.toString()}`
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Program Data", 14, 20);
+
+      doc.setFontSize(10);
+      let yPos = 30;
+      if (previousOrCurrentStudy) {
+        doc.text(`Previous/Current Study: ${previousOrCurrentStudy}`, 14, yPos);
+        yPos += 7;
+      }
+      if (degreeGoingFor) {
+        doc.text(`Degree Going For: ${degreeGoingFor}`, 14, yPos);
+        yPos += 10;
+      }
+
+      const tableData = result.data.map((program: Program) => [
+        program.university || "",
+        program.course_name || "",
+        program.previous_or_current_study || "",
+        program.degree_going_for || "",
+        program.ielts_requirement || "",
+      ]);
+
+      autoTable(doc, {
+        head: [
+          [
+            "University",
+            "Program Name",
+            "Previous / Current Study",
+            "Degree Going For",
+            "IELTS Requirment",
+          ],
+        ],
+        body: tableData,
+        startY: yPos,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [66, 139, 202] },
+        margin: { top: 10 },
+      });
+
+      doc.save(`programs-${new Date().toISOString()}.pdf`);
+
+      try {
+        await post("/api/admin/record-login", {
+          event_type: "program_download",
+          enquiry_id: enquiry?.id,
+          user_id: user.userDetails.id,
+        });
+      } catch (e) {
+        console.error("Failed to log program download:", e);
+      }
+
+      toast.success("Programs downloaded successfully!");
+    } catch (error: any) {
+      console.error("Download error:", error);
+      toast.error(error.message || "Failed to download programs");
     }
   };
 
@@ -184,7 +265,23 @@ export default function EnquirySystem() {
         {/* Result */}
         <div className="mt-6 w-full">
           {programs.length > 0 ? (
-            <ProgramsTable data={programs} settings={settings?.data} />
+            <div>
+              <div className="w-full flex items-center justify-end">
+                <button
+                  onClick={handleDownloadPrograms}
+                  className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-xl text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  disabled={
+                    loading || !previousOrCurrentStudy || !degreeGoingFor
+                  }
+                >
+                  <span>
+                    <Download className="w-5 h-5" />
+                  </span>
+                  <span>download</span>
+                </button>
+              </div>
+              <ProgramsTable data={programs} settings={settings?.data} />
+            </div>
           ) : hasSearched && !loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

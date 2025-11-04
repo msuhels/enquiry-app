@@ -15,10 +15,12 @@ async function getGeoFromIP(ip: string) {
     //   return null; // local
     // }
 
-    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    const res = await fetch(`https://ipwho.is/${ip}`);
     const json = await res.json();
 
-    if (!json.error) {
+    console.log("Geo lookup result", json);
+
+    if (json.success == true) {
       return {
         city: json.city,
         state: json.regionName,
@@ -27,7 +29,7 @@ async function getGeoFromIP(ip: string) {
         lon: json.longitude,
         isp: json.isp,
       };
-    } else if (json.reserved) {
+    } else if (json.success == false && json.message == "Reserved range") {
       return {
         city: "localhost",
         state: "localhost",
@@ -130,3 +132,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+ 

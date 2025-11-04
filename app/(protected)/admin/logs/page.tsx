@@ -77,9 +77,9 @@ export default function LogsPage() {
               {user.full_name || user.username || "Unknown"}
             </div>
 
-            <div className="text-gray-500 text-sm">
+            {/* <div className="text-gray-500 text-sm">
               ID: {row.user_id?.slice(0, 8)}...
-            </div>
+            </div> */}
           </div>
         );
       },
@@ -96,10 +96,6 @@ export default function LogsPage() {
       label: "Location",
       render: (row: ActivityLog) => {
         const ip = row.metadata?.ip_info ?? {};
-
-        if (row.event_type !== "enquiry_created" || !ip?.city) {
-          return <span className="text-xl text-gray-400">-</span>;
-        }
 
         const locationParts = [ip.city, ip.state, ip.country].filter(Boolean);
 
@@ -144,7 +140,7 @@ export default function LogsPage() {
       label: "Role",
       render: (row: ActivityLog) => (
         <span className="text-xl text-gray-700 capitalize">
-          {row.role ?? "-"}
+          {row.role == "admin" ? "Admin" : "B2B" ?? "-"}
         </span>
       ),
     },
