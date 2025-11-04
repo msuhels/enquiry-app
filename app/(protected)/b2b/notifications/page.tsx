@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft as ArrowLeftIcon, Bell as BellIcon } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 
-// Define the structure for a single Notification item
 interface Notification {
   id: string;
   created_at: string;
@@ -14,7 +13,6 @@ interface Notification {
   is_readed: boolean;
 }
 
-// Helper component for a single notification item
 const NotificationItem = ({
   id,
   title,
@@ -43,13 +41,8 @@ const NotificationItem = ({
 
   return (
     <div
-      onClick={() => onMarkRead(id)}
-      className={`px-5 py-4 border-b border-gray-200 last:border-b-0 transition cursor-pointer 
-      ${
-        !isRead
-          ? "bg-[#3A38861A] hover:bg-[#3A388630]"
-          : "bg-white hover:bg-gray-100"
-      }`}
+      className={`px-5 py-4 border-b border-gray-200 last:border-b-0 transition 
+      ${!isRead ? "bg-[#3A38861A]" : "bg-white"}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-3">
@@ -68,13 +61,15 @@ const NotificationItem = ({
           </div>
         </div>
 
-        {/* ✅ Read/Unread label */}
         {!isRead ? (
-          <span className="text-xs text-white bg-[#F97316] px-2 py-1 rounded-full">
-            Unread
-          </span>
+          <button
+            onClick={() => onMarkRead(id)}
+            className="text-lg whitespace-nowrap text-white bg-[#F97316] px-2 py-1 rounded-full hover:bg-[#EA580C] transition cursor-pointer"
+          >
+            Mark as Read
+          </button>
         ) : (
-          <span className="text-xs text-gray-700 bg-gray-200 px-2 py-1 rounded-full">
+          <span className="text-lg text-gray-700 bg-gray-200 px-2 py-1 rounded-full">
             Read
           </span>
         )}
@@ -104,15 +99,12 @@ export default function NotificationsPage() {
     if (!isLoading) setPageLoading(false);
   }, [isLoading]);
 
-  // Mark notification as read
   const markAsRead = async (id: string) => {
     const notif = notificationList.find((n) => n.id === id);
     if (!notif) return;
 
-    // ✅ Skip if already read
     if (notif.is_readed) return;
 
-    // ✅ Optimistic UI update
     mutate(
       {
         data: notificationList.map((n) =>
