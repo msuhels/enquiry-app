@@ -234,7 +234,7 @@ export default function EnquiriesPage() {
   const filterTabs = [
     { key: "all", label: "All", count: enquiriesData?.pagination?.total },
     { key: "admin", label: "Admin", count: enquiriesData?.pagination?.total },
-    { key: "user", label: "Vendor", count: enquiriesData?.pagination?.total },
+    { key: "user", label: "B2B", count: enquiriesData?.pagination?.total },
   ];
 
   return (
@@ -257,8 +257,8 @@ export default function EnquiriesPage() {
           searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
           onDelete={handleDelete}
-          // onExport={handleExportToExcel}
-          filterTabs={filterTabs}
+          onExport={handleExportToExcel}
+          // filterTabs={filterTabs}
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
         />

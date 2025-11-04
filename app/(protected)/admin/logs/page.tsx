@@ -20,10 +20,11 @@ interface ActivityLog {
 export default function LogsPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState({
     email: "",
+    name: "",
     action: "",
     from_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -166,7 +167,7 @@ export default function LogsPage() {
   const filterTabs = [
     { key: "all", label: "All Logs", count: logsData?.pagination?.total },
     { key: "admin", label: "Admin Logs", count: logsData?.pagination?.total },
-    { key: "user", label: "Vendor Logs", count: logsData?.pagination?.total },
+    { key: "user", label: "B2B Logs", count: logsData?.pagination?.total },
   ];
 
   const actionFilterOptions = [
@@ -187,7 +188,7 @@ export default function LogsPage() {
           searchQuery={search}
           onSearchChange={setSearch}
           isLoading={isLoading}
-          searchParameters={["email"]}
+          searchParameters={["name","email"]}
           // searchSelectFilters={[
           //   {
           //     name: "action",
