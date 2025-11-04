@@ -248,7 +248,7 @@ export default function EnquiriesPage() {
           addHref="/b2b/enquiries/add"
           // searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
-          onExport={handleExportToExcel}
+          // onExport={handleExportToExcel}
           // onDelete={handleDelete}
         />
       </div>

@@ -257,7 +257,7 @@ export default function EnquiriesPage() {
           searchSelectFilters={searchSelectFilters}
           dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
           onDelete={handleDelete}
-          onExport={handleExportToExcel}
+          // onExport={handleExportToExcel}
           filterTabs={filterTabs}
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
