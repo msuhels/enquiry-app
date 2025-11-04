@@ -158,7 +158,7 @@ export default function UsersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
         <AdvancedDataTable
-          title="B2B Partners Deployed with Auto deployment"
+          title="B2B Partners"
           columns={columns}
           data={users}
           searchQuery={search}
