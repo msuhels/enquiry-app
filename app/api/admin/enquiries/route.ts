@@ -15,6 +15,7 @@ export async function GET(
     const name = searchParams.get("name") ?? "";
     const organisation = searchParams.get("organisation") ?? "";
     const city = searchParams.get("city") ?? "";
+    const exportFile = searchParams.get("export");
     const state = searchParams.get("state") ?? "";
     const fromDate = searchParams.get("from_date") ?? "";
     const toDate = searchParams.get("to_date") ?? "";
@@ -54,7 +55,11 @@ export async function GET(
       query = query.eq("createdby.role", userType);
     }
 
-    query = query.range(offset, offset + limit - 1);
+    if (!exportFile) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    // query = query.range(offset, offset + limit - 1);
 
     const { data, error, count } = await query;
 
