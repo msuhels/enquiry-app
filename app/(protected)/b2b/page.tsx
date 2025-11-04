@@ -50,13 +50,14 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (notifications) {
-      setNotificationCount(notifications?.data?.length || 0);
+      const unRead = notifications?.data?.filter((n) => !n.is_readed);
+      setNotificationCount(unRead?.length || 0);
     }
   }, [notifications]);
 
   useEffect(() => {
     if (enquiries) {
-      setEnquiriesCount(enquiries?.data?.length || 0);
+      setEnquiriesCount(enquiries?.pagination?.total || 0);
     }
   }, [enquiries]);
   
