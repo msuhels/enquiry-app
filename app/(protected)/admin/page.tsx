@@ -9,6 +9,7 @@ import {
   Eye as EyeIcon,
   UserPlus as UserPlusIcon,
   Bell as BellIcon,
+  Download,
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
@@ -111,12 +112,19 @@ export default function AdminDashboard() {
 
             <div className="flex items-center gap-4">
               <div
+                onClick={() => router.push("/admin/documents")}
+                className="p-2.5 rounded-full bg-gray-50 hover:bg-[#F97316]/10 text-[#3a3886] hover:text-[#F97316] transition-all duration-200"
+              >
+                <Download className="w-5 h-5  transition-colors" />
+              </div>
+              <div
                 className="relative inline-block cursor-pointer group"
                 onClick={() => router.push("/admin/notifications")}
               >
-                <div className="p-2.5 rounded-full bg-gray-50 group-hover:bg-[#F97316]/10 transition-all duration-200">
-                  <BellIcon className="w-5 h-5 text-[#3a3886] group-hover:text-[#F97316] transition-colors" />
+                <div className="p-2.5 rounded-full bg-gray-50 hover:bg-[#F97316]/10 text-[#3a3886] hover:text-[#F97316] transition-all duration-200">
+                  <BellIcon className="w-5 h-5   transition-colors" />
                 </div>
+
                 {notificationCount > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-[#F97316] text-white text-[10px] font-semibold flex items-center justify-center rounded-full px-1.5 shadow-lg">
                     {notificationCount}

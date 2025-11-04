@@ -10,10 +10,14 @@ import {
   type ForgotPasswordFormData,
   type UpdatePasswordFormData,
   type ProfileFormData,
-  type ValidationResult
+  type ValidationResult,
 } from "@/lib/schema/auth-module";
 import { useUserStore } from "@/lib/stores/auth-module";
-import { getUserProfile, updateLastLogin, updateUserProfile } from "@/lib/supabase/auth-module/services/user.services";
+import {
+  getUserProfile,
+  updateLastLogin,
+  updateUserProfile,
+} from "@/lib/supabase/auth-module/services/user.services";
 
 export interface AuthResult {
   success: boolean;
@@ -82,7 +86,9 @@ export class AuthHandlers {
   }
 
   // Validate forgot password form data
-  validateForgotPasswordData(data: ForgotPasswordFormData): ValidationResult<ForgotPasswordFormData> {
+  validateForgotPasswordData(
+    data: ForgotPasswordFormData
+  ): ValidationResult<ForgotPasswordFormData> {
     try {
       const validatedData = forgotPasswordSchema.parse(data);
       return {
@@ -108,7 +114,9 @@ export class AuthHandlers {
   }
 
   // Validate update password form data
-  validateUpdatePasswordData(data: UpdatePasswordFormData): ValidationResult<UpdatePasswordFormData> {
+  validateUpdatePasswordData(
+    data: UpdatePasswordFormData
+  ): ValidationResult<UpdatePasswordFormData> {
     try {
       const validatedData = updatePasswordSchema.parse(data);
       return {
@@ -134,7 +142,9 @@ export class AuthHandlers {
   }
 
   // Validate profile form data
-  validateProfileData(data: ProfileFormData): ValidationResult<ProfileFormData> {
+  validateProfileData(
+    data: ProfileFormData
+  ): ValidationResult<ProfileFormData> {
     try {
       const validatedData = profileSchema.parse(data);
       return {
@@ -188,8 +198,31 @@ export class AuthHandlers {
         };
       }
 
-      // Update store with user data
-      setUser(data.user);
+      if (data.user) {
+        setUser(data.user);
+
+        const accessToken = data.session?.access_token;
+
+        try {
+          const response = await fetch("/api/admin/record-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_token: accessToken,
+              event_type: "login",
+            }),
+          });
+
+          if (!response.ok) {
+            console.error("failed to call record-login", response);
+          } else {
+            const result = await response.json();
+            console.log("LOGGING : record-login result:", result);
+          }
+        } catch (e) {
+          console.error("failed to call record-login", e);
+        }
+      }
 
       // Update last login in users table
       if (data.user) {
@@ -201,7 +234,8 @@ export class AuthHandlers {
         user: data.user,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -247,11 +281,11 @@ export class AuthHandlers {
       // Create user record in users table if auth user was created successfully
       if (data.user) {
         try {
-        console.log("LOGGING : User found ", data.user)
-          const response = await fetch('/api/admin/users', {
-            method: 'POST',
+          console.log("LOGGING : User found ", data.user);
+          const response = await fetch("/api/admin/users", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               authUserId: data.user.id,
@@ -259,26 +293,38 @@ export class AuthHandlers {
             }),
           });
           console.log("LOGGING : Response from API - status:", response.status);
-          console.log("LOGGING : Response from API - statusText:", response.statusText);
+          console.log(
+            "LOGGING : Response from API - statusText:",
+            response.statusText
+          );
           console.log("LOGGING : Response from API - url:", response.url);
-          
+
           if (!response.ok) {
             try {
               const errorData = await response.json();
               console.error("Failed to create user profile:", errorData.error);
             } catch (parseError) {
               const textResponse = await response.text();
-              console.error("Failed to create user profile - could not parse JSON:", textResponse);
+              console.error(
+                "Failed to create user profile - could not parse JSON:",
+                textResponse
+              );
             }
             // Note: We don't fail the signup if user profile creation fails
             // The user can still complete the auth flow
           } else {
             try {
               const responseData = await response.json();
-              console.log("LOGGING : User created successfully in users table:", responseData);
+              console.log(
+                "LOGGING : User created successfully in users table:",
+                responseData
+              );
             } catch (parseError) {
               const textResponse = await response.text();
-              console.error("Success response but could not parse JSON:", textResponse);
+              console.error(
+                "Success response but could not parse JSON:",
+                textResponse
+              );
             }
           }
         } catch (error) {
@@ -293,7 +339,8 @@ export class AuthHandlers {
         user: data.user,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -321,9 +368,12 @@ export class AuthHandlers {
     setSuccess(false);
 
     try {
-      const { error } = await this.supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
-      });
+      const { error } = await this.supabase.auth.resetPasswordForEmail(
+        data.email,
+        {
+          redirectTo: `${window.location.origin}/auth/update-password`,
+        }
+      );
 
       if (error) {
         setError(error.message);
@@ -338,7 +388,8 @@ export class AuthHandlers {
         success: true,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -381,7 +432,8 @@ export class AuthHandlers {
         success: true,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -409,7 +461,10 @@ export class AuthHandlers {
 
     try {
       // Get current user
-      const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await this.supabase.auth.getUser();
 
       if (authError || !user) {
         setError("User not authenticated");
@@ -435,7 +490,8 @@ export class AuthHandlers {
         user: result.data,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -454,7 +510,10 @@ export class AuthHandlers {
 
     try {
       // Get current auth user
-      const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await this.supabase.auth.getUser();
 
       if (authError || !user) {
         setError("User not authenticated");
@@ -480,7 +539,8 @@ export class AuthHandlers {
         user: result.data,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -492,12 +552,42 @@ export class AuthHandlers {
   }
 
   async logout(): Promise<AuthResult> {
-    const { setLogoutLoading, setError, logout: storeLogout } = useUserStore.getState();
+    const {
+      setLogoutLoading,
+      setError,
+      logout: storeLogout,
+      user,
+    } = useUserStore.getState();
 
     setLogoutLoading(true);
     setError(null);
 
     try {
+      const session = await this.supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+
+      if (accessToken) {
+        try {
+          const response = await fetch("/api/admin/record-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_token: accessToken,
+              event_type: "logout",
+            }),
+          });
+
+          if (!response.ok) {
+            console.error("failed to call record-login", response);
+          } else {
+            const result = await response.json();
+            console.log("LOGGING : record-login result:", result);
+          }
+        } catch (e) {
+          console.error("failed to call record-login", e);
+        }
+      }
+
       const { error } = await this.supabase.auth.signOut();
 
       if (error) {
@@ -508,14 +598,14 @@ export class AuthHandlers {
         };
       }
 
-      // Update store
       storeLogout();
 
       return {
         success: true,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -533,7 +623,10 @@ export class AuthHandlers {
     setError(null);
 
     try {
-      const { data: { user }, error } = await this.supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await this.supabase.auth.getUser();
 
       if (error) {
         setError(error.message);
@@ -550,7 +643,8 @@ export class AuthHandlers {
         user,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
       return {
         success: false,
@@ -574,4 +668,4 @@ export class AuthHandlers {
 }
 
 // Export a singleton instance
-export const authHandlers = new AuthHandlers(); 
+export const authHandlers = new AuthHandlers();
