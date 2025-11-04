@@ -3,7 +3,7 @@ name: Deploy to Ubuntu Server
 on:
   push:
     branches:
-      - prod # ✅ Runs only when pushing or merging to prod
+      - prod 
 
 jobs:
   deploy:
