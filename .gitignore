@@ -42,3 +42,8 @@ supabase_enquiry_app_backup_2025_11_04.sql
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# key files
+github-deploy-key
+github-deploy-key.pub
