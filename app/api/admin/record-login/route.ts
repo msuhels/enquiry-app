@@ -18,16 +18,14 @@ async function getGeoFromIP(ip: string) {
     const res = await fetch(`https://ipwho.is/${ip}`);
     const json = await res.json();
 
-    console.log("Geo lookup result", json);
-
     if (json.success == true) {
       return {
         city: json.city,
-        state: json.regionName,
-        country: json.country_name,
+        state: json.region,
+        country: json.country,
         lat: json.latitude,
         lon: json.longitude,
-        isp: json.isp,
+        isp: json.connection.isp,
       };
     } else if (json.success == false && json.message == "Reserved range") {
       return {
