@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     <p>
       You can log in here: 
-      <a href="http://bog4kwkws804gk44wk048sko.217.76.57.190.sslip.io/" style="color:#1a73e8;">Click here to login</a>
+      <a href="https://italycoursefinder.com/" style="color:#1a73e8;">Click here to login</a>
     </p>
 
     <p>
