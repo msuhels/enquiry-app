@@ -112,7 +112,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-4">
               <div
                 className="relative inline-block cursor-pointer group"
-                onClick={() => router.push("/admin/notifications")}
+                onClick={() => router.push("/admin")}
               >
                 <div className="p-2.5 rounded-full bg-gray-50 group-hover:bg-[#F97316]/10 transition-all duration-200">
                   <BellIcon className="w-5 h-5 text-[#3a3886] group-hover:text-[#F97316] transition-colors" />
