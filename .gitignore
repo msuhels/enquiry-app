@@ -32,7 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*.local
-.env
 .env.supabase
 supabase_enquiry_app_backup_2025_11_04.sql
 
@@ -47,3 +46,4 @@ next-env.d.ts
 # key files
 github-deploy-key
 github-deploy-key.pub
+config.bat

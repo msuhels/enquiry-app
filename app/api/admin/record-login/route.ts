@@ -47,8 +47,14 @@ async function getGeoFromIP(ip: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const event_type = body.event_type as "login" | "logout" | "enquiry";
+    const event_type = body.event_type as
+      | "login"
+      | "logout"
+      | "enquiry"
+      | "enquiry_created"
+      | "document_download";
     const enquiry_id = body.enquiry_id as string | null;
+    const document_id = body.document_id as string | null;
     const serverSupabase = await createClient();
     const session = await serverSupabase.auth.getSession();
     const access_token =
@@ -98,6 +104,10 @@ export async function POST(req: NextRequest) {
       metadata.enquiry_id = enquiry_id;
     }
 
+    if (document_id) {
+      metadata.document_id = document_id;
+    }
+
     const { error: insertError } = await supabase
       .from("user_activity_logs")
       .insert([
@@ -130,5 +140,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
-
- 
