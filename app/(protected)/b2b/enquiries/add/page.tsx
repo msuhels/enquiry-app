@@ -137,45 +137,159 @@ export default function EnquirySystem() {
       if (!response.ok) throw new Error(result.error);
 
       const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      doc.setFontSize(18);
-      doc.text("Program Data", 14, 20);
+      doc.setFillColor(58, 56, 134)
+      doc.rect(0, 0, pageWidth, 40, "F");
 
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("Program Search Results", pageWidth / 2, 18, {
+        align: "center",
+      });
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text('"Trusted by the Wise. Chosen by the Best"', pageWidth / 2, 28, {
+        align: "center",
+      });
+
+      let yPos = 45;
+      const boxWidth = (pageWidth - 42) / 2;
+
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.5);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(14, yPos, boxWidth, 20, 1, 1, "FD");
+
+      doc.setTextColor(58, 56, 134);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("Previous/Current Study", 18, yPos + 6);
+
+      doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
-      let yPos = 30;
-      if (previousOrCurrentStudy) {
-        doc.text(`Previous/Current Study: ${previousOrCurrentStudy}`, 14, yPos);
-        yPos += 7;
+      doc.setFont("helvetica", "normal");
+      doc.text(previousOrCurrentStudy || "-", 18, yPos + 14);
+
+      doc.setDrawColor(200, 200, 200);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(14 + boxWidth + 4, yPos, boxWidth, 20, 1, 1, "FD");
+
+      doc.setTextColor(58, 56, 134);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("Degree Going For", 18 + boxWidth + 4, yPos + 6);
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(degreeGoingFor || "-", 18 + boxWidth + 4, yPos + 14);
+
+      yPos = 70;
+
+      doc.setDrawColor(249, 115, 22);
+      doc.setLineWidth(0.5);
+      doc.setFillColor(255, 247, 237);
+
+      const noteText =
+        "This course finder is for counselling purposes only. Final course options will be provided by our subject matter experts after a detailed analysis of your profile.";
+      const splitNote = doc.splitTextToSize(noteText, pageWidth - 60);
+      const textHeight = splitNote.length * 4;
+      const boxHeight = textHeight + 8;
+
+      doc.roundedRect(14, yPos, pageWidth - 28, boxHeight, 2, 2, "FD");
+
+      doc.setTextColor(249, 115, 22);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text("*Note:", 18, yPos + 6);
+
+      doc.setFont("helvetica", "normal");
+      doc.text(splitNote, 32, yPos + 6);
+
+      yPos += boxHeight + 5;
+
+      const showSpecialRequirements =
+        settings?.data?.is_special_requirements_enabled;
+      const showRemarks = settings?.data?.is_remarks_enabled;
+
+      const headers = [
+        "University",
+        "Course Name",
+        "Previous Study",
+        "Degree Going For",
+        "IELTS Req.",
+      ];
+
+      if (showSpecialRequirements) {
+        headers.push("Special Requirements");
       }
-      if (degreeGoingFor) {
-        doc.text(`Degree Going For: ${degreeGoingFor}`, 14, yPos);
-        yPos += 10;
+      if (showRemarks) {
+        headers.push("Remarks");
       }
 
-      const tableData = result.data.map((program: Program) => [
-        program.university || "",
-        program.course_name || "",
-        program.previous_or_current_study || "",
-        program.degree_going_for || "",
-        program.ielts_requirement || "",
-      ]);
+      const tableData = result.data.map((program: Program) => {
+        const row = [
+          program.university || "-",
+          program.course_name || "-",
+          program.previous_or_current_study || "-",
+          program.degree_going_for || "-",
+          program.ielts_requirement || "-",
+        ];
+
+        if (showSpecialRequirements) {
+          row.push(program.special_requirements || "-");
+        }
+        if (showRemarks) {
+          row.push(program.remarks || "-");
+        }
+
+        return row;
+      });
 
       autoTable(doc, {
-        head: [
-          [
-            "University",
-            "Program Name",
-            "Previous / Current Study",
-            "Degree Going For",
-            "IELTS Requirment",
-          ],
-        ],
+        head: [headers],
         body: tableData,
         startY: yPos,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [66, 139, 202] },
-        margin: { top: 10 },
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          lineColor: [220, 220, 220],
+          lineWidth: 0.1,
+        },
+        headStyles: {
+          fillColor: [58, 56, 134],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+          fontStyle: "bold",
+          halign: "left",
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
+        },
+        margin: { left: 14, right: 14 },
+        theme: "grid",
       });
+
+      const pageCount = doc.internal.pages.length - 1;
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(
+          `Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+          14,
+          doc.internal.pageSize.getHeight() - 10
+        );
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          pageWidth - 14,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: "right" }
+        );
+      }
 
       doc.save(`programs-${new Date().toISOString()}.pdf`);
 

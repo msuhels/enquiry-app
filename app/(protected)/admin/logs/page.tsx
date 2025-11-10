@@ -85,6 +85,22 @@ export default function LogsPage() {
       },
     },
     {
+      key : "organization",
+      label: "Organization",
+      render: (row: ActivityLog) => {
+        const md = row.metadata ?? {};
+        const user = md.user ?? {};
+
+        return (
+          <div className="w-64">
+            <div className="text-xl font-medium text-gray-900">
+              {user.organization || "Unknown"}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       key: "email",
       label: "Email",
       render: (row: ActivityLog) => (
