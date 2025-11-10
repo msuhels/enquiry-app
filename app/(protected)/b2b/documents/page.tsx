@@ -10,7 +10,6 @@ import { useDelete } from "@/hooks/api/useDelete";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { IDocument } from "@/lib/types";
 import { Download } from "lucide-react";
-import DeleteDocConfirmationModal from "./components/deleteDocConfirmationModal";
 
 interface DocumentData {
   id: string;
@@ -54,37 +53,6 @@ const DocumentsPage = () => {
     }
   }, [data]);
 
-  const handleEdit = (doc: IDocument) => {
-    router.push(`/admin/documents/update/${doc.id}`);
-  };
-
-  const handleDelete = (doc: IDocument) => {
-    const modalId = openModal(
-      <DeleteDocConfirmationModal
-        doc={doc}
-        onDelete={() => handleConfirmDelete(doc, modalId)}
-        onClose={() => closeModal(modalId)}
-      />,
-      { size: "half" }
-    );
-  };
-
-  const handleConfirmDelete = async (doc: IDocument, modalId: string) => {
-    try {
-      const res = await del(`/api/admin/documents?id=${doc.id}`);
-      if (res.success) {
-        toast.success("Document deleted successfully!");
-        setDocs((prev) => prev.filter((d) => d.id !== doc.id));
-      } else {
-        toast.error(res.error || "Failed to delete document");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Error deleting document");
-    } finally {
-      closeModal(modalId);
-    }
-  };
 
   const downloadDocument = async (document: DocumentData): Promise<void> => {
     // Check if running in browser
