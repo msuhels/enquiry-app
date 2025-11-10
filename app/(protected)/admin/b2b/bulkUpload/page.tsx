@@ -22,6 +22,9 @@ import { useModal } from "@/components/ui/modal";
 import FileFormatInstructions from "@/components/modals/fileInstructionModal";
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import GeneratePasswordModal from "@/components/modals/generatePasswordModal";
+import * as FileSaver from "file-saver";
+import ExcelJS from "exceljs";
+
 
 export interface UserFormData {
   email: string;
@@ -210,37 +213,107 @@ export default function BulkUploadUsersPage() {
     }
   };
 
-  const downloadTemplate = () => {
-    const headers = [
-      "Sr.No.",
-      "Name",
-      "Email",
-      "Phone",
-      "Role",
-      "Organization",
-      "State",
-      "City",
-    ];
+  const downloadTemplate = async () => {
+    try {
+      const fileType =
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Users");
 
-    const sampleData = [
-      "1",
-      "Alice Smith",
-      "alice.smith@example.com",
-      "123-456-7890",
-      "user",
-      "ABC Corp",
-      "Madhya Pradesh",
-      "Indore",
-    ];
+      worksheet.columns = [
+        { header: "Sr.No.", key: "srNo", width: 10 },
+        { header: "Name", key: "name", width: 20 },
+        { header: "Email", key: "email", width: 25 },
+        { header: "Phone", key: "phone", width: 15 },
+        { header: "Role", key: "role", width: 15 },
+        { header: "Organization", key: "organization", width: 20 },
+        { header: "State", key: "state", width: 20 },
+        { header: "City", key: "city", width: 20 },
+      ];
 
-    const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "user_template.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+      const headerRow = worksheet.getRow(1);
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "356854" },
+        };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+        cell.border = {
+          top: { style: "thin", color: { argb: "FF000000" } },
+          left: { style: "thin", color: { argb: "FF000000" } },
+          bottom: { style: "thin", color: { argb: "FF000000" } },
+          right: { style: "thin", color: { argb: "FF000000" } },
+        };
+      });
+      headerRow.height = 25;
+
+      worksheet.addRow({
+        srNo: "1",
+        name: "Alice Smith",
+        email: "alice.smith@example.com",
+        phone: "123-456-7890",
+        role: "user",
+        organization: "ABC Corp",
+        state: "Madhya Pradesh",
+        city: "Indore",
+      });
+
+      const states = [
+        "Andaman and Nicobar Islands",
+        "Andhra Pradesh",
+        "Arunachal Pradesh",
+        "Assam",
+        "Bihar",
+        "Chandigarh",
+        "Chhattisgarh",
+        "Dadra and Nagar Haveli and Daman and Diu",
+        "Delhi",
+        "Goa",
+        "Gujarat",
+        "Haryana",
+        "Himachal Pradesh",
+        "Jammu and Kashmir",
+        "Jharkhand",
+        "Karnataka",
+        "Kerala",
+        "Ladakh",
+        "Lakshadweep",
+        "Madhya Pradesh",
+        "Maharashtra",
+        "Manipur",
+        "Meghalaya",
+        "Mizoram",
+        "Nagaland",
+        "Odisha",
+        "Puducherry",
+        "Punjab",
+        "Rajasthan",
+        "Sikkim",
+        "Tamil Nadu",
+        "Telangana",
+        "Tripura",
+        "Uttar Pradesh",
+        "Uttarakhand",
+        "West Bengal",
+      ];
+
+      worksheet.dataValidations.add("G2:G1000", {
+        type: "list",
+        allowBlank: true,
+        formulae: [`"${states.join(",")}"`],
+        showErrorMessage: true,
+        errorTitle: "Invalid State",
+        error: "Please select a valid State from the dropdown.",
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const data = new Blob([buffer], { type: fileType });
+      FileSaver.saveAs(data, "user_template.xlsx");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const goToPage = (page: number) => {
