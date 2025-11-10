@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Mail,
   Settings,
+  FileText,
   LogOut,
 } from "lucide-react";
 
@@ -15,6 +16,7 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/b2b" },
     { name: "Enquiries", icon: Mail, href: "/b2b/enquiries" },
+    { name: "Documents", icon: FileText, href: "/b2b/documents" },
   ];
 
   return (
