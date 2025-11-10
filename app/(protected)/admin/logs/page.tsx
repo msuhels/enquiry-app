@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Table from "@/components/table/globalTable";
 import { useFetch } from "@/hooks/api/useFetch";
 import { useDebounce } from "use-debounce";
 import { User } from "@/lib/types";
+import { State, City } from "country-state-city";
 
 interface ActivityLog {
   id: string;
@@ -26,6 +27,9 @@ export default function LogsPage() {
     email: "",
     name: "",
     action: "",
+    organization: "",
+    city: "",
+    state: "",
     from_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 10),
@@ -51,6 +55,31 @@ export default function LogsPage() {
   const { data: logsData, isLoading } = useFetch(apiUrl, {
     enabled: !!userId,
   });
+
+    const stateOptions = useMemo(() => {
+    const indianStates = State.getStatesOfCountry("IN");
+    return indianStates.map((state) => ({
+      value: state.name,
+      label: state.name,
+      isoCode: state.isoCode,
+    }));
+  }, []);
+
+  const cityOptions = useMemo(() => {
+    if (!search.state) return [];
+
+    const selectedState = stateOptions.find(
+      (state) => state.value === search.state
+    );
+
+    if (!selectedState) return [];
+
+    const cities = City.getCitiesOfState("IN", selectedState.isoCode);
+    return cities.map((city) => ({
+      value: city.name,
+      label: city.name,
+    }));
+  }, [search.state, stateOptions]);
 
   useEffect(() => {
     setPage(1);
@@ -190,6 +219,20 @@ export default function LogsPage() {
     { value: "download", label: "Download" },
   ];
 
+  const searchSelectFilters = [
+    {
+      key: "state",
+      label: "State",
+      options: stateOptions,
+    },
+    {
+      key: "city",
+      label: "City",
+      options: cityOptions,
+    },
+  ];
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -200,7 +243,7 @@ export default function LogsPage() {
           searchQuery={search}
           onSearchChange={setSearch}
           isLoading={isLoading}
-          searchParameters={["name","email"]}
+          searchParameters={["name", "organization"]}
           // searchSelectFilters={[
           //   {
           //     name: "action",
@@ -214,6 +257,7 @@ export default function LogsPage() {
           total={logsData?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
           emptyMessage="No logs found."
+          searchSelectFilters={searchSelectFilters}
           dateFilters={{
             from_date: search.from_date,
             to_date: search.to_date,
