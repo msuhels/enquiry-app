@@ -15,11 +15,13 @@ export async function GET(req: NextRequest) {
     const fromDate = searchParams.get("from_date") ?? "";
     const toDate = searchParams.get("to_date") ?? "";
     const tab = searchParams.get("tab") ?? "all";
+    const organization = searchParams.get("organization") ?? "";
+    const city = searchParams.get("city") ?? "";
+    const state = searchParams.get("state") ?? "";
 
-    // Step 1: Build user filter if email or name is provided
     let userIdsToFilter: string[] | null = null;
 
-    if (userEmail || userName) {
+    if (userEmail || userName || organization || city || state) {
       let userQuery = supabase.from("users").select("id");
 
       if (userEmail) {
@@ -27,6 +29,16 @@ export async function GET(req: NextRequest) {
       }
       if (userName) {
         userQuery = userQuery.ilike("full_name", `%${userName}%`);
+      }
+
+      if (city) {
+        userQuery = userQuery.ilike("city", `%${city}%`);
+      }
+      if (state) {
+        userQuery = userQuery.ilike("state", `%${state}%`);
+      }
+      if (organization) {
+        userQuery = userQuery.ilike("organization", `%${organization}%`);
       }
 
       const { data: matchedUsers, error: userError } = await userQuery;
@@ -57,6 +69,7 @@ export async function GET(req: NextRequest) {
         });
       }
     }
+
 
     // Step 2: Build logs query with all filters
     let query = supabase
