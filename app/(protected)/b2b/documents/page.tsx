@@ -10,6 +10,7 @@ import { useDelete } from "@/hooks/api/useDelete";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { IDocument } from "@/lib/types";
 import { Download } from "lucide-react";
+import { usePost } from "@/hooks/api/usePost";
 
 interface DocumentData {
   id: string;
@@ -42,6 +43,8 @@ const DocumentsPage = () => {
   )}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
+  const {post} = usePost();
+  const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
 
   useEffect(() => {
     setPage(1);
@@ -63,7 +66,13 @@ const DocumentsPage = () => {
 
     try {
       const loadingToast = toast.loading("Preparing download...");
-
+      if (document.id) {
+        await post("/api/admin/record-login", {
+          event_type: "document_download",
+          user_id: user.userDetails.id,
+          document_id: document.id,
+        });
+      }
       const response = await fetch(
         `/api/admin/documents/download?id=${document.id}`
       );
