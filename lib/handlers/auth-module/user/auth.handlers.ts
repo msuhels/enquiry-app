@@ -18,6 +18,7 @@ import {
   updateLastLogin,
   updateUserProfile,
 } from "@/lib/supabase/auth-module/services/user.services";
+import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 
 export interface AuthResult {
   success: boolean;
@@ -185,6 +186,24 @@ export class AuthHandlers {
     setError(null);
 
     try {
+      const { data: user } = await this.supabase
+        .from("users")
+        .select("*")
+        .eq("email", credentials.email)
+        .single();
+      console.log("LOGGING : user:", user);
+
+      const userId = user?.id;
+      if (user.role !== "admin") {
+        await fetch("/api/admin/revoke-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+          }),
+        });
+      }
+
       const { data, error } = await this.supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
