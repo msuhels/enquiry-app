@@ -96,7 +96,7 @@ function mapCSVDataToUsers(data: any[]): UserFormData[] {
       state: row['State'] || row['state'],
       city: row['City'] || row['city'],
     }))
-    .filter((user) => user.name && user.email);
+    // .filter((user) => user.name && user.email);
 }
 
 // Map Excel data (same as CSV)
