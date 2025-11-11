@@ -19,19 +19,25 @@ export default function UsersPage() {
   const { patch } = usePatch();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState({
+    name: "",
+    organization: "",
+  });
   const [filter, setFilter] = useState("all");
   const [sortKey, setSortKey] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [debouncedSearch] = useDebounce(search, 400);
+  const queryParams = new URLSearchParams();
+
+  Object.entries(debouncedSearch).forEach(([k, v]) => {
+    if (v) queryParams.append(k, v.trim());
+  });
 
   const offset = (page - 1) * itemsPerPage;
 
-  const apiUrl = `/api/admin/users?search=${encodeURIComponent(
-    debouncedSearch
-  )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
+  const apiUrl = `/api/admin/users?${queryParams.toString()}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
 
@@ -168,6 +174,7 @@ export default function UsersPage() {
           sortKey={sortKey}
           sortDir={sortDir}
           onSearchChange={setSearch}
+          searchParameters={["name", "organization"]}
           onFilterChange={setFilter}
           onSortChange={(key, dir) => {}}
           onPageChange={setPage}

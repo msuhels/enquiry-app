@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const userId = url.searchParams.get("id");
+    const name = url.searchParams.get("name");
+    const organisation = url.searchParams.get("organization");
 
     // If specific user ID is requested, return that user
     if (userId) {
@@ -60,6 +62,8 @@ export async function GET(request: NextRequest) {
       offset: url.searchParams.get("offset")
         ? parseInt(url.searchParams.get("offset")!)
         : 0,
+      name : name || undefined,
+      organisation : organisation || undefined
     };
 
     console.log("LOGGING : API received users fetch request with filters:", filters);
@@ -82,6 +86,8 @@ export async function GET(request: NextRequest) {
       sortDir,
       limit: filters.limit,
       offset: filters.offset,
+      name: filters.name,
+      organization: filters.organisation
     });
 
     if (!result.success) {

@@ -39,7 +39,7 @@ export default function EnquiriesPage() {
   const queryParams = new URLSearchParams();
 
   Object.entries(debouncedSearch).forEach(([k, v]) => {
-    if (v) queryParams.append(k, v);
+    if (v) queryParams.append(k, v.trim());
   });
 
   const apiUrl = `/api/admin/myenquiries/${userId}?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
@@ -85,7 +85,7 @@ export default function EnquiriesPage() {
       const { data } = await res.json();
   
       try {
-        const exportData = data.map((enquiry) => ({
+        const exportData = data.map((enquiry : Enquiry) => ({
           "Created By": `${enquiry?.createdby?.full_name}` || "-",
           email: enquiry?.createdby?.email || "-",
           Organisation: enquiry?.createdby?.organization || "-",
@@ -131,7 +131,7 @@ export default function EnquiriesPage() {
       render: (row: Enquiry) => (
         <div className="w-36">
           <div className="text-lg font-medium text-gray-900">
-            {row.createdby.full_name}
+            {row.createdby?.full_name}
           </div>
         </div>
       ),
@@ -141,7 +141,7 @@ export default function EnquiriesPage() {
       label: "Organisation",
       render: (row: Enquiry) => (
         <div>
-          <div>{row.createdby.organization || "-"}</div>
+          <div>{row.createdby?.organization || "-"}</div>
         </div>
       ),
     },
@@ -149,21 +149,21 @@ export default function EnquiriesPage() {
       key: "state",
       label: "State",
       render: (row: Enquiry) => (
-        <div>{row.createdby.state || "-"}</div>
+        <div>{row.createdby?.state || "-"}</div>
       ),
     },
     {
       key: "city",
       label: "City",
       render: (row: Enquiry) => (
-        <div>{row.createdby.city || "-"}</div>
+        <div>{row.createdby?.city || "-"}</div>
       ),
     },
     {
       key: "phone_number",
       label: "Phone",
       render: (row: Enquiry) => (
-        <div>{row.createdby.phone_number || "-"}</div>
+        <div>{row.createdby?.phone_number || "-"}</div>
       ),
     },
     { key: "degree_going_for", label: "Program Interest" },

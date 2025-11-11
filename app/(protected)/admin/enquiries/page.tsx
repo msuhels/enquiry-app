@@ -40,7 +40,7 @@ export default function EnquiriesPage() {
   const queryParams = new URLSearchParams();
 
   Object.entries(debouncedSearch).forEach(([k, v]) => {
-    if (v) queryParams.append(k, v);
+    if (v) queryParams.append(k, v.trim());
   });
 
   queryParams.append("tab", activeTab);
