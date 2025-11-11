@@ -121,6 +121,8 @@ interface GetUsersParams {
   sortDir?: "asc" | "desc";
   limit?: number;
   offset?: number;
+  name?: string;
+  organization?: string;
 }
 
 interface GetUsersResult extends UserServiceResult<UserProfile[]> {
@@ -141,6 +143,8 @@ export async function getUsers(
       sortDir = "desc",
       limit = 10,
       offset = 0,
+      name,
+      organization
     } = params || {};
 
     console.log("LOGGING : getUsers service called with params:", params);
@@ -151,11 +155,12 @@ export async function getUsers(
       .select("*", { count: "exact" })
       .order(sortKey, { ascending: sortDir === "asc" });
 
-    // Apply search filter
-    if (search) {
-      query = query.or(
-        `full_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`
-      );
+    if(name){
+      query = query.ilike("full_name", `%${name}%`);
+    }
+
+    if(organization){
+      query = query.ilike("organization", `%${organization}%`);
     }
 
     // Apply additional filter if needed
