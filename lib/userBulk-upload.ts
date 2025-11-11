@@ -32,15 +32,15 @@ export async function bulkCreateUsersWithValidation(
           continue;
         }
 
-        if (!userInput.full_name) {
-          results.failed++;
-          results.errors.push({
-            row: i + 1,
-            user: userInput,
-            error: "Full name is required",
-          });
-          continue;
-        }
+        // if (!userInput.full_name) {
+        //   results.failed++;
+        //   results.errors.push({
+        //     row: i + 1,
+        //     user: userInput,
+        //     error: "Full name is required",
+        //   });
+        //   continue;
+        // }
 
         // 1️⃣ Generate a random password
         const generatedPassword = crypto
