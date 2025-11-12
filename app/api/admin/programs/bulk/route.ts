@@ -92,20 +92,33 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 2: Collect all unique degrees and studies from input (with intelligent splitting)
-    const allDegrees = new Set<string>();
-    const allStudies = new Set<string>();
+    const degreesMap = new Map<string, string>();
+    const studiesMap = new Map<string, string>();
 
     body.forEach((record: BulkProgramInput) => {
       if (record.degree_going_for) {
         const degrees = splitValues(record.degree_going_for);
-        degrees.forEach(degree => allDegrees.add(degree));
+        degrees.forEach(degree => {
+          const lowerKey = degree.toLowerCase().trim();
+          if (!degreesMap.has(lowerKey)) {
+            degreesMap.set(lowerKey, degree.trim());
+          }
+        });
       }
 
       if (record.previous_or_current_study) {
         const studies = splitValues(record.previous_or_current_study);
-        studies.forEach(study => allStudies.add(study));
+        studies.forEach(study => {
+          const lowerKey = study.toLowerCase().trim();
+          if (!studiesMap.has(lowerKey)) {
+            studiesMap.set(lowerKey, study.trim());
+          }
+        });
       }
     });
+
+    const allDegrees = Array.from(degreesMap.values());
+    const allStudies = Array.from(studiesMap.values());
 
     // Step 3: Identify missing values that need to be created
     const missingDegrees = Array.from(allDegrees).filter(
