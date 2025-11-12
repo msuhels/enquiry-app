@@ -90,7 +90,7 @@ const mapDataToPrograms = (data: any[]): ProgramFormData[] => {
     previous_or_current_study:
       row["Previous / Current Study"] || row["previous_or_current_study"] || "",
     degree_going_for: row["Degree Going For"] || row["degree_going_for"] || "",
-    course_name: row["Courses Name"] || row["course_name"] || "",
+    course_name: row["Course Name"] || row["course_name"] || "",
     ielts_requirement:
       row["IELTS Requirment"] || row["ielts_requirement"] || undefined,
     special_requirements:
