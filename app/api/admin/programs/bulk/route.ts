@@ -46,15 +46,15 @@ export async function POST(request: NextRequest) {
     const supabase = createServiceRoleClient();
 
     // Helper function to split values intelligently
-    const splitValues = (value: string): string[] => {
-      // If value contains parentheses, treat as single value (don't split)
-      if (value.includes('(') || value.includes(')')) {
-        return [value.trim()];
-      }
+    // const splitValues = (value: string): string[] => {
+    //   // If value contains parentheses, treat as single value (don't split)
+    //   if (value.includes('(') || value.includes(')')) {
+    //     return [value.trim()];
+    //   }
       
-      // Otherwise split by comma
-      return value.split(',').map(v => v.trim()).filter(v => v);
-    };
+    //   // Otherwise split by comma
+    //   return value.split(',').map(v => v.trim()).filter(v => v);
+    // };
 
     // Step 1: Fetch all existing degrees and studies ONCE
     console.log("LOGGING : Fetching reference data from database");
@@ -91,29 +91,25 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Step 2: Collect all unique degrees and studies from input (with intelligent splitting)
+    // Step 2: Collect all unique degrees and studies from input (NO SPLITTING - save as-is)
     const degreesMap = new Map<string, string>();
     const studiesMap = new Map<string, string>();
 
     body.forEach((record: BulkProgramInput) => {
       if (record.degree_going_for) {
-        const degrees = splitValues(record.degree_going_for);
-        degrees.forEach(degree => {
-          const lowerKey = degree.toLowerCase().trim();
-          if (!degreesMap.has(lowerKey)) {
-            degreesMap.set(lowerKey, degree.trim());
-          }
-        });
+        const degree = record.degree_going_for.trim();
+        const lowerKey = degree.toLowerCase();
+        if (!degreesMap.has(lowerKey)) {
+          degreesMap.set(lowerKey, degree);
+        }
       }
 
       if (record.previous_or_current_study) {
-        const studies = splitValues(record.previous_or_current_study);
-        studies.forEach(study => {
-          const lowerKey = study.toLowerCase().trim();
-          if (!studiesMap.has(lowerKey)) {
-            studiesMap.set(lowerKey, study.trim());
-          }
-        });
+        const study = record.previous_or_current_study.trim();
+        const lowerKey = study.toLowerCase();
+        if (!studiesMap.has(lowerKey)) {
+          studiesMap.set(lowerKey, study);
+        }
       }
     });
 
@@ -121,11 +117,11 @@ export async function POST(request: NextRequest) {
     const allStudies = Array.from(studiesMap.values());
 
     // Step 3: Identify missing values that need to be created
-    const missingDegrees = Array.from(allDegrees).filter(
+    const missingDegrees = allDegrees.filter(
       degree => !existingDegrees.has(degree.toLowerCase())
     );
 
-    const missingStudies = Array.from(allStudies).filter(
+    const missingStudies = allStudies.filter(
       study => !existingStudies.has(study.toLowerCase())
     );
 
@@ -191,12 +187,12 @@ export async function POST(request: NextRequest) {
           updated_at: timestamp,
         };
 
-        // Store TEXT value directly (no UUID conversion)
+        // Store TEXT value directly (no splitting, no UUID conversion)
         if (record.degree_going_for) {
           processedProgram.degree_going_for = record.degree_going_for.trim();
         }
 
-        // Store TEXT value directly (no UUID conversion)
+        // Store TEXT value directly (no splitting, no UUID conversion)
         if (record.previous_or_current_study) {
           processedProgram.previous_or_current_study = record.previous_or_current_study.trim();
         }
