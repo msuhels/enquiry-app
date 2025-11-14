@@ -19,15 +19,21 @@ export async function bulkCreateUsersWithValidation(
   try {
     for (let i = 0; i < users.length; i++) {
       const userInput = users[i];
-      // console.log("LOGGING : Processing user:", JSON.stringify(userInput));
       try {
-        // Validate required fields
-        if (!userInput.email) {
+        userInput.email = userInput.email
+          ?.trim()
+          .replace(/\s+/g, "")
+          .toLowerCase();
+
+        if (
+          !userInput.email ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInput.email)
+        ) {
           results.failed++;
           results.errors.push({
             row: i + 1,
             user: userInput,
-            error: "Email is required",
+            error: "Invalid email format",
           });
           continue;
         }

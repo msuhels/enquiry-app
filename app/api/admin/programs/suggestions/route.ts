@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
     let query = supabase.from("programs").select("*");
 
     if (previousOrCurrentStudy) {
-      query = query.ilike(
+      query = query.eq(
         "previous_or_current_study",
-        `%${previousOrCurrentStudy}%`
+        previousOrCurrentStudy
       );
     }
 
     if (degreeGoingFor) {
-      query = query.ilike("degree_going_for", `%${degreeGoingFor}%`);
+      query = query.eq("degree_going_for", degreeGoingFor);
     }
 
     const { data, error } = await query;

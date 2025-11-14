@@ -35,8 +35,9 @@ export interface Enquiry {
   gap_years?: number | null;
   custom_fields?: string | null;
   created_at: string;
-  createdby?: string | null;
   updated_at?: string;
+  degree_going_for?: string;
+  previous_or_current_study?: string;
 
   program_interest?: string;
   preferred_university?: string;
@@ -63,6 +64,8 @@ export interface Enquiry {
     status: number;
     statusText: string;
   };
+
+  createdby? :UserProfile
 }
 
 export interface User {

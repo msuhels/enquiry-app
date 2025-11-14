@@ -175,7 +175,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
       )}
 
       {/* Search and Select Filters */}
-      <div className="flex w-full gap-4 items-center mb-4">
+      <div className={`flex ${searchSelectFilters.length > 0 ? "w-full" : "w-1/2"} gap-4 items-center mb-4`}>
         {onSearchChange &&
           searchParameters.map((param) => (
             <div key={param} className="relative flex-1">
