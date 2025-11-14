@@ -209,8 +209,8 @@ export async function getPrograms(filters: any) {
     let query = supabase.from("programs").select("*", { count: "exact" });
 
     // Apply filters
-    if (university) query = query.ilike("university", `%${university}%`);
-    if (course_name) query = query.ilike("course_name", `%${course_name}%`);
+    if (university) query = query.eq("university", `${university}`);
+    if (course_name) query = query.eq("course_name", `${course_name}`);
     if (search) {
       query = query.or(
         `university.ilike.%${search}%,course_name.ilike.%${search}%`
