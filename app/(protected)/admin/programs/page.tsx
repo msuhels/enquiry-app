@@ -18,13 +18,19 @@ export default function ProgramsPage() {
   const { del } = useDelete();
 
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState({
+    search: "",
+    university: "",
+    course: "",
+  });
   const [filter, setFilter] = useState("all");
   const [sortKey, setSortKey] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [debouncedSearch] = useDebounce(search, 400);
+  const [universityOptions, setUniversityOptions] = useState([]);
+  const [courseOptions, setCourseOptions] = useState([]);
   const [fieldsSwitches, setFieldsSwitches] = useState([
     { key: "is_special_requirements_enabled", value: false },
     { key: "is_remarks_enabled", value: false },
@@ -32,11 +38,21 @@ export default function ProgramsPage() {
 
   const offset = (page - 1) * itemsPerPage;
   const apiUrl = `/api/admin/programs?search=${encodeURIComponent(
-    debouncedSearch
-  )}&filter=${filter}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
+    debouncedSearch.search
+  )}&filter=${filter}&university=${debouncedSearch.university}&course_name=${debouncedSearch.course}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
   const { data, isLoading } = useFetch(apiUrl);
   const { data: settings } = useFetch("/api/admin/settings");
+  const {data: options} = useFetch("/api/admin/getUniqueUniAndCourse", {} , false)
   const { patch } = usePatch();
+
+  useEffect(() => {
+    console.log("options", options)
+    if (options?.success) {
+      console.log(options)
+      setUniversityOptions(options.universities.map((u: string) => ({ value: u, label: u })));
+      setCourseOptions(options.courses.map((c: string) => ({ value: c, label: c })));
+    }
+  }, [options])
   useEffect(() => {
     if (data?.success) {
       setPrograms(data.data);
@@ -123,6 +139,19 @@ export default function ProgramsPage() {
     }
   };
 
+  const searchSelectFilters = [
+    {
+      key: "university",
+      label: "University",
+      options: universityOptions,
+    },
+    {
+      key: "course",
+      label: "Course",
+      options: courseOptions,
+    },
+  ];
+
   return (
     <div className="min-h-screen overflow-auto bg-gray-50">
       <div className="max-w-full mx-auto p-8">
@@ -136,6 +165,7 @@ export default function ProgramsPage() {
           activeFilter={filter}
           sortKey={sortKey}
           sortDir={sortDir}
+          searchSelectFilters={searchSelectFilters}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onSearchChange={setSearch}
