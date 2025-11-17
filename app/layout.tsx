@@ -13,7 +13,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Alzato portal",
+  title: "Course Finder",
   description: "The fastest way to get suggestion to world's universities",
 };
 

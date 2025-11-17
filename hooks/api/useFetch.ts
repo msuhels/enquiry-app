@@ -11,10 +11,10 @@ const fetcher = async (url: string) => {
 /**
  * SWR-based GET hook (auto revalidates)
  */
-export function useFetch<T = any>(url: string | null, options?: SWRConfiguration) {
+export function useFetch<T = any>(url: string | null, options?: SWRConfiguration, revalidateOnFocus?: boolean) {
   const { data, error, isLoading, mutate } = useSWR<T>(url, fetcher, {
-    revalidateOnFocus: true,
-    dedupingInterval: 10000,
+    revalidateOnFocus: revalidateOnFocus || true,
+    dedupingInterval: revalidateOnFocus ? 0 : 10000,
     ...options,
   });
 

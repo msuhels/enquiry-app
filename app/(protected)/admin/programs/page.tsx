@@ -42,7 +42,7 @@ export default function ProgramsPage() {
   )}&filter=${filter}&university=${debouncedSearch.university}&course_name=${debouncedSearch.course}&sort=${sortKey}:${sortDir}&limit=${itemsPerPage}&offset=${offset}`;
   const { data, isLoading } = useFetch(apiUrl);
   const { data: settings } = useFetch("/api/admin/settings");
-  const {data: options} = useFetch("/api/admin/getUniqueUniAndCourse")
+  const {data: options} = useFetch("/api/admin/getUniqueUniAndCourse", {} , false)
   const { patch } = usePatch();
 
   useEffect(() => {
