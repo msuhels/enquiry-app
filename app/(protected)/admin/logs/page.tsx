@@ -32,6 +32,7 @@ interface UserActionSummary {
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [allLogs, setAllLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeTab, setActiveTab] = useState("all");
@@ -71,6 +72,10 @@ export default function LogsPage() {
     enabled: !!userId,
   });
 
+  const { data: allLogsData, isLoading: isLoadingAllLogs } = useFetch(
+    `/api/admin/logs?${queryParams.toString()}`
+  );
+
   const stateOptions = useMemo(() => {
     const indianStates = State.getStatesOfCountry("IN");
     return indianStates.map((state) => ({
@@ -98,23 +103,24 @@ export default function LogsPage() {
 
   // Calculate user action summaries
   const userActionSummaries = useMemo(() => {
-    if (!logsData?.data || viewMode !== "action_count") return [];
+    if (!allLogsData?.data || viewMode !== "action_count") return [];
 
     const userMap: Record<string, UserActionSummary> = {};
 
-    logsData.data.forEach((log: ActivityLog) => {
+    allLogsData.data.forEach((log: ActivityLog) => {
       if (!log.user_id) return;
 
       const md = log.metadata ?? {};
       const user = md.user ?? {};
       const ip = md.ip_info ?? {};
       const locationParts = [ip.city, ip.state, ip.country].filter(Boolean);
+      const userExists = log.user ? true : false;
 
       if (!userMap[log.user_id]) {
         userMap[log.user_id] = {
           user_id: log.user_id,
           user_name: user.full_name || user.username || "Unknown",
-          email: log.user?.email || "-",
+          email: userExists ? log.user?.email || user.email || "Unknown" : "user deleted or not found",
           organization: user.organization || "Unknown",
           role: log.role || "-",
           location: locationParts.join(", ") || "-",
@@ -129,7 +135,6 @@ export default function LogsPage() {
         (userMap[log.user_id].action_counts[action] || 0) + 1;
       userMap[log.user_id].total_actions += 1;
 
-      // Update last activity if this log is more recent
       if (
         new Date(log.created_at) > new Date(userMap[log.user_id].last_activity)
       ) {
@@ -138,7 +143,7 @@ export default function LogsPage() {
     });
 
     return Object.values(userMap);
-  }, [logsData, viewMode]);
+  }, [allLogsData, viewMode]);
 
   useEffect(() => {
     setPage(1);

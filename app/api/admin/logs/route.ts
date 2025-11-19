@@ -6,7 +6,8 @@ export async function GET(req: NextRequest) {
     const supabase = await createServiceRoleClient();
     const { searchParams } = new URL(req.url);
 
-    const limit = Number(searchParams.get("limit") ?? 10);
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? Number(limitParam) : null;
     const offset = Number(searchParams.get("offset") ?? 0);
 
     const event = searchParams.get("action") ?? "";
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
           data: [],
           pagination: {
             total: 0,
-            limit,
+            limit: limit ?? 0,
             offset,
             totalPages: 0,
             currentPage: 1,
@@ -102,8 +103,10 @@ export async function GET(req: NextRequest) {
       query = query.in("user_id", userIdsToFilter);
     }
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    // Apply pagination only if limit is provided
+    if (limit !== null) {
+      query = query.range(offset, offset + limit - 1);
+    }
 
     const { data: logs, error, count } = await query;
 
@@ -149,11 +152,11 @@ export async function GET(req: NextRequest) {
       data: enrichedLogs,
       pagination: {
         total: count ?? 0,
-        limit,
+        limit: limit ?? count ?? 0,
         offset,
-        totalPages: Math.ceil((count ?? 0) / limit),
-        currentPage: Math.floor(offset / limit) + 1,
-        hasMore: offset + limit < (count ?? 0),
+        totalPages: limit ? Math.ceil((count ?? 0) / limit) : 1,
+        currentPage: limit ? Math.floor(offset / limit) + 1 : 1,
+        hasMore: limit ? offset + limit < (count ?? 0) : false,
       },
     });
   } catch (error) {
