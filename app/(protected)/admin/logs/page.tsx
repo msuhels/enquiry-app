@@ -15,7 +15,19 @@ interface ActivityLog {
   ip_address: string | null;
   created_at: string;
   role: string | null;
-  user?: User | null; // if API joins users
+  user?: User | null;
+}
+
+interface UserActionSummary {
+  user_id: string;
+  user_name: string;
+  email: string;
+  organization: string;
+  role: string;
+  location: string;
+  action_counts: Record<string, number>;
+  total_actions: number;
+  last_activity: string;
 }
 
 export default function LogsPage() {
@@ -23,6 +35,9 @@ export default function LogsPage() {
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeTab, setActiveTab] = useState("all");
+  const [viewMode, setViewMode] = useState<"datalist" | "action_count">(
+    "datalist"
+  );
   const [search, setSearch] = useState({
     email: "",
     name: "",
@@ -56,7 +71,7 @@ export default function LogsPage() {
     enabled: !!userId,
   });
 
-    const stateOptions = useMemo(() => {
+  const stateOptions = useMemo(() => {
     const indianStates = State.getStatesOfCountry("IN");
     return indianStates.map((state) => ({
       value: state.name,
@@ -81,9 +96,53 @@ export default function LogsPage() {
     }));
   }, [search.state, stateOptions]);
 
+  // Calculate user action summaries
+  const userActionSummaries = useMemo(() => {
+    if (!logsData?.data || viewMode !== "action_count") return [];
+
+    const userMap: Record<string, UserActionSummary> = {};
+
+    logsData.data.forEach((log: ActivityLog) => {
+      if (!log.user_id) return;
+
+      const md = log.metadata ?? {};
+      const user = md.user ?? {};
+      const ip = md.ip_info ?? {};
+      const locationParts = [ip.city, ip.state, ip.country].filter(Boolean);
+
+      if (!userMap[log.user_id]) {
+        userMap[log.user_id] = {
+          user_id: log.user_id,
+          user_name: user.full_name || user.username || "Unknown",
+          email: log.user?.email || "-",
+          organization: user.organization || "Unknown",
+          role: log.role || "-",
+          location: locationParts.join(", ") || "-",
+          action_counts: {},
+          total_actions: 0,
+          last_activity: log.created_at,
+        };
+      }
+
+      const action = log.event_type;
+      userMap[log.user_id].action_counts[action] =
+        (userMap[log.user_id].action_counts[action] || 0) + 1;
+      userMap[log.user_id].total_actions += 1;
+
+      // Update last activity if this log is more recent
+      if (
+        new Date(log.created_at) > new Date(userMap[log.user_id].last_activity)
+      ) {
+        userMap[log.user_id].last_activity = log.created_at;
+      }
+    });
+
+    return Object.values(userMap);
+  }, [logsData, viewMode]);
+
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, activeTab]);
+  }, [debouncedSearch, activeTab, viewMode]);
 
   useEffect(() => {
     if (logsData?.success) {
@@ -91,30 +150,26 @@ export default function LogsPage() {
     }
   }, [logsData]);
 
-  const columns = [
+  // Columns for Data List view (original)
+  const dataListColumns = [
     {
       key: "user",
       label: "User",
       render: (row: ActivityLog) => {
         const md = row.metadata ?? {};
         const user = md.user ?? {};
-        const ip = md.ip_info ?? {};
 
         return (
           <div className="w-64">
             <div className="text-xl font-medium text-gray-900">
               {user.full_name || user.username || "Unknown"}
             </div>
-
-            {/* <div className="text-gray-500 text-sm">
-              ID: {row.user_id?.slice(0, 8)}...
-            </div> */}
           </div>
         );
       },
     },
     {
-      key : "organization",
+      key: "organization",
       label: "Organization",
       render: (row: ActivityLog) => {
         const md = row.metadata ?? {};
@@ -141,7 +196,6 @@ export default function LogsPage() {
       label: "Location",
       render: (row: ActivityLog) => {
         const ip = row.metadata?.ip_info ?? {};
-
         const locationParts = [ip.city, ip.state, ip.country].filter(Boolean);
 
         return (
@@ -205,18 +259,158 @@ export default function LogsPage() {
     },
   ];
 
-  const filterTabs = [
-    { key: "all", label: "All Logs", count: logsData?.pagination?.total },
-    { key: "admin", label: "Admin Logs", count: logsData?.pagination?.total },
-    { key: "user", label: "B2B Logs", count: logsData?.pagination?.total },
+  // Columns for Action Count view (aggregated by user)
+  const actionCountColumns = [
+    {
+      key: "user_name",
+      label: "User",
+      render: (row: UserActionSummary) => (
+        <div className="w-64">
+          <div className="text-xl font-medium text-gray-900">
+            {row.user_name}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "organization",
+      label: "Organization",
+      render: (row: UserActionSummary) => (
+        <div className="w-64">
+          <div className="text-xl font-medium text-gray-900">
+            {row.organization}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "email",
+      label: "Email",
+      render: (row: UserActionSummary) => (
+        <span className="text-xl text-gray-700">{row.email}</span>
+      ),
+    },
+    {
+      key: "location",
+      label: "Location",
+      render: (row: UserActionSummary) => (
+        <span className="text-xl text-gray-700">
+          <div className="text-gray-500 text-xl mt-1">{row.location}</div>
+        </span>
+      ),
+    },
+    {
+      key: "action_counts",
+      label: "Action Summary",
+      render: (row: UserActionSummary) => {
+        const entries = Object.entries(row.action_counts);
+
+        if (entries.length === 0) {
+          return <span className="text-gray-400 text-xl">No data</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-2 min-w-[300px]">
+            {entries.map(([action, count]) => {
+              let badgeColor = "bg-gray-100 text-gray-700 border-gray-300";
+
+              switch (action) {
+                case "login":
+                  badgeColor = "bg-green-50 text-green-700 border-green-200";
+                  break;
+                case "logout":
+                  badgeColor = "bg-red-50 text-red-700 border-red-200";
+                  break;
+                case "enquiry_created":
+                  badgeColor = "bg-purple-50 text-purple-700 border-purple-200";
+                  break;
+                case "program_search":
+                  badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
+                  break;
+                case "download":
+                  badgeColor = "bg-orange-50 text-orange-700 border-orange-200";
+                  break;
+              }
+
+              return (
+                <div
+                  key={action}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${badgeColor}`}
+                >
+                  <span className="capitalize">
+                    {action.replace(/_/g, " ")}
+                  </span>
+                  <span className="font-bold bg-white/60 px-2 py-0.5 rounded">
+                    {count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
+    },
+    {
+      key: "total_actions",
+      label: "Total Activities",
+      render: (row: UserActionSummary) => (
+        <div className="text-center">
+          <span className="text-2xl font-bold text-[#3a3886]">
+            {row.total_actions}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "role",
+      label: "Role",
+      render: (row: UserActionSummary) => (
+        <span className="text-xl text-gray-700 capitalize">
+          {row.role == "admin" ? "Admin" : "B2B"}
+        </span>
+      ),
+    },
+    {
+      key: "last_activity",
+      label: "Last Activity",
+      render: (row: UserActionSummary) => (
+        <div className="text-xl">
+          <div className="text-gray-900 font-medium">
+            {new Date(row.last_activity).toLocaleDateString()}
+          </div>
+          <div className="text-gray-500">
+            {new Date(row.last_activity).toLocaleTimeString()}
+          </div>
+        </div>
+      ),
+    },
   ];
 
-  const actionFilterOptions = [
-    { value: "", label: "All Actions" },
-    { value: "login", label: "Login" },
-    { value: "logout", label: "Logout" },
-    { value: "program_search", label: "Program Search" },
-    { value: "download", label: "Download" },
+  const filterTabs = [
+    {
+      key: "all",
+      label: "All Logs",
+      count:
+        viewMode === "datalist"
+          ? logsData?.pagination?.total
+          : userActionSummaries.length,
+    },
+    {
+      key: "admin",
+      label: "Admin Logs",
+      count:
+        viewMode === "datalist"
+          ? logsData?.pagination?.total
+          : userActionSummaries.length,
+    },
+    {
+      key: "user",
+      label: "B2B Logs",
+      count:
+        viewMode === "datalist"
+          ? logsData?.pagination?.total
+          : userActionSummaries.length,
+    },
   ];
 
   const searchSelectFilters = [
@@ -232,31 +426,37 @@ export default function LogsPage() {
     },
   ];
 
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* View Mode Tabs */}
         <Table
-          title="Activity Logs"
-          columns={columns}
-          data={logs}
+          title={
+            viewMode === "datalist" ? "Activity Logs" : "User Activity Summary"
+          }
+          columns={
+            viewMode === "datalist" ? dataListColumns : actionCountColumns
+          }
+          data={viewMode === "datalist" ? logs : userActionSummaries}
           searchQuery={search}
           onSearchChange={setSearch}
+          setViewMode={setViewMode}
+          viewMode={viewMode}
           isLoading={isLoading}
           searchParameters={["name", "organization"]}
-          // searchSelectFilters={[
-          //   {
-          //     name: "action",
-          //     label: "Action",
-          //     key: "action",
-          //     options: actionFilterOptions,
-          //   },
-          // ]}
           onPageChange={setPage}
           currentPage={page}
-          total={logsData?.pagination?.total || 0}
+          total={
+            viewMode === "datalist"
+              ? logsData?.pagination?.total || 0
+              : userActionSummaries.length
+          }
           itemsPerPage={itemsPerPage}
-          emptyMessage="No logs found."
+          emptyMessage={
+            viewMode === "datalist"
+              ? "No logs found."
+              : "No user activity found."
+          }
           searchSelectFilters={searchSelectFilters}
           dateFilters={{
             from_date: search.from_date,

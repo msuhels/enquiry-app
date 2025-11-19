@@ -1,7 +1,16 @@
 "use client";
 
 import React from "react";
-import { Edit, Trash2, Search, PlusIcon, Folder, Loader2, Download } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Search,
+  PlusIcon,
+  Folder,
+  Loader2,
+  Download,
+  Filter,
+} from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
 import Pagination from "../ui/pagination";
@@ -59,6 +68,8 @@ interface TableProps<T> {
   onDateFilterChange?: (val: { fromDate: string; toDate: string }) => void;
   onLocationFilterChange?: (val: { state: string; city: string }) => void;
   handleToggleActive?: (key: string, value: boolean) => void;
+  setViewMode?: (key: "datalist" | "action_count") => void;
+  viewMode?: "datalist" | "action_count";
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
@@ -91,6 +102,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   onDelete,
   onExport,
   handleToggleActive,
+  setViewMode,
+  viewMode = "datalist",
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -175,7 +188,11 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
       )}
 
       {/* Search and Select Filters */}
-      <div className={`flex ${searchSelectFilters.length > 0 ? "w-full" : "w-1/2"} gap-4 items-center mb-4`}>
+      <div
+        className={`flex ${
+          searchSelectFilters.length > 0 ? "w-full" : "w-1/2"
+        } gap-4 items-center mb-4`}
+      >
         {onSearchChange &&
           searchParameters.map((param) => (
             <div key={param} className="relative flex-1">
@@ -216,29 +233,83 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           ))}
       </div>
 
-      {/* Date Filters */}
-      {Object.keys(dateFilters || {}).length > 0 && (
-        <div className="flex w-full justify-end items-center mb-4 gap-3">
-          {Object.keys(dateFilters).map((key: any, index) => (
-            <div key={index} className="flex flex-col">
-              <label className="text-xl font-medium text-[#3a3886] mb-1.5">
-                {key == "from_date" ? "From Date" : "To Date"}
-              </label>
-              <input
-                type="date"
-                value={searchQuery?.[key] ?? ""}
-                onChange={(e) =>
-                  onSearchChange?.({
-                    ...searchQuery,
-                    [key]: e.target.value,
-                  })
-                }
-                className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
-              />
+      <div className="w-full flex">
+        {viewMode && setViewMode && (
+          <div className="flex items-center">
+            <div className="inline-flex bg-white border border-gray-200 rounded-full shadow-sm p-1">
+              {/* Data List */}
+              <button
+                onClick={() => setViewMode("datalist")}
+                className={`
+          flex items-center gap-2 p-3 rounded-full text-sm font-medium transition-all
+          ${
+            viewMode === "datalist"
+              ? "bg-[#3a3886] text-white shadow-md"
+              : "text-[#3a3886] hover:text-[#F97316]"
+          }
+        `}
+                style={{ height: "auto", minHeight: "0" }}
+              >
+                <Filter size={20} />
+                <p className="items-center min-w-max">{"Data List"}</p>
+              </button>
+              {/* Action Count */}
+              <button
+                onClick={() => setViewMode("action_count")}
+                className={`
+          flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-all
+          ${
+            viewMode === "action_count"
+              ? "bg-[#3a3886] text-white shadow-md"
+              : "text-[#3a3886] hover:text-[#F97316]"
+          }
+        `}
+                style={{ height: "auto", minHeight: "0" }}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                <p className="items-center min-w-max">
+                  {"Action Count"}
+                </p>
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
+
+        {Object.keys(dateFilters || {}).length > 0 && (
+          <div className="flex w-full justify-end items-center mb-4 gap-3">
+            {Object.keys(dateFilters).map((key: any, index) => (
+              <div key={index} className="flex flex-col">
+                <label className="text-xl font-medium text-[#3a3886] mb-1.5">
+                  {key == "from_date" ? "From Date" : "To Date"}
+                </label>
+                <input
+                  type="date"
+                  value={searchQuery?.[key] ?? ""}
+                  onChange={(e) =>
+                    onSearchChange?.({
+                      ...searchQuery,
+                      [key]: e.target.value,
+                    })
+                  }
+                  className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:border-transparent transition-all"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Filter Tabs */}
       {filterTabs.length > 0 && (

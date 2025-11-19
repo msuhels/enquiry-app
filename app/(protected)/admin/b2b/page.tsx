@@ -11,6 +11,7 @@ import { usePatch } from "@/hooks/api/usePatch";
 import DeleteUserConfirmationModal from "./components/deleteUserConfirmationModal";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { User } from "@/lib/types";
+import * as XLSX from "xlsx";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -160,6 +161,49 @@ export default function UsersPage() {
     // { key: "admin", label: "Admins" },
   ];
 
+  const handleExportToExcel = async () => {
+    const exportUrl = `/api/admin/users?${queryParams.toString()}&export=true`;
+    const res = await fetch(exportUrl);
+    const { data } = await res.json();
+
+    try {
+      const B2bData = data.map((user) => ({
+        name: user.full_name,
+        phone: user.phone_number,
+        email: user.email,
+        organization: user.organization,
+        state: user.state,
+        city: user.city,
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(B2bData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Enquiries");
+
+      const maxWidth = 30;
+      worksheet["!cols"] = [
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 15 },
+      ];
+
+      const timestamp = new Date().toISOString();
+      const filename = `b2b_partners_${timestamp}.xlsx`;
+
+      XLSX.writeFile(workbook, filename);
+
+      toast.success("Excel file exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export Excel file");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
@@ -183,6 +227,7 @@ export default function UsersPage() {
           itemsPerPage={itemsPerPage}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onExport={handleExportToExcel}
           addHref="/admin/b2b/addUser"
           addBulkHref="/admin/b2b/bulkUpload"
           isLoading={isLoading}
