@@ -43,8 +43,14 @@ export async function parseExcel(file: File): Promise<UserFormData[]> {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        // Get the raw data with defval to handle empty cells
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          defval: '',
+          raw: false // This ensures values are converted to strings
+        });
 
+        // console.log('Excel parsed data sample:', jsonData[0]); // Debug log
         const users = mapExcelDataToUsers(jsonData as any[]);
         resolve(users);
       } catch (error) {
@@ -84,24 +90,71 @@ export async function parseXML(file: File): Promise<UserFormData[]> {
   });
 }
 
-// Map CSV data
-function mapCSVDataToUsers(data: any[]): UserFormData[] {
-  return data
-    .map((row) => ({
-      name: row['Name'] || row['name'] || '',
-      email: row['Email'] || row['email'] || '',
-      phone: row['Phone'] || row['phone'],
-      role: row['Role'] || row['role'],
-      organization: row['Organization'] || row['organization'],
-      state: row['State'] || row['state'],
-      city: row['City'] || row['city'],
-    }))
-    // .filter((user) => user.name && user.email);
+// Helper function to safely get value from row with multiple possible keys
+// Also handles keys with leading/trailing spaces
+function getValueFromRow(row: any, keys: string[]): string {
+  // First try exact matches
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
+      return String(row[key]).trim();
+    }
+  }
+  
+  // If no exact match, try trimmed keys (handles " State" -> "State")
+  const rowKeys = Object.keys(row);
+  for (const key of keys) {
+    const matchingKey = rowKeys.find(k => k.trim().toLowerCase() === key.toLowerCase());
+    if (matchingKey && row[matchingKey] !== undefined && row[matchingKey] !== null && row[matchingKey] !== '') {
+      return String(row[matchingKey]).trim();
+    }
+  }
+  
+  return '';
 }
 
-// Map Excel data (same as CSV)
+// Map CSV data
+function mapCSVDataToUsers(data: any[]): UserFormData[] {
+  // console.log('CSV data sample:', data[0]); // Debug log
+  // console.log('CSV column headers:', Object.keys(data[0] || {})); // Debug log
+  
+  const result = data.map((row) => ({
+    name: getValueFromRow(row, ['Name', 'name', 'NAME']),
+    email: getValueFromRow(row, ['Email', 'email', 'EMAIL']),
+    phone: getValueFromRow(row, ['Phone', 'phone', 'PHONE']),
+    role: getValueFromRow(row, ['Role', 'role', 'ROLE']),
+    organization: getValueFromRow(row, ['Organization', 'organization', 'ORGANIZATION']),
+    state: getValueFromRow(row, ['State', 'state', 'STATE']),
+    city: getValueFromRow(row, ['City', 'city', 'CITY']),
+  }));
+  
+  // console.log('Mapped CSV result sample:', result[0]); // Debug log
+  return result;
+}
+
+// Map Excel data with special handling for duplicate headers
 function mapExcelDataToUsers(data: any[]): UserFormData[] {
-  return mapCSVDataToUsers(data);
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Check for duplicate headers in the first row (for debugging)
+  const firstRow = data[0];
+  const keys = Object.keys(firstRow);
+  // console.log('Excel column headers found:', keys);
+
+  const result = data.map((row) => ({
+    name: getValueFromRow(row, ['Name', 'name', 'NAME']),
+    email: getValueFromRow(row, ['Email', 'email', 'EMAIL']),
+    phone: getValueFromRow(row, ['Phone', 'phone', 'PHONE']),
+    role: getValueFromRow(row, ['Role', 'role', 'ROLE']),
+    organization: getValueFromRow(row, ['Organization', 'organization', 'ORGANIZATION']),
+    // Check for State with possible duplicate suffix
+    state: getValueFromRow(row, ['State', 'state', 'STATE', 'State__1', 'state__1', 'STATE__1']),
+    city: getValueFromRow(row, ['City', 'city', 'CITY']),
+  }));
+
+  // console.log('Mapped Excel result sample:', result[0]); // Debug log
+  return result;
 }
 
 // Map XML data
