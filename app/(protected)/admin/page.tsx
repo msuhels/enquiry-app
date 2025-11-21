@@ -28,7 +28,7 @@ const RecentEnquiryItem = ({
   const router = useRouter();
   return (
     <div
-      // onClick={() => router.push(`/admin/enquiries/${id}`)}
+      // onClick={() => router.push(`/admin/enquiries/${id}`)} 
       className="px-5 flex w-full items-center justify-between gap-10 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer transition-all duration-200"
     >
       <p className="text-lg max-w-[200px] min-w-[200px] font-semibold text-[#3a3886]">
