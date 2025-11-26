@@ -18,6 +18,8 @@ async function getGeoFromIP(ip: string) {
     const res = await fetch(`https://ipwho.is/${ip}`);
     const json = await res.json();
 
+    console.log("Geo lookup result", json);
+
     if (json.success == true) {
       return {
         city: json.city,
