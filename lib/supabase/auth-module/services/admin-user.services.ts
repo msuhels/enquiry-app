@@ -144,7 +144,7 @@ export async function getUsers(
       limit = 10,
       offset = 0,
       name,
-      organization
+      organization,
     } = params || {};
 
     console.log("LOGGING : getUsers service called with params:", params);
@@ -155,11 +155,11 @@ export async function getUsers(
       .select("*", { count: "exact" })
       .order(sortKey, { ascending: sortDir === "asc" });
 
-    if(name){
+    if (name) {
       query = query.ilike("full_name", `%${name}%`);
     }
 
-    if(organization){
+    if (organization) {
       query = query.ilike("organization", `%${organization}%`);
     }
 
@@ -216,6 +216,23 @@ export async function updateUser(id: string, updates: any) {
       .eq("id", id)
       .select()
       .single();
+
+    if (error) {
+      console.error("Supabase user update failed:", error);
+      return { success: false, error: error.message };
+    }
+
+    if (data) {
+      const { error: authError } =
+        await supabaseAdmin.auth.admin.updateUserById(id, {
+          email: updates.email,
+        });
+
+      if (authError) {
+        console.error("Supabase auth user update failed:", authError);
+        return { success: false, error: authError.message };
+      }
+    }
 
     if (error) throw error;
 

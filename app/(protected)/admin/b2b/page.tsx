@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import { useModal } from "@/components/ui/modal";
@@ -13,22 +13,51 @@ import AdvancedDataTable from "@/components/table/globalTable";
 import { User } from "@/lib/types";
 import * as XLSX from "xlsx";
 
+const STORAGE_KEY = "b2b_listing_state";
+
 export default function UsersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { openModal, closeModal } = useModal();
   const { del } = useDelete();
   const { patch } = usePatch();
+  const hasLoadedFromStorage = useRef(false);
+  const previousSearchRef = useRef("");
 
   const [users, setUsers] = useState<User[]>([]);
-  const [search, setSearch] = useState({
-    name: "",
-    organization: "",
-  });
-  const [filter, setFilter] = useState("all");
-  const [sortKey, setSortKey] = useState("created_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Function to get saved state from sessionStorage
+  const getSavedState = () => {
+    if (typeof window === "undefined") return null;
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading saved state:", error);
+      return null;
+    }
+  };
+
+  // Get saved state
+  const savedState = getSavedState();
+
+  // Initialize with saved state or defaults
+  const [search, setSearch] = useState(
+    savedState?.search || { name: "", organization: "" }
+  );
+  const [filter, setFilter] = useState(savedState?.filter || "all");
+  const [sortKey, setSortKey] = useState(savedState?.sortKey || "created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(
+    savedState?.sortDir || "desc"
+  );
+  const [page, setPage] = useState(savedState?.page || 1);
+  const [itemsPerPage, setItemsPerPage] = useState(
+    savedState?.itemsPerPage || 10
+  );
+
   const [debouncedSearch] = useDebounce(search, 400);
   const queryParams = new URLSearchParams();
 
@@ -42,8 +71,42 @@ export default function UsersPage() {
 
   const { data, isLoading } = useFetch(apiUrl);
 
+  // Mark as initialized after first render
   useEffect(() => {
-    setPage(1);
+    hasLoadedFromStorage.current = true;
+    // Store initial search string
+    previousSearchRef.current = JSON.stringify(search);
+  }, []);
+
+  // Save state to sessionStorage whenever it changes (after initial load)
+  useEffect(() => {
+    if (hasLoadedFromStorage.current) {
+      const stateToSave = {
+        search,
+        filter,
+        sortKey,
+        sortDir,
+        page,
+        itemsPerPage,
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    }
+  }, [search, filter, sortKey, sortDir, page, itemsPerPage]);
+
+  // Reset page to 1 only when search actually changes (not on mount)
+  useEffect(() => {
+    const currentSearch = JSON.stringify(debouncedSearch);
+
+    // Only reset page if search has actually changed and component is initialized
+    if (
+      hasLoadedFromStorage.current &&
+      currentSearch !== previousSearchRef.current
+    ) {
+      setPage(1);
+    }
+
+    // Update the previous search reference
+    previousSearchRef.current = currentSearch;
   }, [debouncedSearch]);
 
   // Populate users when API returns
