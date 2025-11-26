@@ -256,10 +256,10 @@ export async function POST(request: NextRequest) {
       data,
       message: "Document uploaded successfully",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST API error:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: error?.message || "Internal server error" },
       { status: 500 }
     );
   }

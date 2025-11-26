@@ -221,7 +221,7 @@ const DocumentsPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
         <AdvancedDataTable
-          title="Documents"
+          title="Downloads"
           columns={columns}
           data={docs}
           activeFilter={filter}

@@ -189,7 +189,7 @@ const DocumentsPage = () => {
   // Define table columns
   const columns = [
     {
-      key: "name",
+      key: "title",
       label: "Title",
       render: (row: IDocument) => (
         <div>
@@ -198,7 +198,7 @@ const DocumentsPage = () => {
       ),
     },
     {
-      key: "name",
+      key: "description",
       label: "Description",
       render: (row: IDocument) => (
         <div>
@@ -242,7 +242,7 @@ const DocumentsPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
         <AdvancedDataTable
-          title="Documents"
+          title="Downloads"
           columns={columns}
           data={docs}
           activeFilter={filter}
@@ -261,7 +261,7 @@ const DocumentsPage = () => {
           onDelete={handleDelete}
           addHref="/admin/documents/upload"
           isLoading={isLoading}
-          emptyMessage="No documents found."
+          emptyMessage="No downloads found."
         />
       </div>
     </div>
