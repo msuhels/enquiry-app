@@ -7,4 +7,5 @@ export { useForgotPasswordForm, type UseForgotPasswordFormReturn } from "./useFo
 export { useUpdatePassword, type UseUpdatePasswordReturn } from "./useUpdatePassword";
 export { useUpdatePasswordForm, type UseUpdatePasswordFormReturn } from "./useUpdatePasswordForm";
 export { useProfile, type UseProfileReturn } from "./useProfile";
-export { useProfileForm, type UseProfileFormReturn } from "./useProfileForm"; 
+export { useProfileForm, type UseProfileFormReturn } from "./useProfileForm";
+export { useInitializeIp } from "./useInitializeIp"; 

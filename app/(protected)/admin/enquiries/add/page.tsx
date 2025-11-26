@@ -12,6 +12,7 @@ import { Download, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
+import { useUserStore } from "@/lib/stores/auth-module";
 
 export default function EnquirySystem() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function EnquirySystem() {
   const [previousOrCurrentStudy, setPreviousOrCurrentStudy] = useState("");
   const [previousOrCurrentStudyOptions, setPreviousOrCurrentStudyOptions] =
     useState([]);
-
+  const { ip } = useUserStore();
   const [degreeGoingFor, setDegreeGoingFor] = useState("");
   const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
   const [enquiry, setEnquiry] = useState({});
@@ -87,6 +88,7 @@ export default function EnquirySystem() {
             event_type: "enquiry_created",
             user_id: user.userDetails.id,
             enquiry_id: enquiryResponse.data.id,
+            ip
           });
         } catch (e) {
           console.error("Failed to log enquiry creation:", e);
@@ -182,6 +184,7 @@ export default function EnquirySystem() {
           event_type: "program_download",
           enquiry_id: enquiry?.id,
           user_id: user.userDetails.id,
+          ip
         });
       } catch (e) {
         console.error("Failed to log program download:", e);

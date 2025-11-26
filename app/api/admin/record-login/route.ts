@@ -15,7 +15,7 @@ async function getGeoFromIP(ip: string) {
     //   return null; // local
     // }
 
-    const res = await fetch(`https://ipwho.is/${ip}`);
+    const res = await fetch(`https://ipapi.co/json`);
     const json = await res.json();
 
     console.log("Geo lookup result", json);
@@ -27,7 +27,7 @@ async function getGeoFromIP(ip: string) {
         country: json.country,
         lat: json.latitude,
         lon: json.longitude,
-        isp: json.connection.isp,
+        isp: json.org,
       };
     } else if (json.success == false && json.message == "Reserved range") {
       return {
@@ -70,13 +70,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("LOGGING : Body received:", { body });
     let ip =
+      body.ip ||
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
       req.headers.get("x-real-ip") ||
       req.headers.get("cf-connecting-ip") ||
       "unknown";
 
-    ip = normalizeIp(ip);
+    ip = ip.ip ? ip : normalizeIp(ip);
     const userAgent = req.headers.get("user-agent") ?? "unknown";
 
     const supabase = await createServiceRoleClient();
@@ -89,7 +91,16 @@ export async function POST(req: NextRequest) {
     }
     const userId = userData.user.id;
 
-    const geo = await getGeoFromIP(ip);
+    const geo = ip.ip
+      ? {
+          city: ip.city,
+          state: ip.region,
+          country: ip.country,
+          lat: ip.latitude,
+          lon: ip.longitude,
+          isp: ip.org,
+        }
+      : await getGeoFromIP(ip);
 
     const { data: user } = await supabase
       .from("users")

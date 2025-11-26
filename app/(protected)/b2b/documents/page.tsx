@@ -11,6 +11,7 @@ import AdvancedDataTable from "@/components/table/globalTable";
 import { IDocument } from "@/lib/types";
 import { Download } from "lucide-react";
 import { usePost } from "@/hooks/api/usePost";
+import { useUserStore } from "@/lib/stores/auth-module";
 
 interface DocumentData {
   id: string;
@@ -22,7 +23,7 @@ const DocumentsPage = () => {
   const router = useRouter();
   const { openModal, closeModal } = useModal();
   const { del } = useDelete();
-
+  const { ip } = useUserStore();
   const [docs, setDocs] = useState<IDocument[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -71,6 +72,7 @@ const DocumentsPage = () => {
           event_type: "document_download",
           user_id: user.userDetails.id,
           document_id: document.id,
+          ip
         });
       }
       const response = await fetch(

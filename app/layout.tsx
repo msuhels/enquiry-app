@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ModalProvider } from "@/components/ui/modal";
 import { SWRConfig } from "swr";
 import { SWRProvider } from "@/providers/swrProvider";
+import { IpInitializer } from "@/components/ip-initializer";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -38,7 +39,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ModalProvider>
-            <SWRProvider>{children}</SWRProvider>
+            <SWRProvider>
+              <IpInitializer />
+              {children}
+            </SWRProvider>
           </ModalProvider>
           <Toaster />
         </ThemeProvider>

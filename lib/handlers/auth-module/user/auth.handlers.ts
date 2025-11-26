@@ -202,6 +202,7 @@ export class AuthHandlers {
         setUser(data.user);
 
         const accessToken = data.session?.access_token;
+        const ip = await fetch("https://ipapi.co/json/").then((res) => res.json());
 
         try {
           const response = await fetch("/api/admin/record-login", {
@@ -210,6 +211,7 @@ export class AuthHandlers {
             body: JSON.stringify({
               access_token: accessToken,
               event_type: "login",
+              ip
             }),
           });
 
@@ -567,6 +569,8 @@ export class AuthHandlers {
       const accessToken = session.data.session?.access_token;
 
       if (accessToken) {
+        const ip = await fetch("https://ipapi.co/json/").then((res) => res.json());
+
         try {
           const response = await fetch("/api/admin/record-login", {
             method: "POST",
@@ -574,6 +578,7 @@ export class AuthHandlers {
             body: JSON.stringify({
               access_token: accessToken,
               event_type: "logout",
+              ip
             }),
           });
 

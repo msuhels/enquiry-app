@@ -18,6 +18,9 @@ export interface AuthState {
   // Success state
   success: boolean;
   
+  // IP state
+  ip: any;
+  
   // Actions
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
@@ -25,9 +28,11 @@ export interface AuthState {
   setLogoutLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setSuccess: (success: boolean) => void;
+  setIp: (ip: any) => void;
   clearError: () => void;
   logout: () => void;
   reset: () => void;
+  fetchIp: () => Promise<void>;
 }
 
 const initialState = {
@@ -38,11 +43,12 @@ const initialState = {
   isLogoutLoading: false,
   error: null,
   success: false,
+  ip: null
 };
 
 export const useUserStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       
       setUser: (user) =>
@@ -67,6 +73,9 @@ export const useUserStore = create<AuthState>()(
       setSuccess: (success) =>
         set({ success }),
       
+      setIp: (ip) =>
+        set({ ip }),
+      
       clearError: () =>
         set({ error: null }),
       
@@ -79,6 +88,16 @@ export const useUserStore = create<AuthState>()(
       
       reset: () =>
         set(initialState),
+      
+      fetchIp: async () => {
+        try {
+          const response = await fetch("https://ipapi.co/json/");
+          const ipData = await response.json();
+          set({ ip: ipData });
+        } catch (error) {
+          console.error("Failed to fetch IP:", error);
+        }
+      },
     }),
     {
       name: "user-store",
