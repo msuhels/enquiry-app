@@ -225,7 +225,7 @@ export async function updateUser(id: string, updates: any) {
     if (data) {
       const { error: authError } =
         await supabaseAdmin.auth.admin.updateUserById(id, {
-          ...updates,
+          email: updates.email,
         });
 
       if (authError) {
