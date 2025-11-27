@@ -6,6 +6,8 @@ import { useFetch } from "@/hooks/api/useFetch";
 import { useDebounce } from "use-debounce";
 import { User } from "@/lib/types";
 import { State, City } from "country-state-city";
+import * as XLSX from "xlsx";
+import { toast } from "sonner";
 
 interface ActivityLog {
   id: string;
@@ -431,6 +433,97 @@ export default function LogsPage() {
     },
   ];
 
+  const handleExportToExcel = async () => {
+    try {
+      if (viewMode === "action_count") {
+        // Export aggregated user action summaries
+        const exportData = userActionSummaries.map((summary) => {
+          const actionColumns: Record<string, number> = {};
+
+          // Create separate columns for each action type
+          Object.entries(summary.action_counts).forEach(([action, count]) => {
+            actionColumns[action.replace(/_/g, " ").toUpperCase()] = count;
+          });
+
+          return {
+            User: summary.user_name,
+            Organization: summary.organization,
+            Email: summary.email,
+            Location: summary.location,
+            ...actionColumns,
+            Role: summary.role === "admin" ? "Admin" : "B2B",
+            "Total Activities": summary.total_actions,
+            "Last Activity Date": new Date(summary.last_activity).toLocaleDateString(),
+            "Last Activity Time": new Date(summary.last_activity).toLocaleTimeString(),
+          };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "User Activity Summary");
+
+        // Dynamic column widths based on content
+        const columnCount = Object.keys(exportData[0] || {}).length;
+        worksheet["!cols"] = Array(columnCount).fill({ wch: 20 });
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `alzato_user_activity_summary_${timestamp}.xlsx`;
+
+        XLSX.writeFile(workbook, filename);
+
+        toast.success("Excel file exported successfully!");
+      } else {
+        // Export detailed activity logs (original datalist view)
+        const exportUrl = `/api/admin/logs?${queryParams.toString()}&export=true`;
+        const res = await fetch(exportUrl);
+        const { data } = await res.json();
+
+        const logsData = data.map((log: any) => {
+          const md = log.metadata ?? {};
+          const user = md.user ?? {};
+          const ip = md.ip_info ?? {};
+          const locationParts = [ip.city, ip.state, ip.country].filter(Boolean);
+
+          return {
+            User: user.full_name || user.username || "Unknown",
+            Organization: user.organization || "Unknown",
+            Email: log.user?.email ?? "-",
+            Location: locationParts.join(", "),
+            Action: log.event_type.replace("_", " "),
+            Role: log.role === "admin" ? "Admin" : "B2B",
+            Date: new Date(log.created_at).toLocaleDateString(),
+            Time: new Date(log.created_at).toLocaleTimeString(),
+          };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(logsData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Activity Logs");
+
+        worksheet["!cols"] = [
+          { wch: 20 }, // User
+          { wch: 25 }, // Organization
+          { wch: 30 }, // Email
+          { wch: 25 }, // Location
+          { wch: 20 }, // Action
+          { wch: 15 }, // Role
+          { wch: 20 }, // Date
+          { wch: 20 }, // Time
+        ];
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `alzato_activity_logs_${timestamp}.xlsx`;
+
+        XLSX.writeFile(workbook, filename);
+
+        toast.success("Excel file exported successfully!");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export Excel file");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -470,6 +563,7 @@ export default function LogsPage() {
           filterTabs={filterTabs}
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
+          onExport={handleExportToExcel}
         />
       </div>
     </div>
