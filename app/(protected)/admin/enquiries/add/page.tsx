@@ -69,55 +69,60 @@ export default function EnquirySystem() {
     }
   }, [previousOrCurrentStudy, degreeGoingFor]);
 
-  const handleFindPrograms = async () => {
-    try {
-      setLoading(true);
-      setHasSearched(false);
-      setPrograms([]);
+const handleFindPrograms = async () => {
+  setLoading(true);
+  setHasSearched(false);
+  setPrograms([]);
 
-      const enquiryResponse = await post("/api/admin/enquiries", {
-        previous_or_current_study: previousOrCurrentStudy,
-        degree_going_for: degreeGoingFor,
-        userId: user.userDetails.id,
-      });
+  try {
+    const params = new URLSearchParams({
+      previous_or_current_study: previousOrCurrentStudy,
+      degree_going_for: degreeGoingFor,
+    });
 
-      if (enquiryResponse?.data?.id) {
-        setEnquiry(enquiryResponse.data);
-        try {
-          await post("/api/admin/record-login", {
-            event_type: "enquiry_created",
-            user_id: user.userDetails.id,
-            enquiry_id: enquiryResponse.data.id,
-            ip
-          });
-        } catch (e) {
-          console.error("Failed to log enquiry creation:", e);
-        }
-      }
-      const params = new URLSearchParams();
-      if (previousOrCurrentStudy) {
-        params.append("previous_or_current_study", previousOrCurrentStudy);
-      }
-      if (degreeGoingFor) {
-        params.append("degree_going_for", degreeGoingFor);
-      }
+    const enquiryPromise = post("/api/admin/enquiries", {
+      previous_or_current_study: previousOrCurrentStudy,
+      degree_going_for: degreeGoingFor,
+      userId: user.userDetails.id,
+    });
 
-      const response = await fetch(
-        `/api/admin/programs/suggestions?${params.toString()}`
+    const programPromise = fetch(`/api/admin/programs/suggestions?${params}`);
+
+    const [enquiryResponse, programResponse] = await Promise.all([
+      enquiryPromise,
+      programPromise,
+    ]);
+
+    if (enquiryResponse?.data?.id) {
+      const enquiryId = enquiryResponse.data.id;
+      setEnquiry(enquiryResponse.data);
+
+      post("/api/admin/record-login", {
+        event_type: "enquiry_created",
+        user_id: user.userDetails.id,
+        enquiry_id: enquiryId,
+        ip,
+      }).catch((err) =>
+        console.error("Failed to log enquiry creation:", err)
       );
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-
-      setPrograms(result.data);
-      setHasSearched(true);
-      toast.success("Programs fetched successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to fetch programs");
-    } finally {
-      setLoading(false);
     }
-  };
+
+    const programJson = await programResponse.json();
+    if (!programResponse.ok) {
+      throw new Error(programJson.error || "Failed to fetch programs");
+    }
+
+    setPrograms(programJson.data);
+    setHasSearched(true);
+
+    toast.success("Programs fetched successfully!");
+  } catch (error: any) {
+    toast.error(error.message || "Failed to fetch programs");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDownloadPrograms = async () => {
     try {
