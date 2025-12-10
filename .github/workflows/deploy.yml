@@ -3,7 +3,7 @@ name: Deploy to Ubuntu Server
 on:
   push:
     branches:
-      - prod 
+      - prod
 
 jobs:
   deploy:
@@ -23,9 +23,18 @@ jobs:
           port: 22
           script: |
             cd ~/enquiry-app
-            echo "Pulling latest changes..."
+
+            echo "📥 Pulling latest code..."
             git fetch origin prod
             git reset --hard origin/prod
-            echo "Rebuilding and starting Docker containers..."
-            docker compose up -d --build
-            echo "✅ Deployment complete!"
+
+            echo "📦 Installing dependencies..."
+            npm install --legacy-peer-deps
+
+            echo "⚙️ Building Next.js..."
+            npm run build
+
+            echo "🚀 Restarting PM2 process..."
+            pm2 restart enquiry || pm2 start "npm run start" --name enquiry
+            
+            echo "🎉 Deployment complete!"
