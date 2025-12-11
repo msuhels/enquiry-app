@@ -15,6 +15,7 @@ export default function AdminLayout({
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState("");
+  const [hasFetched, setHasFetched] = useState(false);
 
   const [isWelcome, setIsWelcome] = useState<string | null>(null);
 
@@ -26,34 +27,41 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch("/api/admin/users/getAuthUser");
-      const data = await res.json();
-      return data;
-    };
+    // Only fetch once when component mounts
+    if (hasFetched) return;
 
     const fetchUserRole = async () => {
-      const data = await fetchUser();
-      if (data) {
-        setUserRole(data.userDetails.role);
-        setUser(data.userDetails);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
+      try {
+        const res = await fetch("/api/admin/users/getAuthUser");
+        
+        // If unauthorized, redirect to login
+        if (res.status === 401) {
+          router.push("/auth/login");
+          return;
+        }
+
+        const data = await res.json();
+        
+        if (data?.userDetails) {
+          setUserRole(data.userDetails.role);
+          setUser(data.userDetails);
+          
+          // Redirect if admin
+          if (data.userDetails.role === "admin") {
+            router.push("/admin");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        router.push("/auth/login");
+      } finally {
+        setIsLoading(false);
+        setHasFetched(true);
       }
     };
 
     fetchUserRole();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (userRole === "admin") {
-      router.push("/admin");
-    } else if (userRole === "user") {
-      router.push("/b2b");
-      setIsLoading(false);
-    }
-  }, [userRole]);
+  }, [hasFetched, router]);
 
   const handleLogout = () => {
     logout();

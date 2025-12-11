@@ -11,25 +11,52 @@ function normalizeIp(ip: string | null): string {
 
 async function getGeoFromIP(ip: string) {
   try {
-    // if (!ip || ip === "unknown" || ip === "127.0.0.1" || ip === "::1") {
-    //   return null; // local
-    // }
+    // Skip geo lookup for local/invalid IPs
+    if (!ip || ip === "unknown" || ip === "127.0.0.1" || ip === "::1") {
+      return {
+        city: "localhost",
+        state: "localhost",
+        country: "localhost",
+        lat: 0,
+        lon: 0,
+        isp: "localhost",
+      };
+    }
 
-    const res = await fetch(`https://ipapi.co/json`);
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch(`https://ipapi.co/json`, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'ItalyCourseFinder/1.0'
+      }
+    });
+
+    clearTimeout(timeoutId);
+
+    // Check if response is ok
+    if (!res.ok) {
+      console.warn(`Geo lookup failed with status: ${res.status}`);
+      return null;
+    }
+
     const json = await res.json();
 
     console.log("Geo lookup result", json);
 
-    if (json.success == true) {
+    // Use strict equality
+    if (json.success === true) {
       return {
-        city: json.city,
-        state: json.region,
-        country: json.country,
-        lat: json.latitude,
-        lon: json.longitude,
-        isp: json.org,
+        city: json.city || "unknown",
+        state: json.region || "unknown",
+        country: json.country || "unknown",
+        lat: json.latitude || 0,
+        lon: json.longitude || 0,
+        isp: json.org || "unknown",
       };
-    } else if (json.success == false && json.message == "Reserved range") {
+    } else if (json.success === false && json.message === "Reserved range") {
       return {
         city: "localhost",
         state: "localhost",
@@ -41,7 +68,11 @@ async function getGeoFromIP(ip: string) {
     }
     return null;
   } catch (e) {
-    console.error("Geo lookup failed", e);
+    if (e instanceof Error && e.name === 'AbortError') {
+      console.warn("Geo lookup timed out after 5 seconds");
+    } else {
+      console.error("Geo lookup failed", e);
+    }
     return null;
   }
 }

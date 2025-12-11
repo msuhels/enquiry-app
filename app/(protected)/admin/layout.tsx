@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import AdminSidebar from "@/components/admin-sidebar";
 import { useAuth } from "@/hooks/auth-modules";
 import { Loader2 } from "lucide-react";
-// import { useFetch } from "@/hooks/api/useFetch";
 
 export default function AdminLayout({
   children,
@@ -16,33 +15,43 @@ export default function AdminLayout({
   const { isAuthenticated, logout } = useAuth();
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch("/api/admin/users/getAuthUser");
-      const data = await res.json();
-      return data;
-    };
+    // Only fetch once when component mounts
+    if (hasFetched) return;
 
     const fetchUserRole = async () => {
-      const data = await fetchUser();
-      if (data) {
-        setUserRole(data.userDetails.role);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
+      try {
+        const res = await fetch("/api/admin/users/getAuthUser");
+        
+        // If unauthorized, redirect to login
+        if (res.status === 401) {
+          router.push("/auth/login");
+          return;
+        }
+
+        const data = await res.json();
+        
+        if (data?.userDetails?.role) {
+          setUserRole(data.userDetails.role);
+          
+          // Redirect if not admin
+          if (data.userDetails.role !== "admin") {
+            router.push("/b2b");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        router.push("/auth/login");
+      } finally {
+        setIsLoading(false);
+        setHasFetched(true);
       }
     };
 
     fetchUserRole();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (userRole === "admin") {
-      router.push("/admin");
-    } else if (userRole === "user") {
-      router.push("/b2b");
-    }
-  }, [userRole]);
+  }, [hasFetched, router]);
 
   const handleLogout = () => {
     logout();
