@@ -12,6 +12,7 @@ import { IDocument } from "@/lib/types";
 import { Download } from "lucide-react";
 import { usePost } from "@/hooks/api/usePost";
 import { useUserStore } from "@/lib/stores/auth-module";
+import { useAuth } from "@/hooks/auth-modules";
 
 interface DocumentData {
   id: string;
@@ -45,7 +46,7 @@ const DocumentsPage = () => {
 
   const { data, isLoading } = useFetch(apiUrl);
   const {post} = usePost();
-  const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
+  const { userDetails } = useAuth();
 
   useEffect(() => {
     setPage(1);
@@ -67,10 +68,10 @@ const DocumentsPage = () => {
 
     try {
       const loadingToast = toast.loading("Preparing download...");
-      if (document.id) {
+      if (document.id && userDetails?.id) {
         await post("/api/admin/record-login", {
           event_type: "document_download",
-          user_id: user.userDetails.id,
+          user_id: userDetails.id,
           document_id: document.id,
           ip
         });

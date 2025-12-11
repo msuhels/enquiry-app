@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
 import { useUserStore } from "@/lib/stores/auth-module";
+import { useAuth } from "@/hooks/auth-modules";
 
 export default function EnquirySystem() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function EnquirySystem() {
   const { data: previousOrCurrentStudyData } = useFetch(
     `/api/admin/previous-or-current-study`
   );
-  const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
+  const { userDetails } = useAuth();
   const { post } = usePost();
 
   const { data: degreeGoingForData } = useFetch(`/api/admin/degree-going-for`);
@@ -83,7 +84,7 @@ const handleFindPrograms = async () => {
     const enquiryPromise = post("/api/admin/enquiries", {
       previous_or_current_study: previousOrCurrentStudy,
       degree_going_for: degreeGoingFor,
-      userId: user.userDetails.id,
+      userId: userDetails.id,
     });
 
     const programPromise = fetch(`/api/admin/programs/suggestions?${params}`);
@@ -99,7 +100,7 @@ const handleFindPrograms = async () => {
 
       post("/api/admin/record-login", {
         event_type: "enquiry_created",
-        user_id: user.userDetails.id,
+        user_id: userDetails.id,
         enquiry_id: enquiryId,
         ip,
       }).catch((err) =>
@@ -188,7 +189,7 @@ const handleFindPrograms = async () => {
         await post("/api/admin/record-login", {
           event_type: "program_download",
           enquiry_id: enquiry?.id,
-          user_id: user.userDetails.id,
+          user_id: userDetails.id,
           ip
         });
       } catch (e) {

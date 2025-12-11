@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import AdminSidebar from "@/components/admin-sidebar";
 import { useAuth } from "@/hooks/auth-modules";
 import { Loader2 } from "lucide-react";
-// import { useFetch } from "@/hooks/api/useFetch";
 
 export default function AdminLayout({
   children,
@@ -13,36 +12,26 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
-  const [userRole, setUserRole] = useState("");
+  const { isAuthenticated, logout, userDetails, fetchUserDetails } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch("/api/admin/users/getAuthUser");
-      const data = await res.json();
-      return data;
-    };
 
-    const fetchUserRole = async () => {
-      const data = await fetchUser();
-      if (data) {
-        setUserRole(data.userDetails.role);
+  useEffect(() => {
+    if (isAuthenticated && !userDetails) {
+      fetchUserDetails();
+    }
+  }, [isAuthenticated, userDetails, fetchUserDetails]);
+
+  useEffect(() => {
+    if (userDetails) {
+      if (userDetails.role === "admin") {
         setTimeout(() => {
           setIsLoading(false);
         }, 1000);
+      } else if (userDetails.role === "user") {
+        router.push("/b2b");
       }
-    };
-
-    fetchUserRole();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (userRole === "admin") {
-      router.push("/admin");
-    } else if (userRole === "user") {
-      router.push("/b2b");
     }
-  }, [userRole]);
+  }, [userDetails, router]);
 
   const handleLogout = () => {
     logout();

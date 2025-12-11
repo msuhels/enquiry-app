@@ -13,6 +13,7 @@ import { useDelete } from "@/hooks/api/useDelete";
 import { toast } from "sonner";
 import { State, City } from "country-state-city";
 import * as XLSX from "xlsx";
+import { useAuth } from "@/hooks/auth-modules";
 
 export default function EnquiriesPage() {
   const router = useRouter();
@@ -33,10 +34,10 @@ export default function EnquiriesPage() {
   const [debouncedSearch] = useDebounce(search, 400);
   const [activeTab, setActiveTab] = useState("all");
   const { del } = useDelete();
-  const { data: user } = useFetch("/api/admin/users/getAuthUser");
+  const { userDetails } = useAuth();
 
   const offset = (page - 1) * itemsPerPage;
-  const userId = user?.userDetails?.id;
+  const userId = userDetails?.id;
   const queryParams = new URLSearchParams();
 
   Object.entries(debouncedSearch).forEach(([k, v]) => {
@@ -45,11 +46,9 @@ export default function EnquiriesPage() {
 
   queryParams.append("tab", activeTab);
 
-  const apiUrl = `/api/admin/enquiries/?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
+  const apiUrl = userId ? `/api/admin/enquiries/?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}` : null;
 
-  const { data: enquiriesData, isLoading } = useFetch(apiUrl, {
-    enabled: !!userId,
-  });
+  const { data: enquiriesData, isLoading } = useFetch(apiUrl);
 
   useEffect(() => {
     setPage(1);

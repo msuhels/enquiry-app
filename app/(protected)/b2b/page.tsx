@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
+import { useAuth } from "@/hooks/auth-modules";
 
 const RecentEnquiryItem = ({
   name,
@@ -43,9 +44,9 @@ export default function UserDashboard() {
   const [enquiriesCount, setEnquiriesCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  const { data: user } = useFetch("/api/admin/users/getAuthUser");
-  const userId = user?.userDetails?.id;
-  const { data: enquiries } = useFetch(`/api/admin/myenquiries/${userId}`);
+  const { userDetails } = useAuth();
+  const userId = userDetails?.id;
+  const { data: enquiries } = useFetch(userId ? `/api/admin/myenquiries/${userId}` : null);
   const { data: notifications } = useFetch("/api/admin/notifications");
 
   useEffect(() => {
@@ -72,10 +73,10 @@ export default function UserDashboard() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setUserName(user.userDetails.organization || user.userDetails.full_name);
+    if (userDetails) {
+      setUserName(userDetails.organization || userDetails.full_name);
     }
-  }, [user]);
+  }, [userDetails]);
 
   const statCards = [
     {

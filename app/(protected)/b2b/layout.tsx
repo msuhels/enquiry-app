@@ -11,11 +11,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { logout, isAuthenticated } = useAuth();
-  const [userRole, setUserRole] = useState("");
+  const { logout, isAuthenticated, userDetails, fetchUserDetails } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState("");
-
   const [isWelcome, setIsWelcome] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,34 +23,22 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch("/api/admin/users/getAuthUser");
-      const data = await res.json();
-      return data;
-    };
+    if (isAuthenticated && !userDetails) {
+      fetchUserDetails();
+    }
+  }, [isAuthenticated, userDetails, fetchUserDetails]);
 
-    const fetchUserRole = async () => {
-      const data = await fetchUser();
-      if (data) {
-        setUserRole(data.userDetails.role);
-        setUser(data.userDetails);
+  useEffect(() => {
+    if (userDetails) {
+      if (userDetails.role === "admin") {
+        router.push("/admin");
+      } else if (userDetails.role === "user") {
         setTimeout(() => {
           setIsLoading(false);
         }, 1000);
       }
-    };
-
-    fetchUserRole();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (userRole === "admin") {
-      router.push("/admin");
-    } else if (userRole === "user") {
-      router.push("/b2b");
-      setIsLoading(false);
     }
-  }, [userRole]);
+  }, [userDetails, router]);
 
   const handleLogout = () => {
     logout();
@@ -81,7 +66,7 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-hidden flex">
-      {isWelcome === "false" && <WelcomePopup user={user} />}
+      {isWelcome === "false" && <WelcomePopup user={userDetails} />}
       <UserSidebar onLogout={handleLogout} />
       <main className="flex-1 max-h-svh overflow-auto">{children}</main>
     </div>
