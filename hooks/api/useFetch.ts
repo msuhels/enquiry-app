@@ -13,12 +13,8 @@ const fetcher = async (url: string) => {
  */
 export function useFetch<T = any>(url: string | null, options?: SWRConfiguration, revalidateOnFocus?: boolean) {
   const { data, error, isLoading, mutate } = useSWR<T>(url, fetcher, {
-    revalidateOnFocus: revalidateOnFocus !== false,
-    revalidateOnMount: true,
-    revalidateIfStale: false, 
-    refreshInterval: 0,
-    dedupingInterval: 10000,
-    shouldRetryOnError: false,
+    revalidateOnFocus: revalidateOnFocus || true,
+    dedupingInterval: revalidateOnFocus ? 0 : 10000,
     ...options,
   });
 
