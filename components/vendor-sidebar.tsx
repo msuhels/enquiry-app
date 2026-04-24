@@ -17,6 +17,7 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
     { name: "Dashboard", icon: LayoutDashboard, href: "/b2b" },
     { name: "Enquiries", icon: Mail, href: "/b2b/enquiries" },
     { name: "Downloads", icon: FileText, href: "/b2b/documents" },
+    { name: "Updates", icon: FileText, href: "/b2b/updates" },
   ];
 
   return (

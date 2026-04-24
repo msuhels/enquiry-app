@@ -46,12 +46,13 @@ export default function UserDashboard() {
   const { data: user } = useFetch("/api/admin/users/getAuthUser");
   const userId = user?.userDetails?.id;
   const { data: enquiries } = useFetch(`/api/admin/myenquiries/${userId}`);
-  const { data: notifications } = useFetch("/api/admin/notifications");
+  // Use the new user-notifications API to get unread count
+  const { data: notifications } = useFetch("/api/admin/user-notifications");
 
   useEffect(() => {
     if (notifications) {
-      const unRead = notifications?.data?.filter((n) => !n.is_readed);
-      setNotificationCount(unRead?.length || 0);
+      // New API returns unreadCount directly
+      setNotificationCount(notifications?.unreadCount || 0);
     }
   }, [notifications]);
 
@@ -60,7 +61,7 @@ export default function UserDashboard() {
       setEnquiriesCount(enquiries?.pagination?.total || 0);
     }
   }, [enquiries]);
-  
+
   const filterEnquiries = enquiries?.data?.filter(
     (enquiry: Enquiry) =>
       enquiry?.academic_entries?.data?.length > 0 &&
@@ -110,7 +111,7 @@ export default function UserDashboard() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div 
+              <div
                 className="relative inline-block cursor-pointer group"
                 onClick={() => router.push("/b2b/notifications")}
               >
