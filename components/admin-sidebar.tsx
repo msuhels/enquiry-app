@@ -23,6 +23,7 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
     { name: "Downloads", icon: FileText, href: "/admin/documents" },
     { name: "B2B Logs", icon: Logs, href: "/admin/logs" },
     { name: "Updates", icon: Logs, href: "/admin/updates" },
+    { name: "Escalations", icon: Logs, href: "/admin/escalations" },
   ];
 
   return (
