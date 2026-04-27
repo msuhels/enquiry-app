@@ -49,7 +49,7 @@ export default function AdminDashboard() {
 
   const { data: stat } = useFetch("/api/admin/stats");
   const { data: enquiries } = useFetch("/api/admin/enquiries");
-  const { data: notificationsData } = useFetch("/api/admin/notifications/escalations");
+  const { data: notificationsData } = useFetch("/api/admin/addnotification");
 
   const stats = {
     users: stat?.data?.users || 0,

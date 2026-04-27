@@ -111,14 +111,14 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { zone, user_message, level } = body;
 
-        // Get user details for email
+        // Get user details for email and notification
         const { data: userData } = await supabase
             .from("users")
-            .select("full_name")
+            .select("full_name, first_name")
             .eq("id", user.id)
             .single();
 
-        const userName = userData?.full_name || "Unknown User";
+        const userName = userData?.first_name || userData?.full_name || "Unknown User";
 
         // Insert escalation
         const { data: escalation, error: escalationError } = await supabase
@@ -137,12 +137,15 @@ export async function POST(request: Request) {
             return new NextResponse("Error creating escalation", { status: 500 });
         }
 
-        // Insert admin notification
+        // Insert admin notification with correct field names
         const { error: notificationError } = await supabase
-            .from("admin_notification")
+            .from("admin_notifications")
             .insert({
-                user_id: user.id,
-                escalation_id: escalation.id,
+                created_by: user.id,
+                notification_type: "escalation",
+                reference_id: escalation.id,
+                title: `${userName} has sent an escalation request`,
+                message: `New escalation from ${userName} - ${zone} zone, Level ${level}. Click here to view.`,
                 is_read: false,
             });
 

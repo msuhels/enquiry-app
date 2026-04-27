@@ -10,6 +10,7 @@ import {
   Loader2,
   Download,
   Filter,
+  BarChart3,
 } from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
@@ -28,6 +29,13 @@ export interface FilterTab {
   key: string;
   label: string;
   count?: number;
+}
+
+export interface AnalyticsCard {
+  title: string;
+  data: { label: string; value: number; color?: string }[];
+  total?: number;
+  type?: "bar" | "simple";
 }
 
 interface TableProps<T> {
@@ -70,6 +78,7 @@ interface TableProps<T> {
   handleToggleActive?: (key: string, value: boolean) => void;
   setViewMode?: (key: "datalist" | "action_count") => void;
   viewMode?: "datalist" | "action_count";
+  analyticsCards?: AnalyticsCard[];
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
@@ -104,6 +113,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   handleToggleActive,
   setViewMode,
   viewMode = "datalist",
+  analyticsCards,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -152,6 +162,57 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
         </div>
       </div>
 
+      {/* Analytics Cards - Simple Design */}
+{analyticsCards && analyticsCards.length > 0 && (
+  <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    {analyticsCards.map((card, cardIndex) => {
+      const total =
+        card.total ||
+        card.data.reduce((sum, item) => sum + item.value, 0);
+
+      return (
+        <div
+          key={cardIndex}
+          className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:shadow-md transition-all"
+        >
+          {/* Header */}
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-slate-500">
+                {card.title}
+              </h3>
+              <p className="text-sm font-bold text-slate-900">
+                Total : {total.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="rounded-md bg-blue-50 p-2 text-blue-600">
+              <BarChart3 className="h-4 w-4" />
+            </div>
+          </div>
+
+          {/* Data Pills */}
+          <div className="flex flex-wrap gap-2">
+            {card.data.map((item, itemIndex) => (
+              <div
+                key={itemIndex}
+                className="flex items-center gap-1 rounded-md bg-slate-50 px-2 py-1"
+              >
+                <span className="text-[16px] capitalize text-slate-500">
+                  {item.label} :
+                </span>
+                <span className="text-[15px] text-green-600 font-semibold text-slate-800">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
       {/* Field Switches */}
       {fieldsSwitches?.length > 0 && (
         <div className="mb-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -161,7 +222,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 key={index}
                 className="flex items-center justify-between w-full gap-4"
               >
-                <label className="text-2xl font-medium text-[#3a3886] capitalize">
+                <label className="text-3xl font-medium text-[#3a3886] capitalize">
                   {item.key.replace(/_/g, " ")}
                 </label>
 
@@ -171,14 +232,12 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   onCheckedChange={(value) =>
                     handleToggleActive?.(item.key, value)
                   }
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    item.value ? "bg-[#F97316]" : "bg-gray-300"
-                  }`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? "bg-[#F97316]" : "bg-gray-300"
+                    }`}
                 >
                   <Switch.Thumb
-                    className={`block w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                      item.value ? "translate-x-5" : "translate-x-0.5"
-                    }`}
+                    className={`block w-5 h-5 bg-white rounded-full shadow-md transition-transform ${item.value ? "translate-x-5" : "translate-x-0.5"
+                      }`}
                   />
                 </Switch.Root>
               </div>
@@ -189,9 +248,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
 
       {/* Search and Select Filters */}
       <div
-        className={`flex ${
-          searchSelectFilters.length > 0 ? "w-full" : "w-1/2"
-        } gap-4 items-center mb-4`}
+        className={`flex ${searchSelectFilters.length > 0 ? "w-full" : "w-1/2"
+          } gap-4 items-center mb-4`}
       >
         {onSearchChange &&
           searchParameters.map((param) => (
@@ -242,11 +300,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 onClick={() => setViewMode("datalist")}
                 className={`
           flex items-center gap-2 p-3 rounded-full text-sm font-medium transition-all
-          ${
-            viewMode === "datalist"
-              ? "bg-[#3a3886] text-white shadow-md"
-              : "text-[#3a3886] hover:text-[#F97316]"
-          }
+          ${viewMode === "datalist"
+                    ? "bg-[#3a3886] text-white shadow-md"
+                    : "text-[#3a3886] hover:text-[#F97316]"
+                  }
         `}
                 style={{ height: "auto", minHeight: "0" }}
               >
@@ -258,11 +315,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 onClick={() => setViewMode("action_count")}
                 className={`
           flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-all
-          ${
-            viewMode === "action_count"
-              ? "bg-[#3a3886] text-white shadow-md"
-              : "text-[#3a3886] hover:text-[#F97316]"
-          }
+          ${viewMode === "action_count"
+                    ? "bg-[#3a3886] text-white shadow-md"
+                    : "text-[#3a3886] hover:text-[#F97316]"
+                  }
         `}
                 style={{ height: "auto", minHeight: "0" }}
               >
@@ -319,11 +375,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
-                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${
-                  activeFilter === tab.key
-                    ? "border-[#F97316] text-[#F97316]"
-                    : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
-                }`}
+                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${activeFilter === tab.key
+                  ? "border-[#F97316] text-[#F97316]"
+                  : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
+                  }`}
               >
                 {tab.label}
 
@@ -350,9 +405,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   <th
                     key={col.key}
                     onClick={() => handleSortClick(col.key, col.sortable)}
-                    className={`px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider ${
-                      col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
-                    }`}
+                    className={`px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider ${col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
+                      }`}
                   >
                     <div className="flex items-center space-x-1">
                       <span>{col.label}</span>

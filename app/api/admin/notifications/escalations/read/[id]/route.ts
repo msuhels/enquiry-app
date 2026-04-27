@@ -20,7 +20,7 @@ export async function POST(
 
     try {
         const { error } = await supabase
-            .from("admin_notification")
+            .from("admin_notifications")
             .update({ is_read: true })
             .eq("id", id);
 

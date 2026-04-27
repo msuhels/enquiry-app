@@ -12,8 +12,8 @@ export async function POST(
   if (!id) return NextResponse.json({ error: "Notification ID is required" });
 
   const { error } = await supabase
-    .from("notifications")
-    .update({ is_readed: true })
+    .from("admin_notifications")
+    .update({ is_read: true })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error });

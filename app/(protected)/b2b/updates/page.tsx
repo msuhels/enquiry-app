@@ -16,9 +16,15 @@ type Announcement = {
 export default function UpdatesPage() {
   const router = useRouter();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const offset = (page - 1) * itemsPerPage;
+
+  const apiUrl = `/api/admin/announcements?page=${page}&limit=${itemsPerPage}`;
 
   // Call your API
-  const { data, isLoading, error } = useFetch("/api/admin/announcements");
+  const { data, isLoading, error } = useFetch(apiUrl);
 
   // Debug logging
   console.log("Announcements API response:", { data, isLoading, error });
@@ -76,6 +82,10 @@ export default function UpdatesPage() {
           data={announcements}
           isLoading={isLoading}
           emptyMessage="No updates found."
+          onPageChange={setPage}
+          currentPage={page}
+          total={data?.pagination?.total || 0}
+          itemsPerPage={itemsPerPage}
         />
       </div>
     </div>

@@ -14,29 +14,28 @@ export async function GET() {
     }
 
     try {
-        // Fetch admin notifications with escalation and user details
+        // Fetch only escalation notifications from admin_notifications table
         const { data: notifications, error } = await supabase
-            .from("admin_notification")
+            .from("admin_notifications")
             .select(`
                 id,
                 created_at,
-                escalation_id,
+                notification_type,
+                reference_id,
+                title,
+                message,
+                created_by,
                 is_read,
-                user_id,
-                escalations (
-                    zone,
-                    user_message,
-                    level,
-                    created_at
-                ),
                 users (
-                    full_name
+                    full_name,
+                    first_name
                 )
             `)
+            .eq("notification_type", "escalation")
             .order("created_at", { ascending: false });
 
         if (error) {
-            console.error("Error fetching notifications:", error);
+            console.error("Error fetching escalation notifications:", error);
             return new NextResponse("Error fetching notifications", { status: 500 });
         }
 
@@ -49,7 +48,7 @@ export async function GET() {
             unreadCount,
         });
     } catch (error) {
-        console.error("Error in notifications API:", error);
+        console.error("Error in escalation notifications API:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
     }
 }

@@ -2,55 +2,46 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft as ArrowLeftIcon, Bell as BellIcon, Loader2 } from "lucide-react";
+import { ArrowLeft as ArrowLeftIcon, Bell as BellIcon, Loader2, MessageSquare, AlertCircle, Check, X } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import Link from "next/link";
+import { toast } from "sonner";
 
 /**
- * Admin Notification interface matching the API response
+ * Admin Notification interface matching the admin_notifications table
  */
 interface AdminNotification {
     id: string;
     created_at: string;
-    escalation_id: string;
+    notification_type: 'feedback' | 'escalation';
+    reference_id: string;
+    title: string;
+    message: string;
+    created_by: string;
     is_read: boolean;
-    user_id: string;
-    escalations: {
-        zone: string;
-        user_message: string;
-        level: string;
-        created_at: string;
-    } | null;
-    users: {
-        full_name: string;
-    } | null;
 }
 
 /**
- * NotificationItem component - displays a single escalation notification
+ * NotificationItem component - displays a single notification
  */
 const NotificationItem = ({
     id,
-    escalationId,
-    userName,
-    userId,
+    notificationType,
+    referenceId,
+    title,
     message,
-    level,
-    zone,
     createdAt,
     isRead,
-    onMarkRead,
+    onToggleRead,
 }: {
     id: string;
-    escalationId: string;
-    userName: string | null;
-    userId: string;
+    notificationType: 'feedback' | 'escalation';
+    referenceId: string;
+    title: string;
     message: string;
-    level: string;
-    zone: string;
     createdAt: string;
     isRead: boolean;
-    onMarkRead: (id: string) => void;
+    onToggleRead: (id: string) => void;
 }) => {
     const formatTime = (timestamp: string) => {
         const date = new Date(timestamp);
@@ -63,6 +54,14 @@ const NotificationItem = ({
         });
     };
 
+    // Determine the link based on notification type
+    const linkHref = notificationType === 'escalation'
+        ? `/admin/escalations/view/${referenceId}`
+        : `/admin/feedbacks/view/${referenceId}`;
+
+    const Icon = notificationType === 'escalation' ? AlertCircle : MessageSquare;
+    const typeLabel = notificationType === 'escalation' ? 'Escalation' : 'Feedback';
+
     return (
         <div
             className={`px-5 py-4 border-b border-gray-200 last:border-b-0 transition 
@@ -70,43 +69,47 @@ const NotificationItem = ({
         >
             <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3">
-                    <BellIcon
+                    <Icon
                         className={`w-5 h-5 flex-shrink-0 mt-1
             ${!isRead ? "text-[#3A3886]" : "text-gray-400"}`}
                     />
                     <div className="max-w-lg">
-                        <Link href={`/admin/escalations/view/${escalationId}`} className="">
+                        <Link href={linkHref} className="">
                             <p
                                 className={`text-base font-semibold 
                 ${!isRead ? "text-[#3A3886]" : "text-gray-600"}`}
                             >
-                                New Escalation Request
+                                {title}
                             </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                                <span className="font-medium">{userName || "Unknown User"}</span> from {zone} zone
-                            </p>
-                            <p className="text-sm text-gray-500 mt-1 truncate">
+                            <p className="text-sm text-gray-500 mt-1">
                                 {message}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                                Level: {level}
+                                Type: {typeLabel}
                             </p>
                         </Link>
                     </div>
                 </div>
 
-                {!isRead ? (
-                    <button
-                        onClick={() => onMarkRead(id)}
-                        className="text-lg whitespace-nowrap text-white bg-[#F97316] px-2 py-1 rounded-full hover:bg-[#EA580C] transition cursor-pointer"
-                    >
-                        Mark as Read
-                    </button>
-                ) : (
-                    <span className="text-lg text-gray-700 bg-gray-200 px-2 py-1 rounded-full">
-                        Read
-                    </span>
-                )}
+                <button
+                    onClick={() => onToggleRead(id)}
+                    className={`text-lg whitespace-nowrap px-3 py-1 rounded-full transition cursor-pointer flex items-center gap-1 ${isRead
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            : "bg-[#F97316] text-white hover:bg-[#EA580C]"
+                        }`}
+                >
+                    {isRead ? (
+                        <>
+                            <X className="w-4 h-4" />
+                            Unread
+                        </>
+                    ) : (
+                        <>
+                            <Check className="w-4 h-4" />
+                            Read
+                        </>
+                    )}
+                </button>
             </div>
 
             <p className="text-xs text-gray-500 mt-2 text-right">
@@ -123,62 +126,73 @@ export default function AdminNotificationsPage() {
     const router = useRouter();
     const [pageLoading, setPageLoading] = useState(true);
 
-    // Fetch escalation notifications from the new API
+    // Fetch notifications from the admin_notifications table
     const {
         data: notificationsData,
         isLoading,
         error,
         mutate,
-    } = useFetch("/api/admin/notifications/escalations");
+    } = useFetch("/api/admin/addnotification");
 
     // Extract notifications list and unread count from API response
-    const notifications: AdminNotification[] = notificationsData?.data || [];
+    const allNotifications: AdminNotification[] = notificationsData?.data || [];
     const unreadCount = notificationsData?.unreadCount || 0;
+
+    // Sort notifications: unread (is_read: false) first, then read
+    const notifications = [...allNotifications].sort((a, b) => {
+        if (a.is_read === b.is_read) {
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        return a.is_read ? 1 : -1;
+    });
 
     useEffect(() => {
         if (!isLoading) setPageLoading(false);
     }, [isLoading]);
 
     /**
-     * Mark a notification as read
-     * Calls the API to update the admin_notification table
+     * Toggle notification read status
      */
-    const markAsRead = async (id: string) => {
+    const toggleReadStatus = async (id: string) => {
         const notification = notifications.find((n) => n.id === id);
         if (!notification) return;
 
-        // Skip if already read
-        if (notification.is_read) return;
-
-        // Optimistic update - immediately show as read in UI
+        // Optimistic update
+        const originalNotifications = [...notifications];
         mutate(
             {
+                ...notificationsData,
                 data: notifications.map((n) =>
-                    n.id === id ? { ...n, is_read: true } : n
+                    n.id === id ? { ...n, is_read: !n.is_read } : n
                 ),
-                unreadCount: Math.max(0, unreadCount - 1),
+                unreadCount: notification.is_read ? unreadCount + 1 : unreadCount - 1,
             },
             false
         );
 
         try {
-            const response = await fetch(`/api/admin/notifications/escalations/read/${id}`, {
-                method: "POST",
+            const response = await fetch(`/api/admin/addnotification/${id}`, {
+                method: "PUT",
             });
 
-            if (!response.ok) {
-                console.error("Failed to mark as read:", await response.text());
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                console.error("Failed to toggle read status:", data.message);
                 // Revert on error
-                mutate();
+                mutate({ ...notificationsData, data: originalNotifications });
+                toast.error(data.message || "Failed to update notification");
                 return;
             }
 
+            toast.success(data.message);
             // Refresh data from server
             mutate();
         } catch (error) {
-            console.error("Error marking as read:", error);
+            console.error("Error toggling read status:", error);
             // Revert on error
-            mutate();
+            mutate({ ...notificationsData, data: originalNotifications });
+            toast.error("Failed to update notification");
         }
     };
 
@@ -214,15 +228,13 @@ export default function AdminNotificationsPage() {
                                 <NotificationItem
                                     key={notification.id}
                                     id={notification.id}
-                                    escalationId={notification.escalation_id}
-                                    userName={notification.users?.full_name || null}
-                                    userId={notification.user_id}
-                                    message={notification.escalations?.user_message || ""}
-                                    level={notification.escalations?.level || ""}
-                                    zone={notification.escalations?.zone || ""}
+                                    notificationType={notification.notification_type}
+                                    referenceId={notification.reference_id}
+                                    title={notification.title}
+                                    message={notification.message}
                                     createdAt={notification.created_at}
                                     isRead={notification.is_read}
-                                    onMarkRead={markAsRead}
+                                    onToggleRead={toggleReadStatus}
                                 />
                             ))}
                         </div>

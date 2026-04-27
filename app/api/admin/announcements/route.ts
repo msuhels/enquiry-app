@@ -8,28 +8,48 @@ export interface AnnouncementInput {
   created_by: string;
 }
 
-// GET: Fetch all announcements
-export async function GET() {
+// GET: Fetch all announcements with pagination
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceRoleClient();
+    const { searchParams } = new URL(request.url);
 
-    // Use .maybeSingle() approach - will return null if no access
+    // Parse pagination parameters with defaults
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const { count } = await supabase
+      .from("announcements")
+      .select("*", { count: "exact", head: true });
+
+    // Fetch paginated data
     const { data, error } = await supabase
       .from("announcements")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     // Handle permission or table errors gracefully
     if (error) {
       console.error("GET announcements error:", error.message, error.code);
-      // Return empty array on any error so the UI still works
-      return NextResponse.json({ success: true, data: [] });
+      return NextResponse.json({ success: true, data: [], pagination: { total: 0, limit, offset } });
     }
 
-    return NextResponse.json({ success: true, data: data || [] });
+    return NextResponse.json({
+      success: true,
+      data: data || [],
+      pagination: {
+        total: count || 0,
+        limit,
+        offset,
+        page,
+      },
+    });
   } catch (error) {
     console.error("GET announcements unexpected error:", error);
-    return NextResponse.json({ success: true, data: [] });
+    return NextResponse.json({ success: true, data: [], pagination: { total: 0, limit: 10, offset: 0 } });
   }
 }
 
@@ -60,9 +80,9 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("POST announcements error:", error.message);
-      return NextResponse.json({ 
-        success: false, 
-        message: error.message 
+      return NextResponse.json({
+        success: false,
+        message: error.message
       }, { status: 500 });
     }
 
@@ -72,9 +92,9 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("POST announcements unexpected error:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: error instanceof Error ? error.message : "Unknown error" 
+    return NextResponse.json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error"
     }, { status: 500 });
   }
 }

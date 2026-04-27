@@ -28,6 +28,22 @@ const escalationpage = () => {
   const [debouncedSearch] = useDebounce(search, 400);
   const router = useRouter();
 
+  // Analytics data
+  const [zoneAnalytics, setZoneAnalytics] = useState<Array<{ zone: string; count: number }>>([]);
+  const [levelAnalytics, setLevelAnalytics] = useState<Array<{ level: string; count: number }>>([]);
+  const [analyticsSummary, setAnalyticsSummary] = useState<{ totalEscalations: number; totalEnquiries: number }>({ totalEscalations: 0, totalEnquiries: 0 });
+
+  // Fetch analytics data
+  const { data: analyticsData, isLoading: analyticsLoading } = useFetch("/api/admin/analytics/zone-level");
+
+  useEffect(() => {
+    if (analyticsData?.success && analyticsData?.data) {
+      setZoneAnalytics(analyticsData.data.zones || []);
+      setLevelAnalytics(analyticsData.data.levels || []);
+      setAnalyticsSummary(analyticsData.data.summary || { totalEscalations: 0, totalEnquiries: 0 });
+    }
+  }, [analyticsData]);
+
   const offset = (page - 1) * itemsPerPage;
 
   const apiUrl = `/api/admin/escalations/getallescalations?search=${encodeURIComponent(
@@ -125,9 +141,25 @@ const escalationpage = () => {
     },
   ];
 
+  // Transform analytics data for the table component
+  const analyticsCards = [
+    {
+      title: "Escalations by Zone",
+      data: zoneAnalytics.map(z => ({ label: z.zone, value: z.count })),
+      total: analyticsSummary.totalEscalations,
+    },
+    {
+      title: "Escalations by Level",
+      data: levelAnalytics.map(l => ({ label: `Level ${l.level}`, value: l.count })),
+      total: analyticsSummary.totalEscalations,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
+
+        {/* Escalations Table */}
         <AdvancedDataTable
           title="Escalations"
           columns={columns}
@@ -145,6 +177,7 @@ const escalationpage = () => {
           currentPage={page}
           total={data?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
+          analyticsCards={analyticsCards}
           isLoading={isLoading}
           emptyMessage="No escalations found."
         />

@@ -10,6 +10,9 @@ import {
   LogOut,
   FileText,
   Logs,
+  Megaphone,
+  AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 
 export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
@@ -22,8 +25,9 @@ export default function AdminSidebar({ onLogout }: { onLogout: () => void }) {
     { name: "Enquiries", icon: Mail, href: "/admin/enquiries" },
     { name: "Downloads", icon: FileText, href: "/admin/documents" },
     { name: "B2B Logs", icon: Logs, href: "/admin/logs" },
-    { name: "Updates", icon: Logs, href: "/admin/updates" },
-    { name: "Escalations", icon: Logs, href: "/admin/escalations" },
+    { name: "Updates", icon: Megaphone, href: "/admin/updates" },
+    { name: "Escalations", icon: AlertTriangle, href: "/admin/escalations" },
+    { name: "Feedbacks", icon: MessageSquare, href: "/admin/feedbacks" },
   ];
 
   return (
