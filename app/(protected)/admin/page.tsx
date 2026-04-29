@@ -49,7 +49,8 @@ export default function AdminDashboard() {
 
   const { data: stat } = useFetch("/api/admin/stats");
   const { data: enquiries } = useFetch("/api/admin/enquiries");
-  const { data: notificationsData } = useFetch("/api/admin/addnotification");
+  // Disable revalidateOnFocus for notifications to prevent excessive API calls
+  const { data: notificationsData } = useFetch("/api/admin/addnotification", { revalidateOnFocus: false });
 
   const stats = {
     users: stat?.data?.users || 0,

@@ -56,6 +56,10 @@ export async function PATCH(
       ielts_requirement,
       special_requirements,
       remarks,
+      minimum_percentage,
+      degree_duration,
+      english_proficiency_type,
+      minimum_ielts_score,
     } = body;
 
     // Validate that at least one field is being updated
@@ -87,6 +91,10 @@ export async function PATCH(
       ielts_requirement,
       special_requirements,
       remarks,
+      minimum_percentage,
+      degree_duration,
+      english_proficiency_type,
+      minimum_ielts_score,
     } as Partial<Program>;
 
     const result = await updateProgram(id, programData);

@@ -45,7 +45,7 @@ export default function EnquiriesPage() {
 
   queryParams.append("tab", activeTab);
 
-  const apiUrl = `/api/admin/enquiries/?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
+  const apiUrl = `/api/admin/enquiries?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data: enquiriesData, isLoading } = useFetch(apiUrl, {
     enabled: !!userId,
@@ -87,7 +87,7 @@ export default function EnquiriesPage() {
   };
 
   const handleExportToExcel = async () => {
-    const exportUrl = `/api/admin/enquiries/?${queryParams.toString()}&export=true`;
+    const exportUrl = `/api/admin/enquiries?${queryParams.toString()}&export=true`;
     const res = await fetch(exportUrl);
     const { data } = await res.json();
 

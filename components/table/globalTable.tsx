@@ -38,6 +38,19 @@ export interface AnalyticsCard {
   type?: "bar" | "simple";
 }
 
+export interface DepartmentAnalytics {
+  department: string;
+  averageRating: string;
+  totalFeedbacks: number;
+  percentage: number;
+}
+
+export interface OverallAnalytics {
+  overallAverage: number;
+  totalFeedbacks: number;
+  departmentCount: number;
+}
+
 interface TableProps<T> {
   title?: string;
   columns: TableColumn<T>[];
@@ -46,9 +59,9 @@ interface TableProps<T> {
   searchPlaceholder?: string;
   searchParameters?: string[];
   searchSelectFilters?: {
-    name: string;
+    key: string;
     label: string;
-    options: { value: string; label: string };
+    options: { value: string; label: string }[];
   }[];
   filterTabs?: FilterTab[];
   activeFilter?: string;
@@ -79,6 +92,8 @@ interface TableProps<T> {
   setViewMode?: (key: "datalist" | "action_count") => void;
   viewMode?: "datalist" | "action_count";
   analyticsCards?: AnalyticsCard[];
+  departmentAnalytics?: DepartmentAnalytics[];
+  overallAnalytics?: OverallAnalytics;
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
@@ -114,6 +129,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   setViewMode,
   viewMode = "datalist",
   analyticsCards,
+  departmentAnalytics,
+  overallAnalytics,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -161,57 +178,187 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           </div>
         </div>
       </div>
-
-      {/* Analytics Cards - Simple Design */}
-{analyticsCards && analyticsCards.length > 0 && (
-  <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-    {analyticsCards.map((card, cardIndex) => {
-      const total =
-        card.total ||
-        card.data.reduce((sum, item) => sum + item.value, 0);
-
-      return (
-        <div
-          key={cardIndex}
-          className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:shadow-md transition-all"
-        >
-          {/* Header */}
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium text-slate-500">
-                {card.title}
-              </h3>
-              <p className="text-sm font-bold text-slate-900">
-                Total : {total.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="rounded-md bg-blue-50 p-2 text-blue-600">
-              <BarChart3 className="h-4 w-4" />
-            </div>
-          </div>
-
-          {/* Data Pills */}
-          <div className="flex flex-wrap gap-2">
-            {card.data.map((item, itemIndex) => (
-              <div
-                key={itemIndex}
-                className="flex items-center gap-1 rounded-md bg-slate-50 px-2 py-1"
-              >
-                <span className="text-[16px] capitalize text-slate-500">
-                  {item.label} :
-                </span>
-                <span className="text-[15px] text-green-600 font-semibold text-slate-800">
-                  {item.value}
-                </span>
+      {/* Analytics Cards */}
+      {overallAnalytics && (
+        <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Total Feedbacks Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Total Feedbacks</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.totalFeedbacks}
+                </p>
               </div>
-            ))}
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
+
+          {/* Departments Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Departments</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.departmentCount}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Average Rating Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Average Rating</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.overallAverage} / 5
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white fill-current"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Department-wise Cards */}
+          {departmentAnalytics?.map((dept: any, idx: number) => {
+            return (
+              <div
+                key={idx}
+                className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium text-white/90">
+                      {dept.department}
+                    </p>
+                    <p className="text-2xl font-bold mt-1">
+                      {dept.averageRating} / 5
+                    </p>
+                    <p className="text-xs text-white/80 mt-1">
+                      {dept.totalFeedbacks} feedbacks
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className={`w-4 h-4 ${parseFloat(dept.averageRating) >= star
+                          ? "fill-white text-white"
+                          : "text-white/30"
+                          }`}
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="w-full bg-white/20 rounded-full h-2">
+                    <div
+                      className="bg-white rounded-full h-2"
+                      style={{ width: `${dept.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">
+                    {dept.percentage}% of total
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      );
-    })}
-  </div>
-)}
+      )}
+
+      {/* Analytics Cards - Dashboard Style */}
+      {analyticsCards && analyticsCards.length > 0 && (
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {analyticsCards.map((card, cardIndex) => {
+            const total =
+              card.total ||
+              card.data.reduce((sum, item) => sum + item.value, 0);
+
+            return (
+              <div
+                key={cardIndex}
+                className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-white/80">
+                      {card.title}
+                    </h3>
+                    <p className="text-3xl font-bold mt-1">
+                      {total.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                    <BarChart3 className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+
+                {/* Data Pills */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {card.data.map((item, itemIndex) => (
+                    <div
+                      key={itemIndex}
+                      className="flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2"
+                    >
+                      <span className="text-sm capitalize text-white/80">
+                        {item.label}
+                      </span>
+                      <span className="text-base font-bold text-white">
+                        : {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Field Switches */}
       {fieldsSwitches?.length > 0 && (

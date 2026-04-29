@@ -96,18 +96,18 @@ export async function POST(request: Request) {
         const userName = userData?.first_name || userData?.full_name || "User";
 
         // Create admin notification with correct field names
-        await supabase
-            .from("admin_notifications")
-            .insert([
-                {
-                    created_by: user.id,
-                    notification_type: "feedback",
-                    reference_id: data[0].id,
-                    title: `${userName} has sent feedback`,
-                    message: `New feedback from ${userName} - ${department} department. Click here to view.`,
-                    is_read: false,
-                },
-            ]);
+        // await supabase
+        //     .from("admin_notifications")
+        //     .insert([
+        //         {
+        //             created_by: user.id,
+        //             notification_type: "feedback",
+        //             reference_id: data[0].id,
+        //             title: `${userName} has sent feedback`,
+        //             message: `New feedback from ${userName} - ${department} department. Click here to view.`,
+        //             is_read: false,
+        //         },
+        //     ]);
 
         return NextResponse.json({
             success: true,

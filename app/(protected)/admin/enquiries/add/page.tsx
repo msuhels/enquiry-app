@@ -8,7 +8,7 @@ import SearchSelect from "@/components/form/FormSearchSelect";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { usePost } from "@/hooks/api/usePost";
-import { Download, Search } from "lucide-react";
+import { Download, Funnel, FunnelIcon, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
@@ -27,6 +27,63 @@ export default function EnquirySystem() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
+  // IELTS Score options - add more values as needed
+  const ieltsScoreOptions = [
+    { value: "", label: "Select IELTS Score" },
+    { value: "9", label: "9.0" },
+    { value: "8.5", label: "8.5" },
+    { value: "8", label: "8.0" },
+    { value: "7.5", label: "7.5" },
+    { value: "7", label: "7.0" },
+    { value: "6.5", label: "6.5" },
+    { value: "6", label: "6.0" },
+    { value: "5.5", label: "5.5" },
+    { value: "5", label: "5.0" },
+    { value: "4.5", label: "4.5" },
+    { value: "4", label: "4.0" },
+  ];
+
+  // Degree Duration options (1-10 years)
+  const degreeDurationOptions = [
+    { value: "", label: "Select Duration" },
+    { value: "1", label: "1 Year" },
+    { value: "2", label: "2 Years" },
+    { value: "3", label: "3 Years" },
+    { value: "4", label: "4 Years" },
+    { value: "5", label: "5 Years" },
+    { value: "6", label: "6 Years" },
+    { value: "7", label: "7 Years" },
+    { value: "8", label: "8 Years" },
+    { value: "9", label: "9 Years" },
+    { value: "10", label: "10 Years" },
+  ];
+
+  // Minimum Percentage options
+  const minimumPercentageOptions = [
+    { value: "", label: "Select Percentage" },
+    { value: "100", label: "100%" },
+    { value: "95", label: "95%" },
+    { value: "90", label: "90%" },
+    { value: "85", label: "85%" },
+    { value: "80", label: "80%" },
+    { value: "75", label: "75%" },
+    { value: "70", label: "70%" },
+    { value: "65", label: "65%" },
+    { value: "60", label: "60%" },
+    { value: "55", label: "55%" },
+    { value: "50", label: "50%" },
+    { value: "45", label: "45%" },
+    { value: "40", label: "40%" },
+    { value: "35", label: "35%" },
+    { value: "30", label: "30%" },
+  ];
+
+  const [showAdvanceFilter, setShowAdvanceFilter] = useState(false);
+  const [advanceFilters, setAdvanceFilters] = useState({
+    minIeltsScore: "",
+    degreeDuration: "",
+    minimumPercentage: ""
+  });
 
   const isCentered = !hasSearched;
 
@@ -109,7 +166,25 @@ export default function EnquirySystem() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
 
-      setPrograms(result.data);
+      // Apply client-side filtering for advance filters
+      let filteredPrograms = result.data;
+      if (advanceFilters.minIeltsScore) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.minimum_ielts_score && parseFloat(p.minimum_ielts_score) <= parseFloat(advanceFilters.minIeltsScore)
+        );
+      }
+      if (advanceFilters.degreeDuration) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.degree_duration && parseFloat(p.degree_duration) <= parseFloat(advanceFilters.degreeDuration)
+        );
+      }
+      if (advanceFilters.minimumPercentage) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.minimum_percentage && parseFloat(p.minimum_percentage) <= parseFloat(advanceFilters.minimumPercentage)
+        );
+      }
+
+      setPrograms(filteredPrograms);
       setHasSearched(true);
       toast.success("Programs fetched successfully!");
     } catch (error: any) {
@@ -214,14 +289,7 @@ export default function EnquirySystem() {
         >
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <div className="flex items-end justify-center gap-6 mb-6">
-              <SearchSelect
-                label="Previous/Current Study"
-                name="previous_or_current_study"
-                value={previousOrCurrentStudy}
-                allowCreate={false}
-                onChange={setPreviousOrCurrentStudy}
-                options={previousOrCurrentStudyOptions}
-              />
+
 
               <SearchSelect
                 label="Degree Going For"
@@ -232,6 +300,14 @@ export default function EnquirySystem() {
                 options={degreeGoingForOptions}
               />
 
+              <SearchSelect
+                label="Previous/Current Study"
+                name="previous_or_current_study"
+                value={previousOrCurrentStudy}
+                allowCreate={false}
+                onChange={setPreviousOrCurrentStudy}
+                options={previousOrCurrentStudyOptions}
+              />
               <button
                 onClick={handleFindPrograms}
                 className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -251,6 +327,60 @@ export default function EnquirySystem() {
               </button>
             </div>
 
+
+
+            <div className="flex flex-col items-end gap-3">
+              <button
+                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
+                  ? "bg-[#3a3886] text-white"
+                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
+                  }`}
+              >
+                <Funnel className="w-4 h-4" />
+                <span>Advance Filter</span>
+              </button>
+
+              {showAdvanceFilter && (
+                <div className="w-full flex gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+                  <SearchSelect
+                    label="Minimum IELTS Score"
+                    name="minIeltsScore"
+                    value={advanceFilters.minIeltsScore}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minIeltsScore: value })}
+                    options={ieltsScoreOptions}
+                  />
+
+                  <SearchSelect
+                    label="Degree Duration"
+                    name="degreeDuration"
+                    value={advanceFilters.degreeDuration}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, degreeDuration: value })}
+                    options={degreeDurationOptions}
+                  />
+
+                  <SearchSelect
+                    label="Minimum Percentage"
+                    name="minimumPercentage"
+                    value={advanceFilters.minimumPercentage}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minimumPercentage: value })}
+                    options={minimumPercentageOptions}
+                  />
+
+                  <button
+                    onClick={() => {
+                      setAdvanceFilters({ minIeltsScore: "", degreeDuration: "", minimumPercentage: "" });
+                    }}
+                    className="px-3 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="bg-[#F97316]/5 border-l-4 border-[#F97316] rounded-lg p-4">
               <p className="text-[#F97316] font-semibold text-xl">
                 <span className="font-bold">*Note:</span> This course finder is
@@ -312,9 +442,11 @@ const ProgramsTable = ({ data }: any) => {
                 "Course Name",
                 "Previous Study",
                 "Degree Going For",
-                "IELTS Requirement",
+                "IELTS Score",
                 "Special Requirements",
                 "Remarks",
+                "degree_duration",
+                "minimum %",
               ].map((head) => (
                 <th
                   key={head}
@@ -342,13 +474,19 @@ const ProgramsTable = ({ data }: any) => {
                   {item.degree_going_for || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
-                  {item.ielts_requirement || "-"}
+                  {item.minimum_ielts_score || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.special_requirements || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.remarks || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.degree_duration || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.minimum_percentage || "-"}
                 </td>
               </tr>
             ))}

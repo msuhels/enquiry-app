@@ -67,6 +67,10 @@ export async function POST(request: NextRequest) {
       course_name,
       ielts_requirement,
       special_requirements,
+      minimum_percentage,
+      degree_duration,
+      english_proficiency_type,
+      minimum_ielts_score,
       remarks,
     } = body;
 
@@ -98,9 +102,13 @@ export async function POST(request: NextRequest) {
       ielts_requirement,
       special_requirements,
       remarks,
+      minimum_percentage,
+      degree_duration,
+      english_proficiency_type,
+      minimum_ielts_score,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as Program;
+    } as unknown as Program;
 
     const result = await createProgram(programData);
 
@@ -108,7 +116,7 @@ export async function POST(request: NextRequest) {
       console.error("LOGGING : Failed to create program:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
     } else {
-      if(!result.data) {
+      if (!result.data) {
         return NextResponse.json({ error: "Program creation failed" }, { status: 500 });
       }
       const data = await saveNotification({
@@ -126,7 +134,7 @@ export async function POST(request: NextRequest) {
         - Created At: ${new Date(result.data.created_at).toLocaleString()}`,
       });
 
-      if(!data) {
+      if (!data) {
         console.error("LOGGING : Failed to create notification:", result.error);
         return NextResponse.json({ error: "Notification creation failed" }, { status: 500 });
       }

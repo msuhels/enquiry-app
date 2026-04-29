@@ -19,6 +19,10 @@ export default function NewProgramPage() {
     previous_or_current_study: "",
     degree_going_for: "",
     course_name: "",
+    english_proficiency_type: "",
+    minimum_ielts_score: "",
+    minimum_percentage: "",
+    degree_duration: "",
     ielts_requirement: "",
     special_requirements: "",
     remarks: "",
@@ -212,6 +216,30 @@ export default function NewProgramPage() {
     }));
   };
 
+  const ieltsScoreOptions = [
+  { value: "5.0", label: "5.0" },
+  { value: "5.5", label: "5.5" },
+  { value: "6.0", label: "6.0" },
+  { value: "6.5", label: "6.5" },
+  { value: "7.0", label: "7.0" },
+  { value: "7.5", label: "7.5" },
+  { value: "8.0", label: "8.0" },
+];
+
+const degreeDurationOptions = [
+  { value: "1 year", label: "1 year" },
+  { value: "2 year", label: "2 year" },
+  { value: "3 year", label: "3 year" },
+  { value: "4 year", label: "4 year" },
+  { value: "5 year", label: "5 year" },
+  { value: "6 year", label: "6 year" },
+  { value: "7 year", label: "7 year" },
+  { value: "8 year", label: "8 year" },
+  { value: "9 year", label: "9 year" },
+  { value: "10 year", label: "10 year" },
+];
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -249,9 +277,75 @@ export default function NewProgramPage() {
                 onChange={handleDegreeGoingChange}
               />
 
-              {renderFields(basicInfoFields.slice(2))}
+              <SearchSelect
+  label="Degree Duration"
+  name="degree_duration"
+  width="full"
+  value={formData.degree_duration || ""}
+  options={degreeDurationOptions}
+  onChange={(value) =>
+    setFormData((prev) => ({
+      ...prev,
+      degree_duration: value,
+    }))
+  }
+/>
+
+              <SearchSelect
+  label="English Proficiency"
+  name="english_proficiency_type"
+  width="full"
+  value={formData.english_proficiency_type || ""}
+  options={[
+    { value: "IELTS", label: "IELTS" },
+    { value: "MOU", label: "MOU" },
+  ]}
+  onChange={(value) =>
+    setFormData((prev) => ({
+      ...prev,
+      english_proficiency_type: value,
+      minimum_ielts_score: value === "IELTS" ? prev.minimum_ielts_score : "",
+    }))
+  }
+/>
+{formData.english_proficiency_type === "IELTS" && (
+  <div className="flex flex-col space-y-1 relative">
+    <label className="block text-xl font-semibold text-[#3a3886] mb-2">
+      Minimum IELTS Score
+    </label>
+    <SearchSelect
+      label=""
+      name="minimum_ielts_score"
+      width="full"
+      value={formData.minimum_ielts_score}
+      options={ieltsScoreOptions}
+      onChange={(val) =>
+        setFormData((prev) => ({ ...prev, minimum_ielts_score: val }))
+      }
+    />
+  </div>
+)}
+  <div className="w-[47rem]">
+              <FormInput
+  label="Minimum Percentage Required"
+  name="minimum_percentage"
+  type="number"
+  value={formData.minimum_percentage || ""}
+  onChange={handleInputChange}
+  required
+  placeholder="Enter minimum percentage"
+/>
             </div>
+
+              {renderFields(basicInfoFields.slice(2))}
+
+            
+            </div>
+
+            
           </div>
+
+          
 
           <div className="flex justify-end space-x-4">
             <Link

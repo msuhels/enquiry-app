@@ -32,65 +32,51 @@ export default function NewEscalationPage() {
         { value: "3", label: "Level 3" },
         { value: "4", label: "Level 4" },
     ];
-const handleSubmit = async () => {
-  if (!zone) {
-    toast.error("Please select a zone");
-    return;
-  }
+    const handleSubmit = async () => {
+        if (!zone) {
+            toast.error("Please select a zone");
+            return;
+        }
 
-  if (!userMessage.trim()) {
-    toast.error("Please enter a message");
-    return;
-  }
+        if (!userMessage.trim()) {
+            toast.error("Please enter a message");
+            return;
+        }
 
-  if (!level) {
-    toast.error("Please select a level");
-    return;
-  }
+        if (!level) {
+            toast.error("Please select a level");
+            return;
+        }
 
-  setIsSubmitting(true);
+        setIsSubmitting(true);
 
-  try {
-    const response = await fetch("/api/admin/escalations/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        zone,
-        user_message: userMessage.trim(),
-        level,
-      }),
-    });
+        try {
+            const response = await fetch("/api/admin/escalations/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    zone,
+                    user_message: userMessage.trim(),
+                    level,
+                }),
+            });
 
-    const data = await response.json();
+            const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.message || "Failed to create escalation");
-    }
+            if (!data.success) {
+                throw new Error(data.message || "Failed to create escalation");
+            }
 
-    // Create admin notification
-    await fetch("/api/admin/addnotification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        notification_type: "escalation",
-        reference_id: data.data.id,
-        title: `New escalation raised for ${zone}`,
-        message: `A level ${level} escalation has been created for ${zone}.`,
-      }),
-    });
-
-    toast.success("Escalation created successfully!");
-    router.push("/b2b/escalations");
-  } catch (error: any) {
-    toast.error(error.message);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+            toast.success("Escalation created successfully!");
+            router.push("/b2b/escalations");
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">

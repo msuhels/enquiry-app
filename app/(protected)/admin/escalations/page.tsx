@@ -20,13 +20,22 @@ interface Escalation {
 
 const escalationpage = () => {
   const [escalations, setEscalations] = useState<Escalation[]>([]);
-  const [search, setSearch] = useState<Record<string, string>>({ "title and description": "" });
+  const [search, setSearch] = useState<Record<string, string>>({ "title and description": "", zone: "" });
   const [sortKey, setSortKey] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [debouncedSearch] = useDebounce(search, 400);
   const router = useRouter();
+
+  // Zone filter options
+  const zoneOptions = [
+    { value: "central", label: "Central" },
+    { value: "east", label: "East" },
+    { value: "west", label: "West" },
+    { value: "north", label: "North" },
+    { value: "south", label: "South" },
+  ];
 
   // Analytics data
   const [zoneAnalytics, setZoneAnalytics] = useState<Array<{ zone: string; count: number }>>([]);
@@ -48,7 +57,7 @@ const escalationpage = () => {
 
   const apiUrl = `/api/admin/escalations/getallescalations?search=${encodeURIComponent(
     debouncedSearch["title and description"] || ""
-  )}&limit=${itemsPerPage}&offset=${offset}`;
+  )}&zone=${encodeURIComponent(debouncedSearch.zone || "")}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
 
@@ -169,6 +178,13 @@ const escalationpage = () => {
           searchQuery={search}
           onSearchChange={handleSearchChange}
           searchParameters={["title and description"]}
+          searchSelectFilters={[
+            {
+              key: "zone",
+              label: "Zone",
+              options: zoneOptions,
+            },
+          ]}
           onSortChange={(key, dir) => {
             setSortKey(key);
             setSortDir(dir);

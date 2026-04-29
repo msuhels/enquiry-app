@@ -94,8 +94,8 @@ const NotificationItem = ({
                 <button
                     onClick={() => onToggleRead(id)}
                     className={`text-lg whitespace-nowrap px-3 py-1 rounded-full transition cursor-pointer flex items-center gap-1 ${isRead
-                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            : "bg-[#F97316] text-white hover:bg-[#EA580C]"
+                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        : "bg-[#F97316] text-white hover:bg-[#EA580C]"
                         }`}
                 >
                     {isRead ? (
@@ -127,12 +127,13 @@ export default function AdminNotificationsPage() {
     const [pageLoading, setPageLoading] = useState(true);
 
     // Fetch notifications from the admin_notifications table
+    // Disable revalidateOnFocus to prevent excessive API calls
     const {
         data: notificationsData,
         isLoading,
         error,
         mutate,
-    } = useFetch("/api/admin/addnotification");
+    } = useFetch("/api/admin/addnotification", { revalidateOnFocus: false });
 
     // Extract notifications list and unread count from API response
     const allNotifications: AdminNotification[] = notificationsData?.data || [];
