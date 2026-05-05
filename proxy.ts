@@ -1,7 +1,7 @@
 import { checkUserAuthMiddleware } from "@/lib/supabase/adapters/auth-check-middleware";
 import { type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   return await checkUserAuthMiddleware(request);
 }
 

@@ -8,6 +8,9 @@ import {
   Settings,
   FileText,
   LogOut,
+  Megaphone,
+  AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 
 export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
@@ -17,6 +20,9 @@ export default function UserSidebar({ onLogout }: { onLogout: () => void }) {
     { name: "Dashboard", icon: LayoutDashboard, href: "/b2b" },
     { name: "Enquiries", icon: Mail, href: "/b2b/enquiries" },
     { name: "Downloads", icon: FileText, href: "/b2b/documents" },
+    { name: "Updates", icon: Megaphone, href: "/b2b/updates" },
+    { name: "Escalations", icon: AlertTriangle, href: "/b2b/escalations" },
+    { name: "Feedbacks", icon: MessageSquare, href: "/b2b/feedbacks" },
   ];
 
   return (

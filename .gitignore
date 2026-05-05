@@ -46,4 +46,5 @@ next-env.d.ts
 
 # key files
 github-deploy-key
-github-deploy-key.pub
+build_output.txt
+doc.doc

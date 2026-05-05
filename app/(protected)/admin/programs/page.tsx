@@ -107,11 +107,11 @@ export default function ProgramsPage() {
     // { key: "application_deadline", label: "Deadline" },
   ];
 
-  const filterTabs = [
+  // const filterTabs = [
     // { key: "all", label: "All" },
     // { key: "active", label: "Active" },
     // { key: "inactive", label: "Inactive" },
-  ];
+  // ];
 
   const handleSwitchToggle = async (key: string, value: boolean) => {
     try {
@@ -161,7 +161,7 @@ export default function ProgramsPage() {
           data={programs}
           searchQuery={search}
           searchPlaceholder="Search programs..."
-          filterTabs={filterTabs}
+          // filterTabs={filterTabs}
           activeFilter={filter}
           sortKey={sortKey}
           sortDir={sortDir}

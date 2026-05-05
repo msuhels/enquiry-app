@@ -53,6 +53,8 @@ export default function UserUpdatePage() {
 
   const [loadingPassword, setLoadingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   const userId = useParams().id;
@@ -181,12 +183,21 @@ export default function UserUpdatePage() {
     setSaving(true);
     try {
       const { password, ...userDataToSave } = user;
-      const res = await put(`/api/admin/users/${user.id}`, userDataToSave);
+      let payload = { ...user };
+      if (isEditingPassword) {
+        payload.password = newPassword;
+      } else {
+        delete payload.password;
+      }
+      const res = await put(`/api/admin/users/${user.id}`, payload);
       if (res.success) {
         toast.success("User saved successfully!", {
           position: "top-center",
-          richColors: true,
         });
+        // Reset password edit state
+        setIsEditingPassword(false);
+        setNewPassword("");
+        setShowPassword(false);
         router.push("/admin/b2b");
       } else {
         toast.error(res.error || "Failed to save user", {
@@ -353,45 +364,90 @@ export default function UserUpdatePage() {
             </div>
 
             {/* Password */}
+
+            {/* Password */}
             <div className="mb-4 w-full">
               <label className="block text-xl font-semibold text-[#3a3886] mb-2">
                 Password
               </label>
               <div className="flex gap-2 items-center mt-1">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  value={user.password || ""}
-                  readOnly
-                  className="w-full px-4 py-2.5 border-2 text-xl border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500 placeholder:text-gray-400"
+                  type={isEditingPassword ? "text" : showPassword ? "text" : "password"}
+                  value={isEditingPassword ? newPassword : (user.password || "")}
+                  onChange={(e) => {
+                    if (isEditingPassword) {
+                      setNewPassword(e.target.value);
+                    }
+                  }}
+                  readOnly={!isEditingPassword}
+                  className={`w-full px-4 py-2.5 border-2 text-xl rounded-lg focus:outline-none transition-all ${isEditingPassword
+                      ? "border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                      : "border-gray-200 bg-gray-100 cursor-not-allowed text-gray-500"
+                    } placeholder:text-gray-400`}
                 />
-                <button
-                  onClick={fetchPassword}
-                  disabled={loadingPassword}
-                  className="p-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
-                  title="Show password"
-                >
-                  <Eye size={18} />
-                </button>
-                {showPassword && (
+
+                {!isEditingPassword ? (
                   <>
                     <button
-                      onClick={copyPassword}
-                      className="px-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
-                      title="Copy password"
-                    >
-                      <Copy size={18} />
-                    </button>
-                    <button
-                      onClick={sendPasswordEmail}
+                      onClick={fetchPassword}
+                      disabled={loadingPassword}
                       className="p-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
-                      title="Send via email"
+                      title="Show password"
                     >
-                      <Mail size={18} />
+                      <Eye size={18} />
+                    </button>
+                    {showPassword && (
+                      <>
+                        <button
+                          onClick={copyPassword}
+                          className="px-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                          title="Copy password"
+                        >
+                          <Copy size={18} />
+                        </button>
+                        <button
+                          onClick={sendPasswordEmail}
+                          className="p-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                          title="Send via email"
+                        >
+                          <Mail size={18} />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => setIsEditingPassword(true)}
+                      className="px-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                      title="Edit password"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                     </button>
                   </>
+                ) : (
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={() => {
+                        setIsEditingPassword(false);
+                        setNewPassword("");
+                      }}
+                      className="px-2 py-2.5 bg-gray-200 rounded hover:bg-gray-300"
+                      title="Cancel"
+                      type="button"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <button
+                      onClick={() => handleSave()}
+                      className="px-2 py-2.5 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                      title="Save new password"
+                      type="button"
+                    >
+                      <Save size={18} />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
+
           </div>
 
           {/* Metadata */}
@@ -440,14 +496,12 @@ export default function UserUpdatePage() {
                   checked={user.is_active}
                   onClick={(e) => e.stopPropagation()}
                   onCheckedChange={() => handleToggleActive(user)}
-                  className={`relative w-10 h-5 rounded-full transition-colors ${
-                    user.is_active ? "bg-indigo-600" : "bg-gray-300"
-                  }`}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${user.is_active ? "bg-indigo-600" : "bg-gray-300"
+                    }`}
                 >
                   <Switch.Thumb
-                    className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                      user.is_active ? "translate-x-5" : "translate-x-1"
-                    }`}
+                    className={`block w-4 h-4 bg-white rounded-full shadow transition-transform ${user.is_active ? "translate-x-5" : "translate-x-1"
+                      }`}
                   />
                 </Switch.Root>
                 <span className="text-xl text-gray-700">

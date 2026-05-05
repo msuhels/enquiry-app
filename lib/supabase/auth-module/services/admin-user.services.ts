@@ -204,37 +204,172 @@ export async function getUsers(
   }
 }
 
+// export async function updatePassword(
+//   userId: string,
+//   newPassword?: string
+// ): Promise<UserServiceResult<{ password: string }>> {
+//   try {
+//     const supabase = createServiceRoleClient();
+
+//     // ✅ Decide final password
+//     const finalPassword =
+//       newPassword ||
+//       crypto.randomBytes(12).toString("base64").slice(0, 16);
+
+//     // 🔐 Encrypt SAME password
+//     const enc = encryptPlaintext(finalPassword);
+
+//     // 1️⃣ Update custom table
+//     const { error: tableError } = await supabase
+//       .from("users")
+//       .update({
+//         password: enc.ciphertext,
+//         password_iv: enc.iv,
+//         password_tag: enc.tag,
+//         password_algo: enc.algo,
+//         updated_at: new Date().toISOString(),
+//       })
+//       .eq("id", userId);
+
+//     if (tableError) {
+//       return { success: false, error: tableError.message };
+//     }
+
+//     // 2️⃣ Update Supabase Auth
+//     const { error: authError } =
+//       await supabase.auth.admin.updateUserById(userId, {
+//         password: finalPassword,
+//       });
+
+//     if (authError) {
+//       return { success: false, error: authError.message };
+//     }
+
+//     return {
+//       success: true,
+//       data: { password: finalPassword }, // return for admin
+//     };
+//   } catch (error) {
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Unexpected error",
+//     };
+//   }
+// }
+
 export async function updateUser(id: string, updates: any) {
   try {
     const supabaseAdmin = createServiceRoleClient();
-    const { data, error } = await supabaseAdmin
-      .from("users")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .select()
-      .single();
+
+    // Check if password is being updated
+    const isPasswordUpdate =
+      typeof updates.password === "string" && updates.password.trim().length > 0;
+
+    let data, error;
+
+    if (isPasswordUpdate) {
+      // Encrypt the new password
+      const enc = encryptPlaintext(updates.password);
+
+      // DEBUG: Log the encryption details
+      console.log("DEBUG: Encrypting password:", {
+        passwordLength: updates.password.length,
+        ciphertextLength: enc.ciphertext.length,
+        ivLength: enc.iv.length,
+        tagLength: enc.tag.length,
+        algo: enc.algo,
+      });
+
+      // Update with encrypted password
+      const result = await supabaseAdmin
+        .from("users")
+        .update({
+          password: enc.ciphertext,
+          password_iv: enc.iv,
+          password_tag: enc.tag,
+          password_algo: enc.algo,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      data = result.data;
+      error = result.error;
+
+      if (!error && data) {
+        // Also update in Supabase Auth
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
+          password: updates.password,
+        });
+
+        if (authError) {
+          console.error("Supabase auth password update failed:", authError);
+          return { success: false, error: authError.message };
+        }
+
+        // Update other fields (excluding password and encryption fields)
+        // IMPORTANT: Remove password_iv, password_tag, password_algo to avoid overwriting
+        // the newly generated encryption values with old ones from frontend
+        const {
+          password,
+          password_iv,
+          password_tag,
+          password_algo,
+          ...otherUpdates
+        } = updates;
+
+        if (Object.keys(otherUpdates).length > 0) {
+          await supabaseAdmin
+            .from("users")
+            .update({
+              ...otherUpdates,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", id);
+        }
+      }
+    } else {
+      // No password update - just update other fields
+      // Also remove encryption fields to prevent any accidental overwrites
+      const { 
+        password, 
+        password_iv, 
+        password_tag, 
+        password_algo, 
+        ...updatesWithoutPassword 
+      } = updates;
+
+      const result = await supabaseAdmin
+        .from("users")
+        .update({
+          ...updatesWithoutPassword,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      data = result.data;
+      error = result.error;
+
+      // Update email in Supabase Auth if changed
+      if (!error && updatesWithoutPassword.email) {
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
+          email: updatesWithoutPassword.email,
+        });
+
+        if (authError) {
+          console.error("Supabase auth email update failed:", authError);
+          return { success: false, error: authError.message };
+        }
+      }
+    }
 
     if (error) {
       console.error("Supabase user update failed:", error);
       return { success: false, error: error.message };
     }
-
-    if (data) {
-      const { error: authError } =
-        await supabaseAdmin.auth.admin.updateUserById(id, {
-          email: updates.email,
-        });
-
-      if (authError) {
-        console.error("Supabase auth user update failed:", authError);
-        return { success: false, error: authError.message };
-      }
-    }
-
-    if (error) throw error;
 
     return { success: true, data };
   } catch (error: any) {

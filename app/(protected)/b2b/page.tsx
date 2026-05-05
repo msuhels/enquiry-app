@@ -7,6 +7,12 @@ import {
   Eye,
   Plus,
   Bell,
+  Instagram,
+  Twitter,
+  Facebook,
+  Linkedin,
+  X,
+  Youtube,
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
@@ -44,15 +50,16 @@ export default function UserDashboard() {
   const [enquiriesCount, setEnquiriesCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  const { userDetails } = useAuth();
-  const userId = userDetails?.id;
-  const { data: enquiries } = useFetch(userId ? `/api/admin/myenquiries/${userId}` : null);
-  const { data: notifications } = useFetch("/api/admin/notifications");
+  const { data: user } = useFetch("/api/admin/users/getAuthUser");
+  const userId = user?.userDetails?.id;
+  const { data: enquiries } = useFetch(`/api/admin/myenquiries/${userId}`);
+  // Use the new user-notifications API to get unread count
+  const { data: notifications } = useFetch("/api/admin/user-notifications");
 
   useEffect(() => {
     if (notifications) {
-      const unRead = notifications?.data?.filter((n) => !n.is_readed);
-      setNotificationCount(unRead?.length || 0);
+      // New API returns unreadCount directly
+      setNotificationCount(notifications?.unreadCount || 0);
     }
   }, [notifications]);
 
@@ -61,12 +68,12 @@ export default function UserDashboard() {
       setEnquiriesCount(enquiries?.pagination?.total || 0);
     }
   }, [enquiries]);
-  
-  const filterEnquiries = enquiries?.data?.filter(
-    (enquiry: Enquiry) =>
-      enquiry?.academic_entries?.data?.length > 0 &&
-      enquiry?.academic_entries?.data[0]?.course !== null
-  );
+
+  // const filterEnquiries = enquiries?.data?.filter(
+  //   (enquiry: Enquiry) =>
+  //     enquiry?.academic_entries?.data?.length > 0 &&
+  //     enquiry?.academic_entries?.data[0]?.course !== null
+  // );
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
@@ -110,8 +117,9 @@ export default function UserDashboard() {
               </p> */}
             </div>
 
-            <div className="flex items-center gap-4">
-              <div 
+            <div className="flex items-center gap-4 mb-3">
+
+              <div
                 className="relative inline-block cursor-pointer group"
                 onClick={() => router.push("/b2b/notifications")}
               >
@@ -129,7 +137,15 @@ export default function UserDashboard() {
                 {userName.slice(0, 1).toUpperCase()}
               </div> */}
             </div>
+            
           </div>
+          <div className="flex item-center justify-end gap-6 mr-1">
+                  <h1 className="border rounded-full p-1 text-md "><a href="https://www.instagram.com/"><Instagram/></a></h1>
+                  <h1 className="border rounded-full p-1 text-md "><a href="https://x.com/"><X/></a></h1>
+                  <h1 className="border rounded-full p-1 text-md "><a href="https://www.linkedin.com/company/"><Linkedin/></a></h1>
+                  <h1 className="border rounded-full p-1 text-md "><a href="https://www.facebook.com/"><Facebook/></a></h1>
+                  <h1 className="border rounded-full p-1 text-md "><a href="https://www.youtube.com/"><Youtube/></a></h1>
+                </div>
         </div>
 
         {/* STATS CARD */}
@@ -147,11 +163,11 @@ export default function UserDashboard() {
               <div>
                 <p className="text-3xl text-white/80 font-medium">{card.title}</p>
                 <p className="text-4xl font-bold mt-2">{card.value}</p>
-                <div className="mt-4 pt-4 border-t border-white/10">
+                {/* <div className="mt-4 pt-4 border-t border-white/10">
                   <p className="text-lg text-white/70">{card.trend}</p>
-                </div>
+                </div> */}
               </div>
-            </div>
+            </div>  
           ))}
         </div>
 
