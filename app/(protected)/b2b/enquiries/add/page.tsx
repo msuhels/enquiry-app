@@ -8,7 +8,7 @@ import SearchSelect from "@/components/form/FormSearchSelect";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { usePost } from "@/hooks/api/usePost";
-import { Download, Search } from "lucide-react";
+import { Download, Funnel, FunnelIcon, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
@@ -20,21 +20,76 @@ export default function EnquirySystem() {
   const [previousOrCurrentStudy, setPreviousOrCurrentStudy] = useState("");
   const [previousOrCurrentStudyOptions, setPreviousOrCurrentStudyOptions] =
     useState([]);
-
+  const { ip } = useUserStore();
   const [degreeGoingFor, setDegreeGoingFor] = useState("");
   const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
   const [enquiry, setEnquiry] = useState({});
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
-  const { ip } = useUserStore();
+  // IELTS Score options - add more values as needed
+  const ieltsScoreOptions = [
+    { value: "", label: "Select IELTS Score" },
+    { value: "9", label: "9.0" },
+    { value: "8.5", label: "8.5" },
+    { value: "8", label: "8.0" },
+    { value: "7.5", label: "7.5" },
+    { value: "7", label: "7.0" },
+    { value: "6.5", label: "6.5" },
+    { value: "6", label: "6.0" },
+    { value: "5.5", label: "5.5" },
+    { value: "5", label: "5.0" },
+    { value: "4.5", label: "4.5" },
+    { value: "4", label: "4.0" },
+  ];
+
+  // Degree Duration options (1-10 years)
+  const degreeDurationOptions = [
+    { value: "", label: "Select Duration" },
+    { value: "1", label: "1 Year" },
+    { value: "2", label: "2 Years" },
+    { value: "3", label: "3 Years" },
+    { value: "4", label: "4 Years" },
+    { value: "5", label: "5 Years" },
+    { value: "6", label: "6 Years" },
+    { value: "7", label: "7 Years" },
+    { value: "8", label: "8 Years" },
+    { value: "9", label: "9 Years" },
+    { value: "10", label: "10 Years" },
+  ];
+
+  // Minimum Percentage options
+  const minimumPercentageOptions = [
+    { value: "", label: "Select Percentage" },
+    { value: "100", label: "100%" },
+    { value: "95", label: "95%" },
+    { value: "90", label: "90%" },
+    { value: "85", label: "85%" },
+    { value: "80", label: "80%" },
+    { value: "75", label: "75%" },
+    { value: "70", label: "70%" },
+    { value: "65", label: "65%" },
+    { value: "60", label: "60%" },
+    { value: "55", label: "55%" },
+    { value: "50", label: "50%" },
+    { value: "45", label: "45%" },
+    { value: "40", label: "40%" },
+    { value: "35", label: "35%" },
+    { value: "30", label: "30%" },
+  ];
+
+  const [showAdvanceFilter, setShowAdvanceFilter] = useState(false);
+  const [advanceFilters, setAdvanceFilters] = useState({
+    minIeltsScore: "",
+    degreeDuration: "",
+    minimumPercentage: ""
+  });
 
   const isCentered = !hasSearched;
 
   const { data: previousOrCurrentStudyData } = useFetch(
     `/api/admin/previous-or-current-study`
   );
-  const { data: settings, mutate } = useFetch("/api/admin/settings");
   const { data: user } = useFetch(`/api/admin/users/getAuthUser`);
   const { post } = usePost();
 
@@ -77,7 +132,6 @@ export default function EnquirySystem() {
       setHasSearched(false);
       setPrograms([]);
 
-      await mutate();
       const enquiryResponse = await post("/api/admin/enquiries", {
         previous_or_current_study: previousOrCurrentStudy,
         degree_going_for: degreeGoingFor,
@@ -112,7 +166,25 @@ export default function EnquirySystem() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
 
-      setPrograms(result.data);
+      // Apply client-side filtering for advance filters
+      let filteredPrograms = result.data;
+      if (advanceFilters.minIeltsScore) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.minimum_ielts_score && parseFloat(p.minimum_ielts_score) <= parseFloat(advanceFilters.minIeltsScore)
+        );
+      }
+      if (advanceFilters.degreeDuration) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.degree_duration && parseFloat(p.degree_duration) <= parseFloat(advanceFilters.degreeDuration)
+        );
+      }
+      if (advanceFilters.minimumPercentage) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.minimum_percentage && parseFloat(p.minimum_percentage) <= parseFloat(advanceFilters.minimumPercentage)
+        );
+      }
+
+      setPrograms(filteredPrograms);
       setHasSearched(true);
       toast.success("Programs fetched successfully!");
     } catch (error: any) {
@@ -140,159 +212,45 @@ export default function EnquirySystem() {
       if (!response.ok) throw new Error(result.error);
 
       const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
 
-      doc.setFillColor(58, 56, 134)
-      doc.rect(0, 0, pageWidth, 40, "F");
+      doc.setFontSize(18);
+      doc.text("Program Data", 14, 20);
 
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text("Program Search Results", pageWidth / 2, 18, {
-        align: "center",
-      });
-
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      doc.text('"Trusted by the Wise. Chosen by the Best"', pageWidth / 2, 28, {
-        align: "center",
-      });
-
-      let yPos = 45;
-      const boxWidth = (pageWidth - 42) / 2;
-
-      doc.setDrawColor(200, 200, 200);
-      doc.setLineWidth(0.5);
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(14, yPos, boxWidth, 20, 1, 1, "FD");
-
-      doc.setTextColor(58, 56, 134);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.text("Previous/Current Study", 18, yPos + 6);
-
-      doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(previousOrCurrentStudy || "-", 18, yPos + 14);
-
-      doc.setDrawColor(200, 200, 200);
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(14 + boxWidth + 4, yPos, boxWidth, 20, 1, 1, "FD");
-
-      doc.setTextColor(58, 56, 134);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.text("Degree Going For", 18 + boxWidth + 4, yPos + 6);
-
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(degreeGoingFor || "-", 18 + boxWidth + 4, yPos + 14);
-
-      yPos = 70;
-
-      doc.setDrawColor(249, 115, 22);
-      doc.setLineWidth(0.5);
-      doc.setFillColor(255, 247, 237);
-
-      const noteText =
-        "This course finder is for counselling purposes only. Final course options will be provided by our subject matter experts after a detailed analysis of your profile.";
-      const splitNote = doc.splitTextToSize(noteText, pageWidth - 60);
-      const textHeight = splitNote.length * 4;
-      const boxHeight = textHeight + 8;
-
-      doc.roundedRect(14, yPos, pageWidth - 28, boxHeight, 2, 2, "FD");
-
-      doc.setTextColor(249, 115, 22);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.text("*Note:", 18, yPos + 6);
-
-      doc.setFont("helvetica", "normal");
-      doc.text(splitNote, 32, yPos + 6);
-
-      yPos += boxHeight + 5;
-
-      const showSpecialRequirements =
-        settings?.data?.is_special_requirements_enabled;
-      const showRemarks = settings?.data?.is_remarks_enabled;
-
-      const headers = [
-        "University",
-        "Course Name",
-        "Previous Study",
-        "Degree Going For",
-        "IELTS Req.",
-      ];
-
-      if (showSpecialRequirements) {
-        headers.push("Special Requirements");
+      let yPos = 30;
+      if (previousOrCurrentStudy) {
+        doc.text(`Previous/Current Study: ${previousOrCurrentStudy}`, 14, yPos);
+        yPos += 7;
       }
-      if (showRemarks) {
-        headers.push("Remarks");
+      if (degreeGoingFor) {
+        doc.text(`Degree Going For: ${degreeGoingFor}`, 14, yPos);
+        yPos += 10;
       }
 
-      const tableData = result.data.map((program: Program) => {
-        const row = [
-          program.university || "-",
-          program.course_name || "-",
-          program.previous_or_current_study || "-",
-          program.degree_going_for || "-",
-          program.ielts_requirement || "-",
-        ];
-
-        if (showSpecialRequirements) {
-          row.push(program.special_requirements || "-");
-        }
-        if (showRemarks) {
-          row.push(program.remarks || "-");
-        }
-
-        return row;
-      });
+      const tableData = result.data.map((program: Program) => [
+        program.university || "",
+        program.course_name || "",
+        program.previous_or_current_study || "",
+        program.degree_going_for || "",
+        program.ielts_requirement || "",
+      ]);
 
       autoTable(doc, {
-        head: [headers],
+        head: [
+          [
+            "University",
+            "Program Name",
+            "Previous / Current Study",
+            "Degree Going For",
+            "IELTS Requirment",
+          ],
+        ],
         body: tableData,
         startY: yPos,
-        styles: {
-          fontSize: 8,
-          cellPadding: 3,
-          lineColor: [220, 220, 220],
-          lineWidth: 0.1,
-        },
-        headStyles: {
-          fillColor: [58, 56, 134],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: "bold",
-          halign: "left",
-        },
-        alternateRowStyles: {
-          fillColor: [249, 250, 251],
-        },
-        margin: { left: 14, right: 14 },
-        theme: "grid",
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [66, 139, 202] },
+        margin: { top: 10 },
       });
-
-      const pageCount = doc.internal.pages.length - 1;
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(128, 128, 128);
-        doc.text(
-          `Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
-          14,
-          doc.internal.pageSize.getHeight() - 10
-        );
-        doc.text(
-          `Page ${i} of ${pageCount}`,
-          pageWidth - 14,
-          doc.internal.pageSize.getHeight() - 10,
-          { align: "right" }
-        );
-      }
 
       doc.save(`programs-${new Date().toISOString()}.pdf`);
 
@@ -323,7 +281,6 @@ export default function EnquirySystem() {
             “Trusted by the Wise. Chosen by the Best”
           </span>
         </div>
-
         <motion.div
           animate={{
             y: isCentered ? "20vh" : 0,
@@ -332,14 +289,7 @@ export default function EnquirySystem() {
         >
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <div className="flex items-end justify-center gap-6 mb-6">
-              <SearchSelect
-                label="Previous/Current Study"
-                name="previous_or_current_study"
-                value={previousOrCurrentStudy}
-                allowCreate={false}
-                onChange={setPreviousOrCurrentStudy}
-                options={previousOrCurrentStudyOptions}
-              />
+
 
               <SearchSelect
                 label="Degree Going For"
@@ -350,9 +300,17 @@ export default function EnquirySystem() {
                 options={degreeGoingForOptions}
               />
 
+              <SearchSelect
+                label="Previous/Current Study"
+                name="previous_or_current_study"
+                value={previousOrCurrentStudy}
+                allowCreate={false}
+                onChange={setPreviousOrCurrentStudy}
+                options={previousOrCurrentStudyOptions}
+              />
               <button
                 onClick={handleFindPrograms}
-                className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-xl text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
               >
                 {loading ? (
@@ -362,15 +320,69 @@ export default function EnquirySystem() {
                   </>
                 ) : (
                   <>
-                    <Search className="w-6 h-6" />
+                    <Search className="w-4 h-4" />
                     Find
                   </>
                 )}
               </button>
             </div>
 
+
+
+            <div className="flex flex-col items-end gap-3">
+              <button
+                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
+                  ? "bg-[#3a3886] text-white"
+                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
+                  }`}
+              >
+                <Funnel className="w-4 h-4" />
+                <span>Advance Filter</span>
+              </button>
+
+              {showAdvanceFilter && (
+                <div className="w-full flex gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+                  <SearchSelect
+                    label="Minimum IELTS Score"
+                    name="minIeltsScore"
+                    value={advanceFilters.minIeltsScore}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minIeltsScore: value })}
+                    options={ieltsScoreOptions}
+                  />
+
+                  <SearchSelect
+                    label="Degree Duration"
+                    name="degreeDuration"
+                    value={advanceFilters.degreeDuration}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, degreeDuration: value })}
+                    options={degreeDurationOptions}
+                  />
+
+                  <SearchSelect
+                    label="Minimum Percentage"
+                    name="minimumPercentage"
+                    value={advanceFilters.minimumPercentage}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minimumPercentage: value })}
+                    options={minimumPercentageOptions}
+                  />
+
+                  <button
+                    onClick={() => {
+                      setAdvanceFilters({ minIeltsScore: "", degreeDuration: "", minimumPercentage: "" });
+                    }}
+                    className="px-3 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="bg-[#F97316]/5 border-l-4 border-[#F97316] rounded-lg p-4">
-              <p className="text-[#F97316] font-semibold text-lg">
+              <p className="text-[#F97316] font-semibold text-xl">
                 <span className="font-bold">*Note:</span> This course finder is
                 for counselling purposes only. Final course options will be
                 provided by our subject matter experts after a detailed analysis
@@ -380,11 +392,10 @@ export default function EnquirySystem() {
           </div>
         </motion.div>
 
-        {/* Result */}
         <div className="mt-6 w-full">
           {programs.length > 0 ? (
             <div>
-              {/*<div className="w-full flex items-center justify-end">
+              <div className="w-full flex items-center justify-end">
                 <button
                   onClick={handleDownloadPrograms}
                   className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-xl text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -398,18 +409,17 @@ export default function EnquirySystem() {
                   <span>download</span>
                 </button>
               </div>
-               */}
-              <ProgramsTable data={programs} settings={settings?.data} />
+              <ProgramsTable data={programs} />
             </div>
           ) : hasSearched && !loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-gray-400" />
               </div>
-              <p className="text-gray-600 text-xl font-medium">
+              <p className="text-gray-600 text-2xl font-medium">
                 No programs found.
               </p>
-              <p className="text-gray-400 text-2xl mt-2">
+              <p className="text-gray-400 text-xl mt-2">
                 Try adjusting your search criteria
               </p>
             </div>
@@ -420,49 +430,36 @@ export default function EnquirySystem() {
   );
 }
 
-const ProgramsTable = ({ data, settings }: any) => {
-  const showSpecialRequirements = settings?.is_special_requirements_enabled;
-  const showRemarks = settings?.is_remarks_enabled;
-
+const ProgramsTable = ({ data }: any) => {
   return (
     <div className="bg-white w-full rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-[#3a3886] to-[#2d2b6b]">
             <tr>
-              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                University
-              </th>
-              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                Course Name
-              </th>
-              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                Previous Study
-              </th>
-              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                Degree Going For
-              </th>
-
-              <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                IELTS Requirement
-              </th>
-
-              {showSpecialRequirements && (
-                <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                  Special Requirements
+              {[
+                "University",
+                "Course Name",
+                "Previous Study",
+                "Degree Going For",
+                "IELTS Score",
+                "Special Requirements",
+                "Remarks",
+                "degree_duration",
+                "minimum %",
+              ].map((head) => (
+                <th
+                  key={head}
+                  className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider"
+                >
+                  {head}
                 </th>
-              )}
-
-              {showRemarks && (
-                <th className="px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider">
-                  Remarks
-                </th>
-              )}
+              ))}
             </tr>
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-100">
-            {data.map((item: any, index: number) => (
+            {data.map((item: any) => (
               <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#3a3886]">
                   {item.university || "-"}
@@ -477,20 +474,20 @@ const ProgramsTable = ({ data, settings }: any) => {
                   {item.degree_going_for || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
-                  {item.ielts_requirement || "-"}
+                  {item.minimum_ielts_score || "-"}
                 </td>
-
-                {showSpecialRequirements && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
-                    {item.special_requirements || "-"}
-                  </td>
-                )}
-
-                {showRemarks && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
-                    {item.remarks || "-"}
-                  </td>
-                )}
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.special_requirements || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.remarks || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.degree_duration || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.minimum_percentage || "-"}
+                </td>
               </tr>
             ))}
           </tbody>

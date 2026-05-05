@@ -10,6 +10,7 @@ import {
   Loader2,
   Download,
   Filter,
+  BarChart3,
 } from "lucide-react";
 import Breadcrumbs from "../ui/breadCrumbs";
 import Link from "next/link";
@@ -30,6 +31,26 @@ export interface FilterTab {
   count?: number;
 }
 
+export interface AnalyticsCard {
+  title: string;
+  data: { label: string; value: number; color?: string }[];
+  total?: number;
+  type?: "bar" | "simple";
+}
+
+export interface DepartmentAnalytics {
+  department: string;
+  averageRating: string;
+  totalFeedbacks: number;
+  percentage: number;
+}
+
+export interface OverallAnalytics {
+  overallAverage: number;
+  totalFeedbacks: number;
+  departmentCount: number;
+}
+
 interface TableProps<T> {
   title?: string;
   columns: TableColumn<T>[];
@@ -38,9 +59,9 @@ interface TableProps<T> {
   searchPlaceholder?: string;
   searchParameters?: string[];
   searchSelectFilters?: {
-    name: string;
+    key: string;
     label: string;
-    options: { value: string; label: string };
+    options: { value: string; label: string }[];
   }[];
   filterTabs?: FilterTab[];
   activeFilter?: string;
@@ -70,6 +91,9 @@ interface TableProps<T> {
   handleToggleActive?: (key: string, value: boolean) => void;
   setViewMode?: (key: "datalist" | "action_count") => void;
   viewMode?: "datalist" | "action_count";
+  analyticsCards?: AnalyticsCard[];
+  departmentAnalytics?: DepartmentAnalytics[];
+  overallAnalytics?: OverallAnalytics;
 }
 
 export default function AdvancedDataTable<T extends Record<string, any>>({
@@ -104,6 +128,9 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   handleToggleActive,
   setViewMode,
   viewMode = "datalist",
+  analyticsCards,
+  departmentAnalytics,
+  overallAnalytics,
 }: TableProps<T>) {
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -151,6 +178,187 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           </div>
         </div>
       </div>
+      {/* Analytics Cards */}
+      {overallAnalytics && (
+        <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Total Feedbacks Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Total Feedbacks</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.totalFeedbacks}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Departments Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Departments</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.departmentCount}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Average Rating Card */}
+          <div className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-white/90">Average Rating</p>
+                <p className="text-3xl font-bold mt-1">
+                  {overallAnalytics.overallAverage} / 5
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <svg
+                  className="w-6 h-6 text-white fill-current"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Department-wise Cards */}
+          {departmentAnalytics?.map((dept: any, idx: number) => {
+            return (
+              <div
+                key={idx}
+                className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium text-white/90">
+                      {dept.department}
+                    </p>
+                    <p className="text-2xl font-bold mt-1">
+                      {dept.averageRating} / 5
+                    </p>
+                    <p className="text-xs text-white/80 mt-1">
+                      {dept.totalFeedbacks} feedbacks
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className={`w-4 h-4 ${parseFloat(dept.averageRating) >= star
+                          ? "fill-white text-white"
+                          : "text-white/30"
+                          }`}
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="w-full bg-white/20 rounded-full h-2">
+                    <div
+                      className="bg-white rounded-full h-2"
+                      style={{ width: `${dept.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">
+                    {dept.percentage}% of total
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Analytics Cards - Dashboard Style */}
+      {analyticsCards && analyticsCards.length > 0 && (
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {analyticsCards.map((card, cardIndex) => {
+            const total =
+              card.total ||
+              card.data.reduce((sum, item) => sum + item.value, 0);
+
+            return (
+              <div
+                key={cardIndex}
+                className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-white/80">
+                      {card.title}
+                    </h3>
+                    <p className="text-3xl font-bold mt-1">
+                      {total.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                    <BarChart3 className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+
+                {/* Data Pills */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {card.data.map((item, itemIndex) => (
+                    <div
+                      key={itemIndex}
+                      className="flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2"
+                    >
+                      <span className="text-sm capitalize text-white/80">
+                        {item.label}
+                      </span>
+                      <span className="text-base font-bold text-white">
+                        : {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Field Switches */}
       {fieldsSwitches?.length > 0 && (
@@ -161,7 +369,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 key={index}
                 className="flex items-center justify-between w-full gap-4"
               >
-                <label className="text-2xl font-medium text-[#3a3886] capitalize">
+                <label className="text-3xl font-medium text-[#3a3886] capitalize">
                   {item.key.replace(/_/g, " ")}
                 </label>
 
@@ -171,14 +379,12 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   onCheckedChange={(value) =>
                     handleToggleActive?.(item.key, value)
                   }
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    item.value ? "bg-[#F97316]" : "bg-gray-300"
-                  }`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? "bg-[#F97316]" : "bg-gray-300"
+                    }`}
                 >
                   <Switch.Thumb
-                    className={`block w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                      item.value ? "translate-x-5" : "translate-x-0.5"
-                    }`}
+                    className={`block w-5 h-5 bg-white rounded-full shadow-md transition-transform ${item.value ? "translate-x-5" : "translate-x-0.5"
+                      }`}
                   />
                 </Switch.Root>
               </div>
@@ -189,9 +395,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
 
       {/* Search and Select Filters */}
       <div
-        className={`flex ${
-          searchSelectFilters.length > 0 ? "w-full" : "w-1/2"
-        } gap-4 items-center mb-4`}
+        className={`flex ${searchSelectFilters.length > 0 ? "w-full" : "w-1/2"
+          } gap-4 items-center mb-4`}
       >
         {onSearchChange &&
           searchParameters.map((param) => (
@@ -242,11 +447,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 onClick={() => setViewMode("datalist")}
                 className={`
           flex items-center gap-2 p-3 rounded-full text-sm font-medium transition-all
-          ${
-            viewMode === "datalist"
-              ? "bg-[#3a3886] text-white shadow-md"
-              : "text-[#3a3886] hover:text-[#F97316]"
-          }
+          ${viewMode === "datalist"
+                    ? "bg-[#3a3886] text-white shadow-md"
+                    : "text-[#3a3886] hover:text-[#F97316]"
+                  }
         `}
                 style={{ height: "auto", minHeight: "0" }}
               >
@@ -258,11 +462,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 onClick={() => setViewMode("action_count")}
                 className={`
           flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-all
-          ${
-            viewMode === "action_count"
-              ? "bg-[#3a3886] text-white shadow-md"
-              : "text-[#3a3886] hover:text-[#F97316]"
-          }
+          ${viewMode === "action_count"
+                    ? "bg-[#3a3886] text-white shadow-md"
+                    : "text-[#3a3886] hover:text-[#F97316]"
+                  }
         `}
                 style={{ height: "auto", minHeight: "0" }}
               >
@@ -319,11 +522,10 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
               <button
                 key={tab.key}
                 onClick={() => onFilterChange?.(tab.key)}
-                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${
-                  activeFilter === tab.key
-                    ? "border-[#F97316] text-[#F97316]"
-                    : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
-                }`}
+                className={`pb-3 px-1 border-b-2 font-medium text-xl transition-colors ${activeFilter === tab.key
+                  ? "border-[#F97316] text-[#F97316]"
+                  : "border-transparent text-gray-500 hover:text-[#3a3886] hover:border-gray-300"
+                  }`}
               >
                 {tab.label}
 
@@ -350,9 +552,8 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                   <th
                     key={col.key}
                     onClick={() => handleSortClick(col.key, col.sortable)}
-                    className={`px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider ${
-                      col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
-                    }`}
+                    className={`px-6 py-4 text-left text-xl font-semibold text-white uppercase tracking-wider ${col.sortable ? "cursor-pointer hover:bg-[#2d2b6b]/50" : ""
+                      }`}
                   >
                     <div className="flex items-center space-x-1">
                       <span>{col.label}</span>
