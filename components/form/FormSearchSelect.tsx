@@ -13,6 +13,7 @@ interface SearchSelectProps {
   placeholder?: string;
   width?: string;
   allowCreate?: boolean;
+   required?: boolean;
 }
 
 const SearchSelect: React.FC<SearchSelectProps> = ({
@@ -24,6 +25,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   placeholder = "Search or type to add...",
   width = "100%",
   allowCreate = true,
+  required = false,
 }) => {
   const selectedOption =
     options.find((opt) => opt.value === value) ||
@@ -38,7 +40,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
           htmlFor={name}
           className="block text-xl font-semibold text-[#3a3886] mb-2"
         >
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
@@ -52,6 +54,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
         isClearable
         classNamePrefix="react-select"
         className={`${width ? width : "w-80"} rounded-lg`}
+        required={required}
         styles={{
           control: (base, state) => ({
             ...base,

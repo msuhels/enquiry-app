@@ -72,6 +72,9 @@ export async function POST(request: NextRequest) {
       english_proficiency_type,
       minimum_ielts_score,
       remarks,
+      remark1,
+      remark2,
+      interview_required,
     } = body;
 
     const hasProgramData = [
@@ -106,6 +109,9 @@ export async function POST(request: NextRequest) {
       degree_duration,
       english_proficiency_type,
       minimum_ielts_score,
+      remark1,
+      remark2,
+      interview_required,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as unknown as Program;

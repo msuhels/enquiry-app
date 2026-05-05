@@ -11,6 +11,7 @@ type Announcement = {
   content: string;
   image_url?: string | null;
   created_at: string;
+  update_type: string;
 };
 
 export default function ViewUpdatePage() {
@@ -59,6 +60,9 @@ export default function ViewUpdatePage() {
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900">
               {announcement.title}
+            </h1>
+            <h1 className="text-sm text-gray-500 mt-2">
+              Type: {announcement.update_type}
             </h1>
             <p className="text-sm text-gray-500 mt-2">
               Created on{" "}

@@ -6,6 +6,7 @@ export interface AnnouncementInput {
   content: string;
   image_url?: string | null;
   created_by: string;
+  update_type: string;
 }
 
 // GET: Fetch all announcements with pagination
@@ -14,24 +15,35 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceRoleClient();
     const { searchParams } = new URL(request.url);
 
-    // Parse pagination parameters with defaults
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
+    const updateType = searchParams.get("update_type") || "all";
 
-    // Get total count
-    const { count } = await supabase
+    console.log("updateType filter:", updateType);
+    
+    let countQuery = supabase
       .from("announcements")
       .select("*", { count: "exact", head: true });
 
-    // Fetch paginated data
-    const { data, error } = await supabase
+    let dataQuery = supabase
       .from("announcements")
-      .select("*")
+      .select("*");
+
+    if (updateType && updateType !== "all") {
+      countQuery = countQuery.eq("update_type", updateType);
+      dataQuery = dataQuery.eq("update_type", updateType);
+    }
+
+    // Get total count with filter
+    const { count } = await countQuery;
+
+    // Fetch paginated data with filter
+    const { data, error } = await dataQuery
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    // Handle permission or table errors gracefully
+    // Handle errors
     if (error) {
       console.error("GET announcements error:", error.message, error.code);
       return NextResponse.json({ success: true, data: [], pagination: { total: 0, limit, offset } });
@@ -74,6 +86,7 @@ export async function POST(req: NextRequest) {
         content: body.content,
         image_url: body.image_url ?? null,
         created_by: body.created_by,
+        update_type: body.update_type,
       })
       .select()
       .single();

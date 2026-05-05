@@ -20,6 +20,7 @@ export async function GET(
     const fromDate = searchParams.get("from_date") ?? "";
     const toDate = searchParams.get("to_date") ?? "";
     const userType = searchParams.get("tab") ?? "all";
+    const interviewRequired = searchParams.get("interview_required") ?? "";
 
     let query = supabase
       .from("enquiries")
@@ -53,6 +54,11 @@ export async function GET(
     // Filter by user type
     if (userType && userType !== "all") {
       query = query.eq("createdby.role", userType);
+    }
+
+    // Filter by interview required
+    if (interviewRequired) {
+      query = query.eq("interview_required", interviewRequired);
     }
 
     if (!exportFile) {

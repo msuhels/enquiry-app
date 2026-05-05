@@ -78,11 +78,18 @@ export default function EnquirySystem() {
     { value: "30", label: "30%" },
   ];
 
+  const interviewRequiredOptions = [
+    { value: "", label: "Select Option" },
+    { value: "yes", label: "Yes" },
+    { value: "no", label: "No" },
+  ];
+
   const [showAdvanceFilter, setShowAdvanceFilter] = useState(false);
   const [advanceFilters, setAdvanceFilters] = useState({
     minIeltsScore: "",
     degreeDuration: "",
-    minimumPercentage: ""
+    minimumPercentage: "",
+    interview_required: ""
   });
 
   const isCentered = !hasSearched;
@@ -183,7 +190,12 @@ export default function EnquirySystem() {
           p.minimum_percentage && parseFloat(p.minimum_percentage) <= parseFloat(advanceFilters.minimumPercentage)
         );
       }
-
+      if (advanceFilters.interview_required) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.interview_required === advanceFilters.interview_required
+        );
+      }
+      
       setPrograms(filteredPrograms);
       setHasSearched(true);
       toast.success("Programs fetched successfully!");
@@ -370,9 +382,18 @@ export default function EnquirySystem() {
                     options={minimumPercentageOptions}
                   />
 
+                   <SearchSelect
+                    label="Interview Required"
+                    name="interviewRequired"
+                    value={advanceFilters.interview_required}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, interview_required: value })}
+                    options={interviewRequiredOptions}
+                  />
+
                   <button
                     onClick={() => {
-                      setAdvanceFilters({ minIeltsScore: "", degreeDuration: "", minimumPercentage: "" });
+                      setAdvanceFilters({ minIeltsScore: "", degreeDuration: "", minimumPercentage: "", interview_required: "" });
                     }}
                     className="px-3 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
                   >

@@ -29,6 +29,7 @@ import "ckeditor5/ckeditor5.css";
 
 import Breadcrumbs from "@/components/ui/breadCrumbs";
 import { useFetch } from "@/hooks/api/useFetch";
+import SearchSelect from "@/components/form/FormSearchSelect";
 
 export default function NewUpdatePage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function NewUpdatePage() {
   const [editorInstance, setEditorInstance] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [updateType, setUpdateType] = useState("General");
 
   const { data: userData } = useFetch("/api/admin/users/getAuthUser");
 
@@ -128,6 +130,7 @@ export default function NewUpdatePage() {
         title: announcementTitle.trim(),
         content: editorData,
         created_by: userId,
+        update_type: updateType
       }),
     });
 
@@ -219,6 +222,16 @@ export default function NewUpdatePage() {
     }
   };
 
+  const UPDATE_TYPES = [
+  { value: "General", label: "General" },
+  { value: "Admission", label: "Admission" },
+  { value: "Scholarship", label: "Scholarship" },
+  { value: "Pre Enrollment", label: "Pre Enrollment" },
+  { value: "Visa", label: "Visa" },
+  { value: "Post Visa", label: "Post Visa" },
+  { value: "Marketing Updates", label: "Marketing Updates" },
+];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Modal */}
@@ -287,6 +300,18 @@ export default function NewUpdatePage() {
                 className="w-full rounded-xl border px-4 py-3 text-lg focus:border-[#3a3886] focus:outline-none focus:ring-2 focus:ring-[#3a3886]/20"
               />
             </div>
+
+            {/* announcement types */}
+           <SearchSelect
+                label="update type"
+                name="update_type"
+                width="20%"
+                value={updateType || ""}
+                options={UPDATE_TYPES}
+                onChange={(value) =>
+                  setUpdateType(value)
+                }
+              />
 
             {/* CKEditor */}
             <div className="overflow-hidden rounded-xl border">

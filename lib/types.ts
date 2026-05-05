@@ -86,6 +86,15 @@ export interface ProgramFormData {
   degree_going_for: string;
   course_name: string;
   ielts_requirement?: string;
+  interview_required?: string;
+  english_proficiency_type?: string;
+  minimum_ielts_score?: string;
+  minimum_percentage?: string;
+  degree_duration?: string;
+  remark1?: string;
+  remark2?: string;
+  remark1_na?: boolean;
+  remark2_na?: boolean;
   special_requirements?: string;
   remarks?: string;
   ielts_na: boolean;

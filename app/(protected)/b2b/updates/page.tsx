@@ -11,18 +11,23 @@ type Announcement = {
   content: string;
   image_url?: string | null;
   created_at: string;
+  update_type: string;
 };
 
 export default function UpdatesPage() {
   const router = useRouter();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState({
+  search: "",
+  update_type: "",
+});
 
   const offset = (page - 1) * itemsPerPage;
 
-  const apiUrl = `/api/admin/announcements?page=${page}&limit=${itemsPerPage}`;
-
+  const apiUrl = `/api/admin/announcements?page=${page}&limit=${itemsPerPage}&update_type=${search.update_type}`;  
   // Call your API
   const { data, isLoading, error } = useFetch(apiUrl);
 
@@ -52,6 +57,14 @@ export default function UpdatesPage() {
       sortable: true,
     },
     {
+      key: "update_type",
+      label: "Type",
+      sortable: true,
+      render: (row: Announcement) => (
+        <span>{row.update_type}</span>
+      ),
+    },
+    {
       key: "created_at",
       label: "Created At",
       sortable: true,
@@ -73,6 +86,26 @@ export default function UpdatesPage() {
     },
   ];
 
+   const UPDATE_TYPES = [
+  { value: "all", label: "All" },
+  { value: "General", label: "General" },
+  { value: "Admission", label: "Admission" },
+  { value: "Scholarship", label: "Scholarship" },
+  { value: "Pre Enrollment", label: "Pre Enrollment" },
+  { value: "Visa", label: "Visa" },
+  { value: "Post Visa", label: "Post Visa" },
+  { value: "Marketing Updates", label: "Marketing Updates" },
+];
+
+const searchSelectFilters = [
+  {
+    key: "update_type",
+    label: "Update Type",
+    options: UPDATE_TYPES,
+  },
+];
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-full mx-auto p-8">
@@ -86,6 +119,11 @@ export default function UpdatesPage() {
           currentPage={page}
           total={data?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
+          searchQuery={search}
+          onSearchChange={setSearch}
+          searchSelectFilters={searchSelectFilters}
+          activeFilter={filter}
+          onFilterChange={setFilter}
         />
       </div>
     </div>
