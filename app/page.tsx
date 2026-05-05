@@ -1,31 +1,24 @@
 "use client";
 
-import { useFetch } from "@/hooks/api/useFetch";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/auth-modules";
 
 export default function Home() {
   const router = useRouter();
-  const [userRole, setUserRole] = useState("");
-  const { data } = useFetch("/api/admin/users/getAuthUser");
+  const { userDetails, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (data) {
-      setUserRole(data.userDetails.role);
+    if (isAuthenticated && userDetails) {
+      if (userDetails.role === "admin") {
+        router.push("/admin");
+      } else if (userDetails.role === "user") {
+        router.push("/b2b");
+      }
+    } else {
+      router.push("/auth/login");
     }
-  }, [data]);
-
-  useEffect(() => {
-    if (userRole === "admin") {
-      router.push("/admin");
-    } else if (userRole === "user") {
-      router.push("/b2b");
-    }
-  }, [userRole]);
-
-  useEffect(() => {
-    router.push("/auth/login");
-  }, []);
+  }, [userDetails, isAuthenticated, router]);
 
   return <></>;
 }

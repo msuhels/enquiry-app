@@ -2,9 +2,19 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@supabase/supabase-js";
 
+export interface UserDetails {
+  id: string;
+  email: string;
+  role: string;
+  name?: string;
+  organization?: string;
+  [key: string]: any;
+}
+
 export interface AuthState {
   // User state
   user: User | null;
+  userDetails: UserDetails | null;
   isAuthenticated: boolean;
   
   // Loading states
@@ -23,6 +33,7 @@ export interface AuthState {
   
   // Actions
   setUser: (user: User | null) => void;
+  setUserDetails: (userDetails: UserDetails | null) => void;
   setLoading: (loading: boolean) => void;
   setLoginLoading: (loading: boolean) => void;
   setLogoutLoading: (loading: boolean) => void;
@@ -33,10 +44,12 @@ export interface AuthState {
   logout: () => void;
   reset: () => void;
   fetchIp: () => Promise<void>;
+  fetchUserDetails: () => Promise<void>;
 }
 
 const initialState = {
   user: null,
+  userDetails: null,
   isAuthenticated: false,
   isLoading: false,
   isLoginLoading: false,
@@ -57,6 +70,9 @@ export const useUserStore = create<AuthState>()(
           isAuthenticated: !!user,
           error: null,
         }),
+      
+      setUserDetails: (userDetails) =>
+        set({ userDetails }),
       
       setLoading: (isLoading) =>
         set({ isLoading }),
@@ -82,6 +98,7 @@ export const useUserStore = create<AuthState>()(
       logout: () =>
         set({
           user: null,
+          userDetails: null,
           isAuthenticated: false,
           error: null,
         }),
@@ -98,11 +115,29 @@ export const useUserStore = create<AuthState>()(
           console.error("Failed to fetch IP:", error);
         }
       },
+      
+      fetchUserDetails: async () => {
+        const state = useUserStore.getState();
+        if (!state.isAuthenticated || !state.user) {
+          return;
+        }
+        
+        try {
+          const response = await fetch("/api/admin/users/getAuthUser");
+          if (response.ok) {
+            const data = await response.json();
+            set({ userDetails: data.userDetails });
+          }
+        } catch (error) {
+          console.error("Failed to fetch user details:", error);
+        }
+      },
     }),
     {
       name: "user-store",
       partialize: (state) => ({
         user: state.user,
+        userDetails: state.userDetails,
         isAuthenticated: state.isAuthenticated,
       }),
     }

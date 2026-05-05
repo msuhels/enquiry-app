@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/adapters/client";
 export interface UseAuthReturn {
   // State from Zustand store
   user: any;
+  userDetails: any;
   isAuthenticated: boolean;
   isLoading: boolean;
   isLoginLoading: boolean;
@@ -22,6 +23,7 @@ export interface UseAuthReturn {
   logout: () => Promise<boolean>;
   clearError: () => void;
   getCurrentUser: () => Promise<boolean>;
+  fetchUserDetails: () => Promise<void>;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -30,12 +32,14 @@ export function useAuth(): UseAuthReturn {
   // Get state and actions from Zustand store
   const {
     user,
+    userDetails,
     isAuthenticated,
     isLoading,
     isLoginLoading,
     isLogoutLoading,
     error,
     clearError,
+    fetchUserDetails,
   } = useUserStore();
 
   const login = useCallback(
@@ -68,17 +72,10 @@ export function useAuth(): UseAuthReturn {
         if (result.success) {
           toast.dismiss(loginToast)
           toast.success("Login successful! Redirecting...", );
-          // const res = await fetch("/api/admin/users/getAuthUser");
-          // const data = await res.json();
-          // if(data.userDetails.role === "admin") {
-          //   router.push("/admin");
-          // } else {
-          //   router.push("/vendor");
-          // }
-          // Small delay to show completion before redirect
-          // setTimeout(() => {
-          //   router.push("/admin");
-          // }, 500);
+          
+          // Fetch user details after successful login
+          await fetchUserDetails();
+          
           return true;
         } else {
           console.log({ result });
@@ -153,6 +150,7 @@ export function useAuth(): UseAuthReturn {
 
   return {
     user,
+    userDetails,
     isAuthenticated,
     isLoading,
     isLoginLoading,
@@ -162,5 +160,6 @@ export function useAuth(): UseAuthReturn {
     logout,
     clearError,
     getCurrentUser,
+    fetchUserDetails,
   };
 }

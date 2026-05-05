@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("LOGGING : Body received:", { body });
     let ip =
       body.ip ||
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||

@@ -8,6 +8,7 @@ import { User } from "@/lib/types";
 import { State, City } from "country-state-city";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/auth-modules";
 
 interface ActivityLog {
   id: string;
@@ -55,10 +56,10 @@ export default function LogsPage() {
   });
 
   const [debouncedSearch] = useDebounce(search, 400);
-  const { data: user } = useFetch("/api/admin/users/getAuthUser");
+  const { userDetails } = useAuth();
 
   const offset = (page - 1) * itemsPerPage;
-  const userId = user?.userDetails?.id;
+  const userId = userDetails?.id;
 
   const queryParams = new URLSearchParams();
 
@@ -68,14 +69,12 @@ export default function LogsPage() {
 
   queryParams.append("tab", activeTab);
 
-  const apiUrl = `/api/admin/logs?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
+  const apiUrl = userId ? `/api/admin/logs?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}` : null;
 
-  const { data: logsData, isLoading } = useFetch(apiUrl, {
-    enabled: !!userId,
-  });
+  const { data: logsData, isLoading } = useFetch(apiUrl);
 
   const { data: allLogsData, isLoading: isLoadingAllLogs } = useFetch(
-    `/api/admin/logs?${queryParams.toString()}`
+    userId ? `/api/admin/logs?${queryParams.toString()}` : null
   );
 
   const stateOptions = useMemo(() => {

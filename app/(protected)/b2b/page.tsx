@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
 import { Enquiry } from "@/lib/types";
+import { useAuth } from "@/hooks/auth-modules";
 
 const RecentEnquiryItem = ({
   name,
@@ -79,10 +80,10 @@ export default function UserDashboard() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setUserName(user.userDetails.organization || user.userDetails.full_name);
+    if (userDetails) {
+      setUserName(userDetails.organization || userDetails.full_name);
     }
-  }, [user]);
+  }, [userDetails]);
 
   const statCards = [
     {

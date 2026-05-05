@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
 import { useUserStore } from "@/lib/stores/auth-module";
+import { useAuth } from "@/hooks/auth-modules";
 
 export default function EnquirySystem() {
   const router = useRouter();
@@ -135,7 +136,7 @@ export default function EnquirySystem() {
       const enquiryResponse = await post("/api/admin/enquiries", {
         previous_or_current_study: previousOrCurrentStudy,
         degree_going_for: degreeGoingFor,
-        userId: user.userDetails.id,
+        userId: userDetails.id,
       });
 
       if (enquiryResponse?.data?.id) {
@@ -143,7 +144,7 @@ export default function EnquirySystem() {
         try {
           await post("/api/admin/record-login", {
             event_type: "enquiry_created",
-            user_id: user.userDetails.id,
+            user_id: userDetails.id,
             enquiry_id: enquiryResponse.data.id,
             ip
           });
@@ -258,7 +259,7 @@ export default function EnquirySystem() {
         await post("/api/admin/record-login", {
           event_type: "program_download",
           enquiry_id: enquiry?.id,
-          user_id: user.userDetails.id,
+          user_id: userDetails.id,
           ip
         });
       } catch (e) {
