@@ -10,6 +10,9 @@ if (KEY.length !== 32) {
   throw new Error("MASTER_ENCRYPTION_KEY_B64 must decode to 32 bytes (256 bits)");
 }
 
+// DEBUG: Log key info (first 8 chars only for security)
+console.log("DEBUG ENCRYPTION: Key loaded, first 8 chars:", KEY_B64?.substring(0, 8));
+
 export function encryptPlaintext(plaintext: string) {
   // AES-256-GCM, 12 byte iv recommended
   const iv = crypto.randomBytes(12);
@@ -34,6 +37,14 @@ export function decryptToPlaintext({
   iv: string;
   tag: string;
 }) {
+  // DEBUG: Log decryption attempt
+  console.log("DEBUG DECRYPT: Starting decryption", {
+    keyFirst8Chars: KEY_B64?.substring(0, 8),
+    ciphertextLength: ciphertext?.length,
+    ivLength: iv?.length,
+    tagLength: tag?.length,
+  });
+
   const decipher = crypto.createDecipheriv("aes-256-gcm", KEY, Buffer.from(iv, "base64"));
   decipher.setAuthTag(Buffer.from(tag, "base64"));
   const decrypted = Buffer.concat([

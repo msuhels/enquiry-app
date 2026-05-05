@@ -9,11 +9,11 @@ export async function POST(req: NextRequest) {
     // Get the authenticated user from cookies (Next.js automatically sends cookies)
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const callerUserId = user.id;
 
     // Verify the caller is admin using service role client
@@ -46,8 +46,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // DEBUG: Log the retrieved encryption fields
+    console.log("DEBUG: Retrieved encryption fields:", {
+      passwordLength: data.password?.length,
+      passwordFirstChars: data.password?.substring(0, 20),
+      ivLength: data.password_iv?.length,
+      ivValue: data.password_iv,
+      tagLength: data.password_tag?.length,
+      tagValue: data.password_tag,
+      algo: data.password_algo,
+    });
+
+    // Check if this looks like plaintext (very short, doesn't look like encrypted data)
+    // Real encrypted passwords should have IV and tag, and ciphertext should be longer
+    const isLikelyPlaintext = !data.password_iv || data.password?.length < 20;
+
+    if (isLikelyPlaintext) {
+      console.log("DEBUG: Detected plaintext password - returning as-is");
+      // Return the plaintext password directly
+      return NextResponse.json({ password: data.password }, { status: 200 });
+    }
+
     // Decrypt
     try {
+      console.log("DEBUG: Attempting decryption with:", {
+        ciphertextType: typeof data.password,
+        ivType: typeof data.password_iv,
+        tagType: typeof data.password_tag,
+      });
+
       const plaintext = decryptToPlaintext({
         ciphertext: data.password,
         iv: data.password_iv,

@@ -30,6 +30,7 @@ export default function EnquiriesPage() {
     state: "",
     from_date: new Date().toISOString().slice(0, 10),
     to_date: new Date().toISOString().slice(0, 10),
+    interview_required: "",
   });
   const [debouncedSearch] = useDebounce(search, 400);
   const [activeTab, setActiveTab] = useState("all");
@@ -46,7 +47,7 @@ export default function EnquiriesPage() {
 
   queryParams.append("tab", activeTab);
 
-  const apiUrl = userId ? `/api/admin/enquiries/?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}` : null;
+  const apiUrl = `/api/admin/enquiries?${queryParams.toString()}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data: enquiriesData, isLoading } = useFetch(apiUrl);
 
@@ -86,7 +87,7 @@ export default function EnquiriesPage() {
   };
 
   const handleExportToExcel = async () => {
-    const exportUrl = `/api/admin/enquiries/?${queryParams.toString()}&export=true`;
+    const exportUrl = `/api/admin/enquiries?${queryParams.toString()}&export=true`;
     const res = await fetch(exportUrl);
     const { data } = await res.json();
 
@@ -227,6 +228,14 @@ export default function EnquiriesPage() {
       key: "city",
       label: "City",
       options: cityOptions,
+    },
+    {
+      key: "interview_required",
+      label: "Interview Required",
+      options: [
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" },
+      ],
     },
   ];
 

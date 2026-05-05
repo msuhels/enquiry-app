@@ -2,28 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft as ArrowLeftIcon, Bell as BellIcon } from "lucide-react";
+import { ArrowLeft as ArrowLeftIcon, Bell as BellIcon, Loader2 } from "lucide-react";
 import { useFetch } from "@/hooks/api/useFetch";
+import Link from "next/link";
 
-interface Notification {
+/**
+ * Announcement interface matching the API response
+ */
+interface Announcement {
   id: string;
   created_at: string;
   title: string;
-  description: string;
-  is_readed: boolean;
+  content: string;
+  image_url: string | null;
+  created_by: string;
+  is_read: boolean;
 }
 
+/**
+ * NotificationItem component - displays a single announcement
+ */
 const NotificationItem = ({
   id,
   title,
-  description,
+  content,
   createdAt,
   isRead,
   onMarkRead,
 }: {
   id: string;
   title: string;
-  description: string;
+  content: string;
   createdAt: string;
   isRead: boolean;
   onMarkRead: (id: string) => void;
@@ -45,19 +54,25 @@ const NotificationItem = ({
       ${!isRead ? "bg-[#3A38861A]" : "bg-white"}`}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-start space-x-3">
           <BellIcon
-            className={`w-5 h-5 flex-shrink-0 
+            className={`w-5 h-5 flex-shrink-0 mt-1
             ${!isRead ? "text-[#3A3886]" : "text-gray-400"}`}
           />
-          <div>
+          <div className="max-w-lg">
+           <Link href={`/b2b/updates/view/${id}`} className="">
+           
             <p
               className={`text-base font-semibold 
               ${!isRead ? "text-[#3A3886]" : "text-gray-600"}`}
             >
-              {title}
+              A new update is recently announce by the admin
+              
             </p>
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            <p>
+              {title}...
+            </p>
+            </Link>
           </div>
         </div>
 
@@ -82,41 +97,70 @@ const NotificationItem = ({
   );
 };
 
+/**
+ * Main Notifications Page component
+ */
 export default function NotificationsPage() {
   const router = useRouter();
   const [pageLoading, setPageLoading] = useState(true);
 
+  // Fetch announcements with user's read status from the new API
   const {
-    data: notifications,
+    data: notificationsData,
     isLoading,
     error,
     mutate,
-  } = useFetch("/api/admin/notifications");
+  } = useFetch("/api/admin/user-notifications");
 
-  const notificationList: Notification[] = notifications?.data || [];
+  // Extract announcements list and unread count from API response
+  const announcements: Announcement[] = notificationsData?.data || [];
+  const unreadCount = notificationsData?.unreadCount || 0;
 
   useEffect(() => {
     if (!isLoading) setPageLoading(false);
   }, [isLoading]);
 
+  /**
+   * Mark an announcement as read
+   * Calls the API to insert/update the user_notification table
+   */
   const markAsRead = async (id: string) => {
-    const notif = notificationList.find((n) => n.id === id);
-    if (!notif) return;
+    const announcement = announcements.find((a) => a.id === id);
+    if (!announcement) return;
 
-    if (notif.is_readed) return;
+    // Skip if already read
+    if (announcement.is_read) return;
 
+    // Optimistic update - immediately show as read in UI
     mutate(
       {
-        data: notificationList.map((n) =>
-          n.id === id ? { ...n, is_readed: true } : n
+        data: announcements.map((a) =>
+          a.id === id ? { ...a, is_read: true } : a
         ),
+        unreadCount: Math.max(0, unreadCount - 1),
       },
       false
     );
 
-    await fetch(`/api/admin/notifications/read/${id}`, { method: "POST" });
+    try {
+      const response = await fetch(`/api/admin/user-notifications/read/${id}`, {
+        method: "POST",
+      });
 
-    mutate();
+      if (!response.ok) {
+        console.error("Failed to mark as read:", await response.text());
+        // Revert on error
+        mutate();
+        return;
+      }
+
+      // Refresh data from server
+      mutate();
+    } catch (error) {
+      console.error("Error marking as read:", error);
+      // Revert on error
+      mutate();
+    }
   };
 
   return (
@@ -128,27 +172,33 @@ export default function NotificationsPage() {
             onClick={() => router.back()}
           />
           <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+          {unreadCount > 0 && (
+            <span className="ml-2 bg-[#F97316] text-white text-sm px-3 py-1 rounded-full">
+              {unreadCount} unread
+            </span>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           {pageLoading || isLoading ? (
-            <div className="p-6 text-center text-gray-500 text-base">
+            <div className="p-6 text-center text-gray-500 text-base flex items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
               Loading notifications...
             </div>
           ) : error ? (
             <div className="p-6 text-center text-red-500 text-base">
               Failed to load notifications.
             </div>
-          ) : notificationList.length > 0 ? (
+          ) : announcements.length > 0 ? (
             <div>
-              {notificationList.map((notification) => (
+              {announcements.map((announcement) => (
                 <NotificationItem
-                  key={notification.id}
-                  id={notification.id}
-                  title={notification.title}
-                  description={notification.description}
-                  createdAt={notification.created_at}
-                  isRead={notification.is_readed}
+                  key={announcement.id}
+                  id={announcement.id}
+                  title={announcement.title}
+                  content={announcement.content}
+                  createdAt={announcement.created_at}
+                  isRead={announcement.is_read}
                   onMarkRead={markAsRead}
                 />
               ))}

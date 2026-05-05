@@ -45,10 +45,12 @@ const RecentEnquiryItem = ({
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [notificationCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const { data: stat } = useFetch("/api/admin/stats");
   const { data: enquiries } = useFetch("/api/admin/enquiries");
+  // Disable revalidateOnFocus for notifications to prevent excessive API calls
+  const { data: notificationsData } = useFetch("/api/admin/addnotification", { revalidateOnFocus: false });
 
   const stats = {
     users: stat?.data?.users || 0,
@@ -57,6 +59,13 @@ export default function AdminDashboard() {
   };
 
   const filterEnquiries = enquiries?.data;
+
+  // Update notification count from API
+  useEffect(() => {
+    if (notificationsData?.unreadCount !== undefined) {
+      setNotificationCount(notificationsData.unreadCount);
+    }
+  }, [notificationsData]);
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
@@ -119,9 +128,10 @@ export default function AdminDashboard() {
               </div>
               <div
                 className="relative inline-block cursor-pointer group"
-                onClick={() => router.push("/admin")}
+                onClick={() => router.push("/admin/notifications")}
               >
-                <div className="p-2.5 rounded-full bg-gray-50 hover:bg-[#F97316]/10 text-[#3a3886] hover:text-[#F97316] transition-all duration-200">
+                <div
+                  className="p-2.5 rounded-full bg-gray-50 hover:bg-[#F97316]/10 text-[#3a3886] hover:text-[#F97316] transition-all duration-200">
                   <BellIcon className="w-5 h-5   transition-colors" />
                 </div>
 
@@ -211,9 +221,9 @@ export default function AdminDashboard() {
                 {filterEnquiries.slice(0, 5).map((e: Enquiry) => (
                   <RecentEnquiryItem
                     key={e.id}
-                    name={e.createdby.full_name}
+                    name={e.createdby?.full_name || ""}
                     context={e.created_at.slice(0, 10)}
-                    course={e.degree_going_for}
+                    course={e.degree_going_for || ""}
                     id={e.id}
                   />
                 ))}
