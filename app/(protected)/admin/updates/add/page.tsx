@@ -40,7 +40,7 @@ export default function NewUpdatePage() {
   const [editorInstance, setEditorInstance] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [updateType, setUpdateType] = useState("General");
+  const [updateType, setUpdateType] = useState("Sales");
 
   const { data: userData } = useFetch("/api/admin/users/getAuthUser");
 
@@ -223,7 +223,7 @@ export default function NewUpdatePage() {
   };
 
   const UPDATE_TYPES = [
-  { value: "General", label: "General" },
+  { value: "Sales", label: "Sales" },
   { value: "Admission", label: "Admission" },
   { value: "Scholarship", label: "Scholarship" },
   { value: "Pre Enrollment", label: "Pre Enrollment" },

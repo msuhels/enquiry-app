@@ -63,37 +63,69 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { department, rating, remarks } = body;
+         const { department, improvement_area, open_feedback, ratings } = body;
 
-        if (!department || !rating || !remarks) {
-            return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
-        }
+         if (!department || !ratings || !Array.isArray(ratings) || ratings.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "Invalid input data" },
+        { status: 400 }
+      );
+    }
 
-        const { data, error } = await supabase
-            .from("feedbacks")
-            .insert([
-                {
-                    user_id: user.id,
-                    department,
-                    rating,
-                    remarks,
-                },
-            ])
-            .select();
+     const feedbackId = crypto.randomUUID();
 
-        if (error) {
-            console.error("Error creating feedback:", error);
-            return NextResponse.json({ success: false, message: "Error creating feedback" }, { status: 500 });
-        }
+     const { error: feedbackError } = await supabase
+      .from("feedbacks")
+      .insert({
+        id: feedbackId,
+        user_id: user.id,
+        department,
+        improvement_area,
+        open_feedback,
+      });
+
+
+    if (feedbackError) {
+      console.error("Error creating feedback:", feedbackError);
+      return NextResponse.json(
+        { success: false, message: "Error creating feedback" },
+        { status: 500 }
+      );
+    }
+
+    const ratingsPayload = ratings.map((item: any) => ({
+      feedback_id: feedbackId,
+      parameter: item.parameter,
+      rating: item.rating,
+      remark: item.remark || "",
+    }));
+
+
+      const { error: ratingError } = await supabase
+      .from("feedback_ratings")
+      .insert(ratingsPayload);
+
+     if (ratingError) {
+      console.error("Error inserting ratings:", ratingError);
+
+      // ❗ Rollback parent insert
+      await supabase.from("feedbacks").delete().eq("id", feedbackId);
+
+      return NextResponse.json(
+        { success: false, message: "Error saving ratings" },
+        { status: 500 }
+      );
+    }
+      
 
         // Get user details for notification
-        const { data: userData } = await supabase
-            .from("users")
-            .select("first_name, full_name")
-            .eq("id", user.id)
-            .single();
+        // const { data: userData } = await supabase
+        //     .from("users")
+        //     .select("first_name, full_name")
+        //     .eq("id", user.id)
+        //     .single();
 
-        const userName = userData?.first_name || userData?.full_name || "User";
+        // const userName = userData?.first_name || userData?.full_name || "User";
 
         // Create admin notification with correct field names
         // await supabase
@@ -109,10 +141,11 @@ export async function POST(request: Request) {
         //         },
         //     ]);
 
-        return NextResponse.json({
-            success: true,
-            data: data[0],
-        });
+         return NextResponse.json({
+      success: true,
+      message: "Feedback submitted successfully",
+      feedback_id: feedbackId,
+    });
     } catch (error) {
         console.error("Error processing feedback:", error);
         return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
