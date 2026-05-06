@@ -29,7 +29,6 @@ export default function EnquiriesPage() {
     state: "",
     from_date: new Date().toISOString().slice(0, 10),
     to_date: new Date().toISOString().slice(0, 10),
-    interview_required: "",
   });
   const [debouncedSearch] = useDebounce(search, 400);
   const [activeTab, setActiveTab] = useState("all");
@@ -229,14 +228,6 @@ export default function EnquiriesPage() {
       key: "city",
       label: "City",
       options: cityOptions,
-    },
-    {
-      key: "interview_required",
-      label: "Interview Required",
-      options: [
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" },
-      ],
     },
   ];
 

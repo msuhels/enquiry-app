@@ -77,11 +77,11 @@ export async function POST(request: Request) {
      const { error: feedbackError } = await supabase
       .from("feedbacks")
       .insert({
-        id: feedbackId,
-        user_id: user.id,
-        department,
-        improvement_area,
-        open_feedback,
+      id: feedbackId,
+      user_id: user.id,
+      improvement_area,
+      department,
+      open_feedback,
       });
 
 
@@ -94,10 +94,11 @@ export async function POST(request: Request) {
     }
 
     const ratingsPayload = ratings.map((item: any) => ({
-      feedback_id: feedbackId,
-      parameter: item.parameter,
-      rating: item.rating,
-      remark: item.remark || "",
+        feedback_id: feedbackId,
+        department: item.department,
+        parameter: item.parameter,
+        rating: item.rating,
+        remark: item.remark || "",
     }));
 
 
