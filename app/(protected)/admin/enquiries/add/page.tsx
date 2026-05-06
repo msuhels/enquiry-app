@@ -8,7 +8,7 @@ import SearchSelect from "@/components/form/FormSearchSelect";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { usePost } from "@/hooks/api/usePost";
-import { Download, Funnel, FunnelIcon, Search } from "lucide-react";
+import { Download, Funnel, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Program } from "@/lib/types";
@@ -23,7 +23,7 @@ export default function EnquirySystem() {
   const { ip } = useUserStore();
   const [degreeGoingFor, setDegreeGoingFor] = useState("");
   const [degreeGoingForOptions, setDegreeGoingForOptions] = useState([]);
-  const [enquiry, setEnquiry] = useState({});
+  const [enquiry, setEnquiry] = useState<{ id?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
@@ -148,14 +148,21 @@ export default function EnquirySystem() {
     }
   }, [degreeGoingForData]);
 
+  // Only clear programs when both search fields are cleared (not during partial changes)
   useEffect(() => {
-    if (!previousOrCurrentStudy || !degreeGoingFor) {
+    if (!previousOrCurrentStudy && !degreeGoingFor && hasSearched) {
       setHasSearched(false);
       setPrograms([]);
     }
-  }, [previousOrCurrentStudy, degreeGoingFor]);
+  }, [previousOrCurrentStudy, degreeGoingFor, hasSearched]);
 
   const handleFindPrograms = async () => {
+    // Validate user data before proceeding
+    if (!user?.userDetails?.id) {
+      toast.error("User not authenticated. Please refresh the page.");
+      return;
+    }
+
     try {
       setLoading(true);
       setHasSearched(false);
@@ -174,7 +181,7 @@ export default function EnquirySystem() {
             event_type: "enquiry_created",
             user_id: user.userDetails.id,
             enquiry_id: enquiryResponse.data.id,
-            ip
+            ip: ip || ""
           });
         } catch (e) {
           console.error("Failed to log enquiry creation:", e);
@@ -194,8 +201,9 @@ export default function EnquirySystem() {
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
-
-
+      if (!result.data || !Array.isArray(result.data)) {
+        throw new Error("Invalid response: programs data not found");
+      }
 
       // Apply client-side filtering for advance filters
       let filteredPrograms = result.data;
@@ -243,6 +251,12 @@ export default function EnquirySystem() {
   };
 
   const handleDownloadPrograms = async () => {
+    // Validate user data before proceeding
+    if (!user?.userDetails?.id) {
+      toast.error("User not authenticated. Please refresh the page.");
+      return;
+    }
+
     try {
       const params = new URLSearchParams();
       if (previousOrCurrentStudy) {
@@ -258,6 +272,9 @@ export default function EnquirySystem() {
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
+      if (!result.data || !Array.isArray(result.data)) {
+        throw new Error("Invalid response: programs data not found");
+      }
 
       const doc = new jsPDF();
 
@@ -305,9 +322,9 @@ export default function EnquirySystem() {
       try {
         await post("/api/admin/record-login", {
           event_type: "program_download",
-          enquiry_id: enquiry?.id,
+          enquiry_id: enquiry?.id || "",
           user_id: user.userDetails.id,
-          ip
+          ip: ip || ""
         });
       } catch (e) {
         console.error("Failed to log program download:", e);
@@ -356,7 +373,7 @@ export default function EnquirySystem() {
                 onChange={setPreviousOrCurrentStudy}
                 options={previousOrCurrentStudyOptions}
               />
-               <button
+              <button
                 onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
                 className={`flex items-center gap-2 w-[400px] px-6 py-3 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
                   ? "bg-[#3a3886] text-white"
@@ -371,7 +388,7 @@ export default function EnquirySystem() {
 
 
             <div className="flex flex-col items-end gap-3">
-             <button
+              <button
                 onClick={handleFindPrograms}
                 className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
@@ -389,8 +406,24 @@ export default function EnquirySystem() {
                 )}
               </button>
 
-              {showAdvanceFilter && (
-                <div className="w-full grid grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+
+              {showAdvanceFilter && (<>
+                <button
+                  onClick={() => {
+                    setAdvanceFilters({
+                      minIeltsScore: "",
+                      degreeDuration: "",
+                      minimumPercentage: "",
+                      interview_required: "",
+                      english_proficiency_type: "",
+                      prev_degree_required: ""
+                    });
+                  }}
+                  className="px-9 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
+                >
+                  Clear
+                </button>
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
 
                   <SearchSelect
                     label="Degree Duration"
@@ -452,23 +485,9 @@ export default function EnquirySystem() {
                     options={prevDegreeRequiredOptions}
                   />
 
-                  <button
-                    onClick={() => {
-                      setAdvanceFilters({
-                        minIeltsScore: "",
-                        degreeDuration: "",
-                        minimumPercentage: "",
-                        interview_required: "",
-                        english_proficiency_type: "",
-                        prev_degree_required: ""
-                      });
-                    }}
-                    className="px-3 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
-                  >
-                    Clear
-                  </button>
+
                 </div>
-              )}
+              </>)}
             </div>
             <div className="bg-[#F97316]/5 border-l-4 border-[#F97316] rounded-lg p-4">
               <p className="text-[#F97316] font-semibold text-xl">

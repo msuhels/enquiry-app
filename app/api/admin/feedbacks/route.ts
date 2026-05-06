@@ -165,27 +165,27 @@ export async function POST(request: Request) {
 
 
         // Get user details for notification
-        // const { data: userData } = await supabase
-        //     .from("users")
-        //     .select("first_name, full_name")
-        //     .eq("id", user.id)
-        //     .single();
+        const { data: userData } = await supabase
+            .from("users")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
 
-        // const userName = userData?.first_name || userData?.full_name || "User";
+        const userName = userData?.full_name || "User";
 
         // Create admin notification with correct field names
-        // await supabase
-        //     .from("admin_notifications")
-        //     .insert([
-        //         {
-        //             created_by: user.id,
-        //             notification_type: "feedback",
-        //             reference_id: data[0].id,
-        //             title: `${userName} has sent feedback`,
-        //             message: `New feedback from ${userName} - ${department} department. Click here to view.`,
-        //             is_read: false,
-        //         },
-        //     ]);
+        await supabase
+            .from("admin_notifications")
+            .insert([
+                {
+                    created_by: user.id,
+                    notification_type: "feedback",
+                    reference_id: feedbackId,
+                    title: `${userName} has sent feedback`,
+                    message: `New feedback from ${userName} - ${department} department. Click here to view.`,
+                    is_read: false,
+                },
+            ]);
 
         return NextResponse.json({
             success: true,

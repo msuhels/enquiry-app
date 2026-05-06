@@ -6,6 +6,12 @@ export interface Program {
   degree_going_for?: string;
   course_name?: string;
   ielts_requirement?: string;
+  english_proficiency_type?: string;
+  prev_degree_required?: string;
+  minimum_ielts_score?: string;
+  minimum_percentage?: string;
+  degree_duration?: string;
+  interview_required?: string;
   special_requirements?: string;
   remarks?: string;
   created_at: string;
