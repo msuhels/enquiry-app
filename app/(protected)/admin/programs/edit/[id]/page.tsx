@@ -27,6 +27,7 @@ export default function EditProgramPage() {
     ielts_requirement: "",
     minimum_percentage: "",
     degree_duration: "",
+    prev_degree_required:"",
     english_proficiency_type: "",
     minimum_ielts_score: "",
     special_requirements: "",
@@ -88,6 +89,19 @@ export default function EditProgramPage() {
       textarea: true,
     },
   ];
+
+    const prevDegreeRequiredOptions = [
+   { value: "1 year", label: "1 year" },
+    { value: "2 year", label: "2 year" },
+    { value: "3 year", label: "3 year" },
+    { value: "4 year", label: "4 year" },
+    { value: "5 year", label: "5 year" },
+    { value: "6 year", label: "6 year" },
+    { value: "7 year", label: "7 year" },
+    { value: "8 year", label: "8 year" },
+    { value: "9 year", label: "9 year" },
+    { value: "10 year", label: "10 year" },
+  ]
 
   const getPreviousStudyOptions = () => {
     const data =
@@ -363,6 +377,20 @@ export default function EditProgramPage() {
                   setFormData((prev) => ({
                     ...prev,
                     degree_duration: value,
+                  }))
+                }
+              />
+
+                <SearchSelect
+                label="Previous Degree duration Required"
+                name="prev_degree_required"
+                width="full"
+                value={formData.prev_degree_required || ""}
+                options={prevDegreeRequiredOptions}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    prev_degree_required: value,
                   }))
                 }
               />

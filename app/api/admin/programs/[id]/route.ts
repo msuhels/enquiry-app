@@ -55,6 +55,7 @@ export async function PATCH(
       course_name,
       ielts_requirement,
       special_requirements,
+      prev_degree_required,
       remarks,
       minimum_percentage,
       degree_duration,
@@ -70,6 +71,7 @@ export async function PATCH(
       course_name,
       ielts_requirement,
       special_requirements,
+      prev_degree_required,
       remarks,
     ].some(
       (value) =>
@@ -90,6 +92,7 @@ export async function PATCH(
       course_name,
       ielts_requirement,
       special_requirements,
+      prev_degree_required,
       remarks,
       minimum_percentage,
       degree_duration,
@@ -361,6 +364,7 @@ export async function DELETE(
         - Degree Going For: ${result.data.degree_going_for}
         - Course Name: ${result.data.course_name}
         - IELTS Requirement: ${result.data.ielts_requirement}
+        - Previous Degree duration Required: ${result.data.prev_degree_required || "None"}
         - Special Requirements: ${result.data.special_requirements || "None"}
         - Remarks: ${result.data.remarks || "None"}
         - Deleted At: ${new Date().toLocaleString()}`,

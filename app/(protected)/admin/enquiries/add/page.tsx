@@ -89,8 +89,30 @@ export default function EnquirySystem() {
     minIeltsScore: "",
     degreeDuration: "",
     minimumPercentage: "",
-    interview_required: ""
+    interview_required: "",
+    english_proficiency_type: "",
+    prev_degree_required: ""
   });
+
+  const englishProficiencyOptions = [
+    { value: "", label: "Select English Proficiency" },
+    { value: "MOU", label: "MOU" },
+    { value: "IELTS", label: "IELTS" },
+  ];
+
+  const prevDegreeRequiredOptions = [
+    { value: "", label: "Select Previous Degree Duration" },
+    { value: "1 year", label: "1 year" },
+    { value: "2 year", label: "2 year" },
+    { value: "3 year", label: "3 year" },
+    { value: "4 year", label: "4 year" },
+    { value: "5 year", label: "5 year" },
+    { value: "6 year", label: "6 year" },
+    { value: "7 year", label: "7 year" },
+    { value: "8 year", label: "8 year" },
+    { value: "9 year", label: "9 year" },
+    { value: "10 year", label: "10 year" },
+  ];
 
   const isCentered = !hasSearched;
 
@@ -173,6 +195,8 @@ export default function EnquirySystem() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
 
+
+
       // Apply client-side filtering for advance filters
       let filteredPrograms = result.data;
       if (advanceFilters.minIeltsScore) {
@@ -192,10 +216,22 @@ export default function EnquirySystem() {
       }
       if (advanceFilters.interview_required) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.interview_required === advanceFilters.interview_required
+          p.interview_required && p.interview_required.toLowerCase() === advanceFilters.interview_required.toLowerCase()
         );
       }
-      
+
+      if (advanceFilters.english_proficiency_type) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.english_proficiency_type && p.english_proficiency_type === advanceFilters.english_proficiency_type
+        );
+      }
+
+      if (advanceFilters.prev_degree_required) {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.prev_degree_required && p.prev_degree_required === advanceFilters.prev_degree_required
+        );
+      }
+
       setPrograms(filteredPrograms);
       setHasSearched(true);
       toast.success("Programs fetched successfully!");
@@ -320,7 +356,22 @@ export default function EnquirySystem() {
                 onChange={setPreviousOrCurrentStudy}
                 options={previousOrCurrentStudyOptions}
               />
-              <button
+               <button
+                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
+                className={`flex items-center gap-2 w-[400px] px-6 py-3 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
+                  ? "bg-[#3a3886] text-white"
+                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
+                  }`}
+              >
+                <Funnel className="w-4 h-4" />
+                <span>Advance Filter</span>
+              </button>
+            </div>
+
+
+
+            <div className="flex flex-col items-end gap-3">
+             <button
                 onClick={handleFindPrograms}
                 className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
@@ -337,32 +388,9 @@ export default function EnquirySystem() {
                   </>
                 )}
               </button>
-            </div>
-
-
-
-            <div className="flex flex-col items-end gap-3">
-              <button
-                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
-                  ? "bg-[#3a3886] text-white"
-                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
-                  }`}
-              >
-                <Funnel className="w-4 h-4" />
-                <span>Advance Filter</span>
-              </button>
 
               {showAdvanceFilter && (
-                <div className="w-full flex gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-                  <SearchSelect
-                    label="Minimum IELTS Score"
-                    name="minIeltsScore"
-                    value={advanceFilters.minIeltsScore}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minIeltsScore: value })}
-                    options={ieltsScoreOptions}
-                  />
+                <div className="w-full grid grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
 
                   <SearchSelect
                     label="Degree Duration"
@@ -382,7 +410,7 @@ export default function EnquirySystem() {
                     options={minimumPercentageOptions}
                   />
 
-                   <SearchSelect
+                  <SearchSelect
                     label="Interview Required"
                     name="interviewRequired"
                     value={advanceFilters.interview_required}
@@ -391,9 +419,49 @@ export default function EnquirySystem() {
                     options={interviewRequiredOptions}
                   />
 
+                  <SearchSelect
+                    label="English Proficiency"
+                    name="english_proficiency_type"
+                    value={advanceFilters.english_proficiency_type}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({
+                      ...advanceFilters,
+                      english_proficiency_type: value,
+                      minIeltsScore: value === "MOU" ? "" : advanceFilters.minIeltsScore
+                    })}
+                    options={englishProficiencyOptions}
+                  />
+
+                  {advanceFilters.english_proficiency_type === "IELTS" && (
+                    <SearchSelect
+                      label="Minimum IELTS Score"
+                      name="minIeltsScore"
+                      value={advanceFilters.minIeltsScore}
+                      allowCreate={false}
+                      onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minIeltsScore: value })}
+                      options={ieltsScoreOptions}
+                    />
+                  )}
+
+                  <SearchSelect
+                    label="Previous Degree Duration Required"
+                    name="prev_degree_required"
+                    value={advanceFilters.prev_degree_required}
+                    allowCreate={false}
+                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
+                    options={prevDegreeRequiredOptions}
+                  />
+
                   <button
                     onClick={() => {
-                      setAdvanceFilters({ minIeltsScore: "", degreeDuration: "", minimumPercentage: "", interview_required: "" });
+                      setAdvanceFilters({
+                        minIeltsScore: "",
+                        degreeDuration: "",
+                        minimumPercentage: "",
+                        interview_required: "",
+                        english_proficiency_type: "",
+                        prev_degree_required: ""
+                      });
                     }}
                     className="px-3 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
                   >
@@ -464,6 +532,9 @@ const ProgramsTable = ({ data }: any) => {
                 "Previous Study",
                 "Degree Going For",
                 "IELTS Score",
+                "English Proficiency",
+                "Previous Degree Required",
+                "Interview Required",
                 "Special Requirements",
                 "Remarks",
                 "degree_duration",
@@ -496,6 +567,15 @@ const ProgramsTable = ({ data }: any) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
                   {item.minimum_ielts_score || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.english_proficiency_type || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.prev_degree_required || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.interview_required || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.special_requirements || "-"}

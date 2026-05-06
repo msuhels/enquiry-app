@@ -62,13 +62,20 @@ export async function GET(
       .eq("id", feedback.user_id)
       .single();
 
-    // Return feedback with user details
+    // Get the ratings for this feedback
+    const { data: ratings } = await supabase
+      .from("feedback_ratings")
+      .select("*")
+      .eq("feedback_id", id);
+
+    // Return feedback with user details and ratings
     return NextResponse.json({
       success: true,
       data: {
         ...feedback,
         user_full_name: userData?.full_name || null,
         user_email: userData?.email || null,
+        ratings: ratings || [],
       },
     });
   } catch (error) {

@@ -93,7 +93,7 @@ export default function UpdatesPage() {
 
   const UPDATE_TYPES = [
   { value: "all", label: "All" },
-  { value: "General", label: "General" },
+  { value: "Sales", label: "Sales" },
   { value: "Admission", label: "Admission" },
   { value: "Scholarship", label: "Scholarship" },
   { value: "Pre Enrollment", label: "Pre Enrollment" },

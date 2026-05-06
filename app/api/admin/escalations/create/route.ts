@@ -114,11 +114,11 @@ export async function POST(request: Request) {
         // Get user details for email and notification
         const { data: userData } = await supabase
             .from("users")
-            .select("full_name, first_name")
+            .select("full_name")
             .eq("id", user.id)
             .single();
 
-        const userName = userData?.first_name || userData?.full_name || "Unknown User";
+        const userName = userData?.full_name || "Unknown User";
 
         // Insert escalation
         const { data: escalation, error: escalationError } = await supabase

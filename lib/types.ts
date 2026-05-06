@@ -91,6 +91,7 @@ export interface ProgramFormData {
   minimum_ielts_score?: string;
   minimum_percentage?: string;
   degree_duration?: string;
+  prev_degree_required?: string;
   remark1?: string;
   remark2?: string;
   remark1_na?: boolean;

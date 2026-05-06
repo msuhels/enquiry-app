@@ -4,11 +4,16 @@ import { createClient } from "@/lib/supabase/adapters/server";
 
 export async function GET(request: Request) {
     const supabase = await createClient();
-    
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
+
+    // Filter parameters
+    const department = searchParams.get("department") || "";
+    const fromDate = searchParams.get("from_date") || "";
+    const toDate = searchParams.get("to_date") || "";
 
     const {
         data: { user },
@@ -19,16 +24,48 @@ export async function GET(request: Request) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Get total count for this user's feedbacks
-    const { count } = await supabase
+    // Build base query for count
+    let countQuery = supabase
         .from("feedbacks")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+        .select("*", { count: "exact", head: true });
 
-    const { data: feedbacks, error } = await supabase
+    // Build base query for data with user join
+    let dataQuery = supabase
         .from("feedbacks")
-        .select("*")
-        .eq("user_id", user.id)
+        .select(`
+            *,
+            user:users!feedbacks_user_id_fkey (full_name, email)
+        `);
+
+    // Apply department filter
+    if (department) {
+        countQuery = countQuery.eq("department", department);
+        dataQuery = dataQuery.eq("department", department);
+    }
+
+    // Apply date filters
+    if (fromDate) {
+        const fromDateTime = new Date(fromDate).toISOString();
+        countQuery = countQuery.gte("created_at", fromDateTime);
+        dataQuery = dataQuery.gte("created_at", fromDateTime);
+    }
+
+    if (toDate) {
+        const toDateTime = new Date(toDate + "T23:59:59").toISOString();
+        countQuery = countQuery.lte("created_at", toDateTime);
+        dataQuery = dataQuery.lte("created_at", toDateTime);
+    }
+
+    // Get total count
+    const { count, error: countError } = await countQuery;
+
+    if (countError) {
+        console.error("Error counting feedbacks:", countError);
+        return new NextResponse("Error counting feedbacks", { status: 500 });
+    }
+
+    // Get paginated data
+    const { data: feedbacks, error } = await dataQuery
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -37,9 +74,17 @@ export async function GET(request: Request) {
         return new NextResponse("Error fetching feedbacks", { status: 500 });
     }
 
+    // Transform the data to flatten user info
+    const transformedFeedbacks = (feedbacks || []).map((feedback: any) => ({
+        ...feedback,
+        createdby: feedback.user ? {
+            full_name: feedback.user.full_name || "Unknown"
+        } : { full_name: "Unknown" }
+    }));
+
     return NextResponse.json({
         success: true,
-        data: feedbacks || [],
+        data: transformedFeedbacks || [],
         pagination: {
             page,
             limit,
@@ -63,37 +108,70 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { department, rating, remarks } = body;
+        const { department, improvement_area, open_feedback, ratings } = body;
 
-        if (!department || !rating || !remarks) {
-            return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
+        if (!department || !ratings || !Array.isArray(ratings) || ratings.length === 0) {
+            return NextResponse.json(
+                { success: false, message: "Invalid input data" },
+                { status: 400 }
+            );
         }
 
-        const { data, error } = await supabase
+        const feedbackId = crypto.randomUUID();
+
+        const { error: feedbackError } = await supabase
             .from("feedbacks")
-            .insert([
-                {
-                    user_id: user.id,
-                    department,
-                    rating,
-                    remarks,
-                },
-            ])
-            .select();
+            .insert({
+                id: feedbackId,
+                user_id: user.id,
+                improvement_area,
+                department,
+                open_feedback,
+            });
 
-        if (error) {
-            console.error("Error creating feedback:", error);
-            return NextResponse.json({ success: false, message: "Error creating feedback" }, { status: 500 });
+
+        if (feedbackError) {
+            console.error("Error creating feedback:", feedbackError);
+            return NextResponse.json(
+                { success: false, message: "Error creating feedback" },
+                { status: 500 }
+            );
         }
+
+        const ratingsPayload = ratings.map((item: any) => ({
+            feedback_id: feedbackId,
+            department: item.department,
+            parameter: item.parameter,
+            rating: item.rating,
+            remark: item.remark || "",
+        }));
+
+
+        const { error: ratingError } = await supabase
+            .from("feedback_ratings")
+            .insert(ratingsPayload);
+
+        if (ratingError) {
+            console.error("Error inserting ratings:", ratingError);
+
+            // ❗ Rollback parent insert
+            await supabase.from("feedbacks").delete().eq("id", feedbackId);
+
+            return NextResponse.json(
+                { success: false, message: "Error saving ratings" },
+                { status: 500 }
+            );
+        }
+
 
         // Get user details for notification
-        const { data: userData } = await supabase
-            .from("users")
-            .select("first_name, full_name")
-            .eq("id", user.id)
-            .single();
+        // const { data: userData } = await supabase
+        //     .from("users")
+        //     .select("first_name, full_name")
+        //     .eq("id", user.id)
+        //     .single();
 
-        const userName = userData?.first_name || userData?.full_name || "User";
+        // const userName = userData?.first_name || userData?.full_name || "User";
 
         // Create admin notification with correct field names
         // await supabase
@@ -111,7 +189,8 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             success: true,
-            data: data[0],
+            message: "Feedback submitted successfully",
+            feedback_id: feedbackId,
         });
     } catch (error) {
         console.error("Error processing feedback:", error);
