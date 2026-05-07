@@ -31,7 +31,12 @@ export default function EditProgramPage() {
     english_proficiency_type: "",
     minimum_ielts_score: "",
     special_requirements: "",
+    interview_required: "",
     remarks: "",
+     remark1: "",
+    remark2: "",
+    remark1_na: false,
+    remark2_na: false,
     ielts_na: false,
     special_requirements_na: false,
     remarks_na: false,
@@ -83,9 +88,21 @@ export default function EditProgramPage() {
       textarea: true,
     },
     {
-      label: "Remarks",
+      label: "Remarks 1",
       name: "remarks",
       naKey: "remarks_na",
+      textarea: true,
+    },
+    {
+      label: "Remark 2",
+      name: "remark1",
+      naKey: "remark1_na",
+      textarea: true,
+    },
+    {
+      label: "Remark 3",
+      name: "remark2",
+      naKey: "remark2_na",
       textarea: true,
     },
   ];
@@ -440,6 +457,26 @@ export default function EditProgramPage() {
                   }
                 />
               )}
+
+                <div className="w-[47rem]">
+                              <SearchSelect
+                                label="Interview Required"
+                                name="interview_required"
+                                width="full"
+                                value={formData.interview_required || ""}
+                                options={[
+                                  { value: "Yes", label: "Yes" },
+                                  { value: "No", label: "No" },
+                                ]}
+                                onChange={(value) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    interview_required: value,
+                                  }))
+                                }
+                                required
+                              />
+                            </div>
 
               <FormInput
                 label="Minimum Percentage Required"
