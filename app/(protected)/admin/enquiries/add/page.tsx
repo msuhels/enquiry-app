@@ -102,6 +102,7 @@ export default function EnquirySystem() {
 
   const prevDegreeRequiredOptions = [
     { value: "", label: "Select Previous Degree Duration" },
+    { value: "0 year", label: "0 year" },
     { value: "1 year", label: "1 year" },
     { value: "2 year", label: "2 year" },
     { value: "3 year", label: "3 year" },
@@ -357,6 +358,7 @@ export default function EnquirySystem() {
 
 
               <SearchSelect
+              width="30px"
                 label="Degree Going For"
                 name="degree_going_for"
                 value={degreeGoingFor}

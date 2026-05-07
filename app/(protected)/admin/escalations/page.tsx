@@ -20,7 +20,12 @@ interface Escalation {
 
 const escalationpage = () => {
   const [escalations, setEscalations] = useState<Escalation[]>([]);
-  const [search, setSearch] = useState<Record<string, string>>({ "title and description": "", zone: "" });
+  const [search, setSearch] = useState<Record<string, string>>({
+    "search escalation users": "",
+    zone: "",
+    from_date: new Date().toISOString().slice(0, 10),
+    to_date: new Date().toISOString().slice(0, 10),
+  });
   const [sortKey, setSortKey] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
@@ -56,8 +61,8 @@ const escalationpage = () => {
   const offset = (page - 1) * itemsPerPage;
 
   const apiUrl = `/api/admin/escalations/getallescalations?search=${encodeURIComponent(
-    debouncedSearch["title and description"] || ""
-  )}&zone=${encodeURIComponent(debouncedSearch.zone || "")}&limit=${itemsPerPage}&offset=${offset}`;
+    debouncedSearch["search escalation users"] || ""
+  )}&zone=${encodeURIComponent(debouncedSearch.zone || "")}&from_date=${encodeURIComponent(debouncedSearch.from_date || "")}&to_date=${encodeURIComponent(debouncedSearch.to_date || "")}&limit=${itemsPerPage}&offset=${offset}`;
 
   const { data, isLoading } = useFetch(apiUrl);
 
@@ -185,6 +190,7 @@ const escalationpage = () => {
               options: zoneOptions,
             },
           ]}
+          dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
           onSortChange={(key, dir) => {
             setSortKey(key);
             setSortDir(dir);

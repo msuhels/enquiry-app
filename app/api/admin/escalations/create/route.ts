@@ -9,14 +9,9 @@ import nodemailer from "nodemailer";
 // ESCALATION_LEVEL_3_EMAIL=email3@example.com
 // ESCALATION_LEVEL_4_EMAIL=email4@example.com
 
-function getLevelEmail(level: string): string | null {
-    const levelMap: Record<string, string> = {
-        "1": process.env.ESCALATION_LEVEL_1_EMAIL || "",
-        "2": process.env.ESCALATION_LEVEL_2_EMAIL || "",
-        "3": process.env.ESCALATION_LEVEL_3_EMAIL || "",
-        "4": process.env.ESCALATION_LEVEL_4_EMAIL || "",
-    };
-    return levelMap[level] || null;
+function getZoneLevelEmail(zone: string, level: string): string | null {
+    const envKey = `ZONE_${zone.toUpperCase()}_ESCALATION_LEVEL_${level}_EMAIL`;
+    return process.env[envKey] || null;
 }
 
 async function sendEscalationEmail(
@@ -155,16 +150,18 @@ export async function POST(request: Request) {
         }
 
         // Send email based on level
-        const levelEmail = getLevelEmail(level);
+        const levelEmail = getZoneLevelEmail(zone, level);
         if (levelEmail) {
+            const emails = levelEmail.split(",").map(e => e.trim());
             try {
-                await sendEscalationEmail(levelEmail, zone, user_message, level, userName);
+                await Promise.all(
+                    emails.map(email => sendEscalationEmail(email, zone, user_message, level, userName))
+                );
             } catch (emailError) {
                 console.error("Error sending escalation email:", emailError);
-                // Don't fail the whole request if email fails
             }
         } else {
-            console.warn(`No email configured for level ${level}`);
+            console.warn(`No email configured for zone ${zone} level ${level}`);
         }
 
         return NextResponse.json({
