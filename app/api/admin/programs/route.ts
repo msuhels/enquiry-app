@@ -99,6 +99,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const toNumeric = (value: string | undefined | null): number | null => {
+      if (!value || value.trim() === "") return null;
+      const num = parseFloat(value);
+      return isNaN(num) ? null : num;
+    };
+
     const programData = {
       university,
       previous_or_current_study,
@@ -108,10 +114,10 @@ export async function POST(request: NextRequest) {
       special_requirements,
       prev_degree_required,
       remarks,
-      minimum_percentage,
-      degree_duration,
+      minimum_percentage: toNumeric(minimum_percentage),
+      degree_duration: toNumeric(degree_duration),
       english_proficiency_type,
-      minimum_ielts_score,
+      minimum_ielts_score: toNumeric(minimum_ielts_score),
       remark1,
       remark2,
       interview_required,

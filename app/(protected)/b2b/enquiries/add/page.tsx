@@ -561,7 +561,7 @@ const ProgramsTable = ({ data }: any) => {
                 "Interview Required",
                 "Special Requirements",
                 "Remarks",
-                "degree_duration",
+                "degree duration",
                 "minimum %",
               ].map((head) => (
                 <th

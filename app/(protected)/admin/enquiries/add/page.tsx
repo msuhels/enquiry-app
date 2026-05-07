@@ -102,7 +102,6 @@ export default function EnquirySystem() {
 
   const prevDegreeRequiredOptions = [
     { value: "", label: "Select Previous Degree Duration" },
-    { value: "0 year", label: "0 year" },
     { value: "1 year", label: "1 year" },
     { value: "2 year", label: "2 year" },
     { value: "3 year", label: "3 year" },
@@ -358,9 +357,9 @@ export default function EnquirySystem() {
 
 
               <SearchSelect
-              width="30px"
                 label="Degree Going For"
                 name="degree_going_for"
+                width="90%"
                 value={degreeGoingFor}
                 allowCreate={false}
                 onChange={setDegreeGoingFor}
@@ -370,27 +369,14 @@ export default function EnquirySystem() {
               <SearchSelect
                 label="Previous/Current Study"
                 name="previous_or_current_study"
+                width="90%"
                 value={previousOrCurrentStudy}
                 allowCreate={false}
                 onChange={setPreviousOrCurrentStudy}
                 options={previousOrCurrentStudyOptions}
               />
-              <button
-                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
-                className={`flex items-center gap-2 w-[400px] px-6 py-3 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
-                  ? "bg-[#3a3886] text-white"
-                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
-                  }`}
-              >
-                <Funnel className="w-4 h-4" />
-                <span>Advance Filter</span>
-              </button>
-            </div>
 
-
-
-            <div className="flex flex-col items-end gap-3">
-              <button
+                <button
                 onClick={handleFindPrograms}
                 className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
@@ -408,7 +394,22 @@ export default function EnquirySystem() {
                 )}
               </button>
 
+              <button
+                onClick={() => setShowAdvanceFilter(!showAdvanceFilter)}
+                className={`flex items-center gap-2 w-[400px] px-6 py-3 rounded-lg shadow-md transition-all duration-200 ${showAdvanceFilter
+                  ? "bg-[#3a3886] text-white"
+                  : "bg-[#F97316] text-white hover:bg-[#ea6a0f]"
+                  }`}
+              >
+                <Funnel className="w-4 h-4" />
+                <span>Advance Filter</span>
+              </button>
+            </div>
 
+
+
+            <div className="flex flex-col items-end gap-3">
+              
               {showAdvanceFilter && (<>
                 <button
                   onClick={() => {
