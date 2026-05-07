@@ -80,8 +80,8 @@ export default function ViewUpdatePage() {
               dangerouslySetInnerHTML={{ __html: announcement.content }}
             />
           </div>
+          </div>
         </div>
-      </div>
-    </div>
+        </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDebounce } from "use-debounce";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { useFetch } from "@/hooks/api/useFetch";
 
@@ -12,71 +13,118 @@ type Escalation = {
     level: string;
     user_id: string;
     created_at: string;
+    user?: {
+        full_name: string;
+    };
 };
 
 export default function EscalationsPage() {
     const router = useRouter();
     const [escalations, setEscalations] = useState<Escalation[]>([]);
+    const [search, setSearch] = useState<Record<string, string>>({
+        "search escalation users": "",
+        zone: "",
+        from_date: new Date().toISOString().slice(0, 10),
+        to_date: new Date().toISOString().slice(0, 10),
+    });
+    const [sortKey, setSortKey] = useState("created_at");
+    const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+    const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [debouncedSearch] = useDebounce(search, 400);
 
-    // Call your API
-    const { data, isLoading, error } = useFetch("/api/admin/escalations");
+    // Zone filter options
+    const zoneOptions = [
+        { value: "central", label: "Central" },
+        { value: "east", label: "East" },
+        { value: "west", label: "West" },
+        { value: "north", label: "North" },
+        { value: "south", label: "South" },
+    ];
 
-    // Debug logging
-    console.log("Escalations API response:", { data, isLoading, error });
+    const offset = (page - 1) * itemsPerPage;
+
+    // Build API URL with filters
+    const apiUrl = `/api/admin/escalations/getallescalations?search=${encodeURIComponent(
+        debouncedSearch["search escalation users"] || ""
+    )}&zone=${encodeURIComponent(debouncedSearch.zone || "")}&from_date=${encodeURIComponent(debouncedSearch.from_date || "")}&to_date=${encodeURIComponent(debouncedSearch.to_date || "")}&limit=${itemsPerPage}&offset=${offset}`;
+
+    const { data, isLoading } = useFetch(apiUrl);
 
     useEffect(() => {
-        if (data) {
-            console.log("Data structure:", JSON.stringify(data));
-            if (data.success && Array.isArray(data.data)) {
-                console.log("Setting escalations:", data.data);
-                setEscalations(data.data);
-            } else {
-                console.log("Data success:", data.success, "Data:", data.data);
-            }
+        setPage(1);
+    }, [debouncedSearch]);
+
+    useEffect(() => {
+        if (data?.success) {
+            setEscalations(data.data);
         }
-        if (error) {
-            console.error("API error:", error);
-        }
-    }, [data, error]);
+    }, [data]);
+
+    const handleSearchChange = (val: Record<string, string>) => {
+        setSearch(val);
+    };
 
     // Table columns
     const columns = [
         {
             key: "zone",
             label: "Zone",
-            sortable: true,
+            render: (row: Escalation) => (
+                <div>
+                    <div className="text-xl font-medium text-gray-900">{row.zone}</div>
+                </div>
+            ),
         },
         {
             key: "user_message",
             label: "Message",
-            sortable: true,
             render: (row: Escalation) => (
-                <span className="line-clamp-2">{row.user_message}</span>
+                <div>
+                    <div
+                        title={row?.user_message as string}
+                        className="text-xl text-gray-500 w-72 truncate"
+                    >
+                        {row.user_message}
+                    </div>
+                </div>
             ),
         },
         {
             key: "level",
             label: "Level",
-            sortable: true,
             render: (row: Escalation) => (
-                <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${row.level === "high"
-                            ? "bg-red-100 text-red-800"
-                            : row.level === "medium"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
-                        }`}
-                >
-                    {row.level}
-                </span>
+                <div>
+                    <div
+                        title={row?.level as string}
+                        className="text-xl text-gray-500 w-72 truncate"
+                    >
+                        {row.level}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            key: "user",
+            label: "User",
+            render: (row: Escalation) => (
+                <div>
+                    <div
+                        title={row?.user?.full_name as string}
+                        className="text-xl text-gray-500 w-72 truncate"
+                    >
+                        {row?.user?.full_name || "-"}
+                    </div>
+                </div>
             ),
         },
         {
             key: "created_at",
             label: "Created At",
-            sortable: true,
             render: (row: Escalation) => (
-                <span>{new Date(row.created_at).toLocaleDateString()}</span>
+                <div className="text-xl font-medium text-gray-900">
+                    {row.created_at ? new Date(row.created_at).toLocaleDateString() : "-"}
+                </div>
             ),
         },
         {
@@ -101,6 +149,26 @@ export default function EscalationsPage() {
                     columns={columns}
                     addHref="/b2b/escalations/add"
                     data={escalations}
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    
+                    
+                    searchSelectFilters={[
+                        {
+                            key: "zone",
+                            label: "Zone",
+                            options: zoneOptions,
+                        },
+                    ]}
+                    dateFilters={{ from_date: search.from_date, to_date: search.to_date }}
+                    onSortChange={(key, dir) => {
+                        setSortKey(key);
+                        setSortDir(dir);
+                    }}
+                    onPageChange={setPage}
+                    currentPage={page}
+                    total={data?.pagination?.total || 0}
+                    itemsPerPage={itemsPerPage}
                     isLoading={isLoading}
                     emptyMessage="No escalations found."
                 />
