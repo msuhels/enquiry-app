@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { useFetch } from "@/hooks/api/useFetch";
+import { mutate } from "swr";
+import { toast } from "sonner";
 
 type Escalation = {
     id: string;
@@ -16,6 +18,7 @@ type Escalation = {
     user?: {
         full_name: string;
     };
+    status?: string;
 };
 
 export default function EscalationsPage() {
@@ -63,6 +66,24 @@ export default function EscalationsPage() {
 
     const handleSearchChange = (val: Record<string, string>) => {
         setSearch(val);
+    };
+
+    const handleStatusChange = async (id: string, status: string) => {
+        try {
+            const response = await fetch(`/api/admin/escalations/updateescalation/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status }),
+            });
+
+            if (response.ok) {
+                // Refresh the data
+                await mutate(apiUrl);
+            }
+            toast.success("Status updated successfully");
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
     };
 
     // Table columns
@@ -119,6 +140,23 @@ export default function EscalationsPage() {
             ),
         },
         {
+            key: "status",
+            label: "Status",
+            render: (row: Escalation) => (
+                <div>
+                    <select
+                        value={row.status || "open"}
+                        onChange={(e) => handleStatusChange(row.id, e.target.value)}
+                        name="status"
+                        id="status"
+                    >
+                        <option  value="open"> Open</option>
+                        <option  value="closed">Closed</option>
+                    </select>
+                </div>
+            ),
+        },
+        {
             key: "created_at",
             label: "Created At",
             render: (row: Escalation) => (
@@ -151,8 +189,8 @@ export default function EscalationsPage() {
                     data={escalations}
                     sortKey={sortKey}
                     sortDir={sortDir}
-                    
-                    
+
+
                     searchSelectFilters={[
                         {
                             key: "zone",

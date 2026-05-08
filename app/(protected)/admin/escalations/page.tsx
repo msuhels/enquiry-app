@@ -14,6 +14,7 @@ interface Escalation {
   user: {
     full_name: string;
   };
+  status: string;
   created_at: string;
   updated_at: string;
 }
@@ -133,7 +134,17 @@ const escalationpage = () => {
         </div>
       ),
     },
-
+    {
+      key: "status",
+      label: "Status",
+      render: (row: Escalation) => (
+        <div>
+          <h1>
+            {row.status}
+          </h1>
+        </div>
+      ),
+    },
 
     {
       key: "created_at",
@@ -155,15 +166,15 @@ const escalationpage = () => {
     },
   ];
 
-  // Transform analytics data for the table component
-  const analyticsCards = [
+  // Transform analytics data for 2 smaller cards (Zones and Levels)
+  const escalationAnalyticsCards = [
     {
-      title: "Escalations by Zone",
-      data: zoneAnalytics.map(z => ({ label: z.zone, value: z.count })),
+      title: "Zones",
+      data: zoneAnalytics.map(z => ({ label: z.zone.charAt(0).toUpperCase() + z.zone.slice(1), value: z.count })),
       total: analyticsSummary.totalEscalations,
     },
     {
-      title: "Escalations by Level",
+      title: "Levels",
       data: levelAnalytics.map(l => ({ label: `Level ${l.level}`, value: l.count })),
       total: analyticsSummary.totalEscalations,
     },
@@ -182,7 +193,7 @@ const escalationpage = () => {
           sortDir={sortDir}
           searchQuery={search}
           onSearchChange={handleSearchChange}
-          searchParameters={["title and description"]}
+          // searchParameters={["title and description"]}
           searchSelectFilters={[
             {
               key: "zone",
@@ -199,7 +210,7 @@ const escalationpage = () => {
           currentPage={page}
           total={data?.pagination?.total || 0}
           itemsPerPage={itemsPerPage}
-          analyticsCards={analyticsCards}
+          escalationAnalyticsCards={escalationAnalyticsCards}
           isLoading={isLoading}
           emptyMessage="No escalations found."
         />

@@ -33,9 +33,15 @@ export interface FilterTab {
 
 export interface AnalyticsCard {
   title: string;
-  data: { label: string; value: number; color?: string }[];
+  data?: { label: string; value: number; color?: string }[];
   total?: number;
   type?: "bar" | "simple";
+}
+
+export interface EscalationAnalyticsCard {
+  title: string;
+  data: { label: string; value: number }[];
+  total?: number;
 }
 
 export interface DepartmentAnalytics {
@@ -92,6 +98,7 @@ interface TableProps<T> {
   setViewMode?: (key: "datalist" | "action_count") => void;
   viewMode?: "datalist" | "action_count";
   analyticsCards?: AnalyticsCard[];
+  escalationAnalyticsCards?: EscalationAnalyticsCard[];
   departmentAnalytics?: DepartmentAnalytics[];
   overallAnalytics?: OverallAnalytics;
 }
@@ -129,6 +136,7 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
   setViewMode,
   viewMode = "datalist",
   analyticsCards,
+  escalationAnalyticsCards,
   departmentAnalytics,
   overallAnalytics,
 }: TableProps<T>) {
@@ -315,7 +323,58 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
           {analyticsCards.map((card, cardIndex) => {
             const total =
               card.total ||
-              card.data.reduce((sum, item) => sum + item.value, 0);
+              card.data?.reduce((sum, item) => sum + item.value, 0) || 0;
+
+            return (
+              <div
+                key={cardIndex}
+                className="bg-gradient-to-br from-[#3a3886] to-[#2d2b6b] text-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-white/80">
+                      {card.title}
+                    </h3>
+                    <p className="text-3xl font-bold mt-1">
+                      {total.toLocaleString()}/5
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                    <BarChart3 className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+
+                {/* Data Pills - Only show if data exists */}
+                {card.data && card.data.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {card.data?.map((item, itemIndex) => (
+                      <div
+                        key={itemIndex}
+                        className="flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2"
+                      >
+                        <span className="text-sm capitalize text-white/80">
+                          {item.label}
+                        </span>
+                        <span className="text-base font-bold text-white">
+                          : {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Escalation Analytics Cards - Same as analyticsCards style */}
+      {escalationAnalyticsCards && escalationAnalyticsCards.length > 0 && (
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {escalationAnalyticsCards.map((card, cardIndex) => {
+            const total = card.total || card.data.reduce((sum, item) => sum + item.value, 0);
 
             return (
               <div
@@ -339,21 +398,23 @@ export default function AdvancedDataTable<T extends Record<string, any>>({
                 </div>
 
                 {/* Data Pills */}
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {card.data.map((item, itemIndex) => (
-                    <div
-                      key={itemIndex}
-                      className="flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2"
-                    >
-                      <span className="text-sm capitalize text-white/80">
-                        {item.label}
-                      </span>
-                      <span className="text-base font-bold text-white">
-                        : {item.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                {card.data && card.data.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {card.data.map((item, itemIndex) => (
+                      <div
+                        key={itemIndex}
+                        className="flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2"
+                      >
+                        <span className="text-sm capitalize text-white/80">
+                          {item.label}
+                        </span>
+                        <span className="text-base font-bold text-white">
+                          : {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
