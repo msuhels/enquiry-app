@@ -108,7 +108,7 @@ export default function EditProgramPage() {
   ];
 
     const prevDegreeRequiredOptions = [
-   { value: "1 year", label: "1 year" },
+    { value: "1 year", label: "1 year" },
     { value: "2 year", label: "2 year" },
     { value: "3 year", label: "3 year" },
     { value: "4 year", label: "4 year" },
@@ -173,6 +173,10 @@ export default function EditProgramPage() {
           "Not Applicable",
         remarks_na:
           result.data.remarks === "Not Applicable",
+          remark1_na:
+          result.data.remark1 === "Not Applicable",
+        remark2_na:
+          result.data.remark2 === "Not Applicable",
       });
     } catch {
       toast.error("Something went wrong");

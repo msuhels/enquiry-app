@@ -22,41 +22,41 @@ export async function GET(req: NextRequest) {
         }
 
         // Fetch all announcements
-        const { data: announcements, error: announcementsError } = await serviceRoleSupabase
-            .from("announcements")
+        const { data: notifications, error: notificationError } = await serviceRoleSupabase
+            .from("user_notifications")
             .select("*")
             .order("created_at", { ascending: false });
 
-        if (announcementsError) {
-            console.error("Error fetching announcements:", announcementsError);
-            return NextResponse.json({ success: false, message: announcementsError.message }, { status: 500 });
+        if (notificationError) {
+            console.error("Error fetching notifications:", notificationError);
+            return NextResponse.json({ success: false, message: notificationError.message }, { status: 500 });
         }
- 
+
         // Fetch user's notification read status
-        const { data: userNotifications, error: userNotifError } = await serviceRoleSupabase
-            .from("user_notifications")
+        const { data: readNotifications, error: readError } = await serviceRoleSupabase
+            .from("isread_user_notification")
             .select("*")
             .eq("user_id", user.id);
 
-        if (userNotifError) {
-            console.error("Error fetching user notifications:", userNotifError);
+        if (readError) {
+            console.error("Error fetching user notifications:", readError);
             // Continue even if this fails - just assume all unread
         }
 
-        // Create a map of announcement_id -> is_read
+        // Create a map of user_notification_id -> is_read (matching the schema)
         const readMap = new Map<string, boolean>();
-        userNotifications?.forEach((notif) => {
-            readMap.set(notif.announcement_id, notif.is_read);
+        readNotifications?.forEach((notif) => {
+            readMap.set(notif.user_notification_id.toString(), notif.is_read);
         });
 
-        // Merge announcements with read status
-        const announcementsWithReadStatus = announcements?.map((announcement) => ({
-            ...announcement,
-            is_read: readMap.get(announcement.id) || false,
+        // Merge notifications with read status
+        const notificationsWithReadStatus = notifications?.map((notification) => ({
+            ...notification,
+            is_read: readMap.get(notification.id.toString()) || false,
         })) || [];
 
         // Sort: unread first, then by date
-        announcementsWithReadStatus.sort((a, b) => {
+        notificationsWithReadStatus.sort((a, b) => {
             if (a.is_read !== b.is_read) {
                 return a.is_read ? 1 : -1; // unread first
             }
@@ -64,11 +64,11 @@ export async function GET(req: NextRequest) {
         });
 
         // Count unread
-        const unreadCount = announcementsWithReadStatus.filter((a) => !a.is_read).length;
+        const unreadCount = notificationsWithReadStatus.filter((a) => !a.is_read).length;
 
         return NextResponse.json({
             success: true,
-            data: announcementsWithReadStatus,
+            data: notificationsWithReadStatus,
             unreadCount,
         });
     } catch (error) {

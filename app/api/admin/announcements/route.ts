@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const updateType = searchParams.get("update_type") || "all";
 
     console.log("updateType filter:", updateType);
-    
+
     let countQuery = supabase
       .from("announcements")
       .select("*", { count: "exact", head: true });
@@ -99,15 +99,53 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
+    // Create user notification for the announcement
+    const { error: notificationError } = await supabase
+      .from("user_notifications")
+      .insert({
+        notification_type: "updates",
+        reference_id: data.id.toString(),
+        title: body.title,
+        message: "A new update has been posted!",
+        created_by: body.created_by,
+      });
+    
+    if (notificationError) {
+      console.error("Notification insert error:", notificationError.message);
+      // Return success but include warning about notification failure
+      return NextResponse.json(
+        {
+          success: true,
+          data,
+          notificationWarning: "Notification creation failed: " + notificationError.message
+        },
+        { status: 201 }
+      );
+    }
+    // =====================================================================
+
     return NextResponse.json(
-      { success: true, data },
+      {
+        success: true,
+        data,
+      },
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST announcements unexpected error:", error);
-    return NextResponse.json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    console.error(
+      "POST announcements unexpected error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }

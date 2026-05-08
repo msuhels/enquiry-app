@@ -31,12 +31,18 @@ export async function POST(
             return NextResponse.json({ success: false, message: "Announcement ID is required" }, { status: 400 });
         }
 
+        // Convert announcementId to number (bigint) for database query
+        const notificationIdNum = parseInt(announcementId, 10);
+        if (isNaN(notificationIdNum)) {
+            return NextResponse.json({ success: false, message: "Invalid announcement ID" }, { status: 400 });
+        }
+
         // Check if a record already exists
         const { data: existingRecord, error: fetchError } = await serviceRoleSupabase
-            .from("user_notifications")
+            .from("isread_user_notification")
             .select("*")
             .eq("user_id", user.id)
-            .eq("announcement_id", announcementId)
+            .eq("user_notification_id", notificationIdNum)
             .maybeSingle();
 
         if (fetchError) {
@@ -49,7 +55,7 @@ export async function POST(
         if (existingRecord) {
             // Update existing record
             const { data, error } = await serviceRoleSupabase
-                .from("user_notifications")
+                .from("isread_user_notification")
                 .update({ is_read: true })
                 .eq("id", existingRecord.id)
                 .select()
@@ -64,10 +70,10 @@ export async function POST(
         } else {
             // Insert new record
             const { data, error } = await serviceRoleSupabase
-                .from("user_notifications")
+                .from("isread_user_notification")
                 .insert({
                     user_id: user.id,
-                    announcement_id: announcementId,
+                    user_notification_id: notificationIdNum,
                     is_read: true,
                 })
                 .select()
