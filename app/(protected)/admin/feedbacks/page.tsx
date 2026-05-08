@@ -42,9 +42,53 @@ export default function FeedbacksPage() {
     const apiUrl = `/api/admin/feedbacks?${queryParams.toString()}&page=${page}&limit=${itemsPerPage}`;
 
     const { data, isLoading, error } = useFetch(apiUrl);
+    const { data: analyticsData } = useFetch('/api/admin/feedbacks/analytics');
 
     console.log("feedbacks API response:", { data, isLoading, error });
+    console.log("feedbacks analytics:", analyticsData);
     const feedbacks = data?.data || [];
+
+    const departmentAnalytics = analyticsData?.data?.departmentAnalytics || [];
+
+    // Department-wise stat cards (5 cards for 5 departments)
+    const departments = ['Sales', 'Admission', 'Scholarship', 'Visa', 'Overall'];
+
+    // Get department rating and count
+    const getDeptData = (deptName: string) => {
+        const deptData = departmentAnalytics.find((d: any) =>
+            d.department.toLowerCase() === deptName.toLowerCase()
+        );
+        return deptData ? { rating: parseFloat(deptData.averageRating), count: deptData.totalRatings } : { rating: 0, count: 0 };
+    };
+
+    // Analytics cards for Table component (5 department ratings)
+    const analyticsCards = [
+        {
+            title: "Sales",
+            total: getDeptData('Sales').rating,
+            data: getDeptData('Sales').count > 0 ? [{ label: "Ratings", value: getDeptData('Sales').count }] : undefined,
+        },
+        {
+            title: "Admission",
+            total: getDeptData('Admission').rating,
+            data: getDeptData('Admission').count > 0 ? [{ label: "Ratings", value: getDeptData('Admission').count }] : undefined,
+        },
+        {
+            title: "Scholarship",
+            total: getDeptData('Scholarship').rating,
+            data: getDeptData('Scholarship').count > 0 ? [{ label: "Ratings", value: getDeptData('Scholarship').count }] : undefined,
+        },
+        {
+            title: "Visa",
+            total: getDeptData('Visa').rating,
+            data: getDeptData('Visa').count > 0 ? [{ label: "Ratings", value: getDeptData('Visa').count }] : undefined,
+        },
+        {
+            title: "Overall",
+            total: getDeptData('Overall').rating,
+            data: getDeptData('Overall').count > 0 ? [{ label: "Ratings", value: getDeptData('Overall').count }] : undefined,
+        },
+    ];
 
     const departmentOptions = [
         { value: "sales", label: "Sales" },
@@ -77,6 +121,14 @@ export default function FeedbacksPage() {
             sortable: true,
             render: (row: any) => (
                 <span>{row.createdby?.full_name || "Unknown"}</span>
+            ),
+        },
+        {
+            key: "organization",
+            label: "organization",
+            sortable: true,
+            render: (row: any) => (
+                <span>{row.createdby?.organization_name || "Unknown"}</span>
             ),
         },
         {
@@ -124,6 +176,7 @@ export default function FeedbacksPage() {
                     total={data?.pagination?.total || 0}
                     itemsPerPage={itemsPerPage}
                     emptyMessage="No feedbacks found."
+                    analyticsCards={analyticsCards}
                 />
             </div>
         </div>

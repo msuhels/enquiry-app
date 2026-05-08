@@ -34,7 +34,7 @@ export async function GET(request: Request) {
         .from("feedbacks")
         .select(`
             *,
-            user:users!feedbacks_user_id_fkey (full_name, email)
+            user:users!feedbacks_user_id_fkey (full_name, email, organization)
         `);
 
     // Apply department filter
@@ -78,8 +78,9 @@ export async function GET(request: Request) {
     const transformedFeedbacks = (feedbacks || []).map((feedback: any) => ({
         ...feedback,
         createdby: feedback.user ? {
-            full_name: feedback.user.full_name || "Unknown"
-        } : { full_name: "Unknown" }
+            full_name: feedback.user.full_name || "Unknown",
+            organization_name: feedback.user.organization || "Unknown"
+        } : { full_name: "Unknown", organization_name: "Unknown" }
     }));
 
     return NextResponse.json({
