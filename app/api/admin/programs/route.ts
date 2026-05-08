@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       remark1,
       remark2,
       interview_required,
+      created_by,
     } = body;
 
     const hasProgramData = [
@@ -134,6 +135,7 @@ export async function POST(request: NextRequest) {
       if (!result.data) {
         return NextResponse.json({ error: "Program creation failed" }, { status: 500 });
       }
+      // Save admin notification (for admin panel)
       const data = await saveNotification({
         program_id: result.data.id,
         title: `A New Program Has Been Created - ${result?.data.course_name}`,
@@ -151,9 +153,31 @@ export async function POST(request: NextRequest) {
       });
 
       if (!data) {
-        console.error("LOGGING : Failed to create notification:", result.error);
+        console.error("LOGGING : Failed to create admin notification:", result.error);
         return NextResponse.json({ error: "Notification creation failed" }, { status: 500 });
       }
+
+      // =====================================================================
+      // TODO: Uncomment this block after fixing RLS permissions on user_notifications table
+      // Create user notification for B2B users
+      // const supabase = createServiceRoleClient();
+      // const userNotificationMessage = `New program added: ${result.data.course_name} at ${result.data.university}`;
+      // 
+      // const { error: userNotificationError } = await supabase
+      //   .from("user_notifications")
+      //   .insert({
+      //     notification_type: "program",
+      //     reference_id: result.data.id.toString(),
+      //     title: `New Program: ${result.data.course_name}`,
+      //     message: userNotificationMessage.slice(0, 255),
+      //     created_by: body.created_by,
+      //   });
+      //
+      // if (userNotificationError) {
+      //   console.error("LOGGING : Failed to create user notification:", userNotificationError.message);
+      //   // Don't fail the request, just log the error
+      // }
+      // =====================================================================
     }
 
     console.log("LOGGING : Program created successfully via API");

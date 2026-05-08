@@ -13,9 +13,9 @@ interface Announcement {
   id: string;
   created_at: string;
   title: string;
-  content: string;
-  image_url: string | null;
-  created_by: string;
+  message: string | null;
+  notification_type: string;
+  reference_id: string;
   is_read: boolean;
 }
 
@@ -25,14 +25,18 @@ interface Announcement {
 const NotificationItem = ({
   id,
   title,
-  content,
+  message,
+  notification_type,
+  reference_id,
   createdAt,
   isRead,
   onMarkRead,
 }: {
   id: string;
   title: string;
-  content: string;
+  message: string | null;
+  notification_type: string;
+  reference_id: string;
   createdAt: string;
   isRead: boolean;
   onMarkRead: (id: string) => void;
@@ -60,7 +64,7 @@ const NotificationItem = ({
             ${!isRead ? "text-[#3A3886]" : "text-gray-400"}`}
           />
           <div className="max-w-lg">
-           <Link href={`/b2b/updates/view/${id}`} className="">
+           <Link href={`/b2b/${notification_type}/view/${reference_id}`} className="">
            
             <p
               className={`text-base font-semibold 
@@ -72,6 +76,9 @@ const NotificationItem = ({
             <p>
               {title}...
             </p>
+              <p className="text-sm text-gray-600 mt-1">
+                {message || ""}
+              </p>
             </Link>
           </div>
         </div>
@@ -196,7 +203,9 @@ export default function NotificationsPage() {
                   key={announcement.id}
                   id={announcement.id}
                   title={announcement.title}
-                  content={announcement.content}
+                  message={announcement.message}
+                  notification_type={announcement.notification_type}
+                  reference_id={announcement.reference_id}
                   createdAt={announcement.created_at}
                   isRead={announcement.is_read}
                   onMarkRead={markAsRead}

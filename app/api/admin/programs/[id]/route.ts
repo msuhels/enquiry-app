@@ -57,6 +57,7 @@ export async function PATCH(
       special_requirements,
       prev_degree_required,
       remarks,
+      interview_required,
       minimum_percentage,
       degree_duration,
       remark1,
@@ -69,6 +70,9 @@ export async function PATCH(
     const hasProgramData = [
       university,
       previous_or_current_study,
+      degree_duration,
+      interview_required,
+      minimum_percentage,
       degree_going_for,
       course_name,
       ielts_requirement,
@@ -91,11 +95,21 @@ export async function PATCH(
     }
 
     // Helper function to convert empty strings to null for numeric fields
-    const toNumeric = (value: string | undefined | null): number | null => {
-      if (!value || value.trim() === "") return null;
-      const num = parseFloat(value);
-      return isNaN(num) ? null : num;
-    };
+   const toNumeric = (
+  value: string | number | undefined | null
+): number | null => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  const num = Number(value);
+
+  return isNaN(num) ? null : num;
+};
 
     const programData = {
      university,
@@ -108,8 +122,9 @@ export async function PATCH(
       remarks,
       remark1,
       remark2,
+      interview_required,
       minimum_percentage: toNumeric(minimum_percentage) as any,
-      degree_duration: toNumeric(degree_duration) as any,
+      degree_duration,
       english_proficiency_type,
       minimum_ielts_score: toNumeric(minimum_ielts_score) as any,
     } as Partial<Program>;
