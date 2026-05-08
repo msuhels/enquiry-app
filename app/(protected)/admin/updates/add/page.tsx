@@ -287,9 +287,25 @@ export default function NewUpdatePage() {
 
         <div className="rounded-2xl bg-white p-6 shadow-lg">
           <div className="space-y-6">
+
+            {/* announcement types */}
+            <div className="z-[999]">
+             <SearchSelect
+                label="update type"
+                name="update_type"
+                width="20%"
+                value={updateType || ""}
+                options={UPDATE_TYPES}
+                onChange={(value) =>
+                  setUpdateType(value)
+                }
+              /> 
+            </div>
+
+            
             {/* Title */}
-            <div>
-              <label className="mb-2 block text-lg font-semibold text-gray-700">
+            <div >
+              <label className="mb-2 mt-4 block text-lg font-semibold text-gray-700">
                 Title
               </label>
 
@@ -305,24 +321,12 @@ export default function NewUpdatePage() {
               />
             </div>
 
-            {/* announcement types */}
-            <div className="z-[999]">
-             <SearchSelect
-                label="update type"
-                name="update_type"
-                width="20%"
-                value={updateType || ""}
-                options={UPDATE_TYPES}
-                onChange={(value) =>
-                  setUpdateType(value)
-                }
-              /> 
-            </div>
+            
            
 
             {/* CKEditor */}
             <div className="document-editor">
-  <div className="document-editor__toolbar" ref={toolbarRef} ></div>
+  <div className="document-editor__toolbar w-[600px] flex items-center absolute left-[450px]" ref={toolbarRef} ></div>
   <div className="document-editor__editable-container">
     <div className="document-editor__editable">
               <CKEditor
