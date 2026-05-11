@@ -131,11 +131,17 @@ export default function UserUpdatePage() {
         setUser((prev) => ({ ...prev, password: data.password }));
         setShowPassword(true);
       } else {
-        alert(data.error || "Failed to fetch password");
+        toast.error(data.error || "Failed to fetch password", {
+          position: "top-center",
+          richColors: true,
+        });
       }
     } catch (err) {
       console.error(err);
-      alert("Error fetching password");
+      toast.error("Error fetching password", {
+        position: "top-center",
+        richColors: true,
+      });
     } finally {
       setLoadingPassword(false);
     }

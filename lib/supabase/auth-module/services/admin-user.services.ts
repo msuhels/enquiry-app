@@ -308,36 +308,30 @@ export async function updateUser(id: string, updates: any) {
           return { success: false, error: authError.message };
         }
 
-        // Update other fields (excluding password and encryption fields)
-        // IMPORTANT: Remove password_iv, password_tag, password_algo to avoid overwriting
-        // the newly generated encryption values with old ones from frontend
-        const {
-          password,
-          password_iv,
-          password_tag,
-          password_algo,
-          ...otherUpdates
-        } = updates;
-
-        if (Object.keys(otherUpdates).length > 0) {
-          await supabaseAdmin
-            .from("users")
-            .update({
-              ...otherUpdates,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", id);
-        }
+        // IMPORTANT: Do NOT do a third update here!
+        // The first update already stores the encrypted password with IV, tag, and algo.
+        // Doing a third update with spread operator would overwrite the encryption fields
+        // with undefined values, breaking the decryption functionality.
+        // 
+        // The first update (lines 284-295) already handles:
+        // - password: encrypted ciphertext
+        // - password_iv: encryption IV
+        // - password_tag: authentication tag
+        // - password_algo: encryption algorithm
+        // - updated_at: timestamp
+        //
+        // We return early here to avoid the third update that would corrupt the encryption fields.
+        return { success: true, data };
       }
     } else {
       // No password update - just update other fields
       // Also remove encryption fields to prevent any accidental overwrites
-      const { 
-        password, 
-        password_iv, 
-        password_tag, 
-        password_algo, 
-        ...updatesWithoutPassword 
+      const {
+        password,
+        password_iv,
+        password_tag,
+        password_algo,
+        ...updatesWithoutPassword
       } = updates;
 
       const result = await supabaseAdmin
