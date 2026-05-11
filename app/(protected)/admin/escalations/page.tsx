@@ -134,17 +134,6 @@ const escalationpage = () => {
         </div>
       ),
     },
-    {
-      key: "status",
-      label: "Status",
-      render: (row: Escalation) => (
-        <div>
-          <h1>
-            {row.status}
-          </h1>
-        </div>
-      ),
-    },
 
     {
       key: "created_at",
@@ -154,6 +143,29 @@ const escalationpage = () => {
           {row.created_at ? new Date(row.created_at).toLocaleDateString() : "-"}
         </div>
       ),
+    },
+     {
+      key: "status",
+      label: "Status",
+         render: (row: Escalation) => {
+        const status = row.status || "open";
+        const isOpen = status === "open";
+        return (
+            <div className="flex items-center gap-2">
+                <span className={`
+                    inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium capitalize border
+                    ${isOpen 
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        :"bg-amber-50 text-amber-700 border-amber-200" 
+                    }
+                `}>
+                    <span className={`w-2 h-2 rounded-full ${isOpen ? "bg-emerald-500" : "bg-amber-500 "}`}></span>
+                    {status}
+                </span>
+            </div>
+        );
+    },
+
     },
     {
       key: "action",
