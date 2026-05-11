@@ -32,6 +32,56 @@ export default function NewEscalationPage() {
         { value: "3", label: "Level 3" },
         { value: "4", label: "Level 4" },
     ];
+
+
+    // Function to get zone-specific label for a level
+const getLevelLabel = (value: string) => {
+    const zoneLabels: Record<string, Record<string, string>> = {
+        central: {
+            "1": "Level 1 - Ms. Anamika Tiwari, Ms. Shivangee Patwa , Mr. Amit Upadhyay : Admission Application, Scholarship Application & pre-Enrollment, Visa Application, Sales & Marketing",
+            "2": "Level 2 - Ms. Nikita Rahangdale, Mr. Amit Upadhyay : Admission Application to Visa, Sales & Marketing",
+            "3": "Level 3 - Mr. Ravi Upadhyay, Mr. Amit Upadhyay : Admission Application to Visa & Sales & Marketing",
+            "4": "Level 4 - Director Office: Admission to Visa & Sales & Marketing",
+        },
+        east: {
+             "1": "Level 1 - Ms. Anamika Tiwari, Ms. Shivangee Patwa , Mr. Amit Upadhyay : Admission Application, Scholarship Application & pre-Enrollment, Visa Application, Sales & Marketing",
+            "2": "Level 2 - Ms. Nikita Rahangdale, Mr. Amit Upadhyay : Admission Application to Visa, Sales & Marketing",
+            "3": "Level 3 - Mr. Ravi Upadhyay, Mr. Amit Upadhyay : Admission Application to Visa & Sales & Marketing",
+            "4": "Level 4 - Director Office: Admission to Visa & Sales & Marketing",
+        },
+        west: {
+            "1": "Level 1 - Ms. Anamika Tiwari, Ms. Shivangee Patwa , Mr. Amit Upadhyay : Admission Application, Scholarship Application & pre-Enrollment, Visa Application, Sales & Marketing",
+            "2": "Level 2 - Ms. Nikita Rahangdale, Mr. Amit Upadhyay : Admission Application to Visa, Sales & Marketing",
+            "3": "Level 3 - Mr. Ravi Upadhyay, Mr. Amit Upadhyay : Admission Application to Visa & Sales & Marketing",
+            "4": "Level 4 - Director Office: Admission to Visa & Sales & Marketing",
+        },
+        north: {
+             "1": "Level 1 - Ms. Anamika Tiwari, Ms. Shivangee Patwa , Mr. Amit Upadhyay : Admission Application, Scholarship Application & pre-Enrollment, Visa Application, Sales & Marketing",
+            "2": "Level 2 - Mr. Amit Upadhyay : Admission Application to Visa, Sales & Marketing",
+            "3": "Level 3 - Mr. Ravi Upadhyay, Mr. Amit Upadhyay : Admission Application to Visa & Sales & Marketing",
+            "4": "Level 4 - Director Office: Admission to Visa & Sales & Marketing",
+        },
+        south: {
+             "1": "Level 1 - Ms. Anamika Tiwari, Ms. Shivangee Patwa , Mr. Amit Upadhyay : Admission Application, Scholarship Application & pre-Enrollment, Visa Application, Sales & Marketing",
+            "2": "Level 2 - Ms. Nargis Malbarwala, Mr. Amit Upadhyay : Admission Application to Visa, Sales & Marketing",
+            "3": "Level 3 - Mr. Ravi Upadhyay, Mr. Amit Upadhyay : Admission Application to Visa & Sales & Marketing",
+            "4": "Level 4 - Director Office: Admission to Visa & Sales & Marketing",
+        },
+    };
+
+    // Default labels when no zone is selected
+    const defaultLabels: Record<string, string> = {
+        "1": "Level 1 - Admission Application, Scholarship Application & pre Enrollment, Visa Application, Sales & Marketing",
+        "2": "Level 2 - Admission Application to Visa, Sales & Marketing",
+        "3": "Level 3 - Admission Application to Visa & Sales & Marketing",
+        "4": "Level 4 - Admission to Visa & Sales & Marketing",
+    };
+
+    if (!zone) return defaultLabels[value] || "";
+    return zoneLabels[zone]?.[value] || defaultLabels[value] || "";
+};
+
+
     const handleSubmit = async () => {
         if (!zone) {
             toast.error("Please select a zone");
@@ -118,8 +168,8 @@ export default function NewEscalationPage() {
                         {/* Level */}
                         <div>
                             <label className="mb-2 block text-lg font-semibold text-gray-700">
-                                Level <span className="text-red-500">*</span>
-                            </label>
+    {zone ? `${zone.charAt(0).toUpperCase() + zone.slice(1)} ` : ""}Level <span className="text-red-500">*</span>
+</label>
 
                             <select
                                 value={level}
@@ -129,7 +179,7 @@ export default function NewEscalationPage() {
                                 <option value="">Select Level</option>
                                 {levelOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
-                                        {option.label}
+                                        {getLevelLabel(option.value)}
                                     </option>
                                 ))}
                             </select>

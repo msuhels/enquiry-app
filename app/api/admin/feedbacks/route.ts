@@ -24,18 +24,20 @@ export async function GET(request: Request) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Build base query for count
+    // Build base query for count - FILTER BY CURRENT USER for B2B
     let countQuery = supabase
         .from("feedbacks")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
 
-    // Build base query for data with user join
+    // Build base query for data with user join - FILTER BY CURRENT USER for B2B
     let dataQuery = supabase
         .from("feedbacks")
         .select(`
             *,
             user:users!feedbacks_user_id_fkey (full_name, email, organization)
-        `);
+        `)
+        .eq("user_id", user.id);
 
     // Apply department filter
     if (department) {

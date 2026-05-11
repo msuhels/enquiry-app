@@ -57,13 +57,13 @@ export async function PATCH(
       special_requirements,
       prev_degree_required,
       remarks,
-      interview_required,
       minimum_percentage,
       degree_duration,
       remark1,
       remark2,
       english_proficiency_type,
-      minimum_ielts_score,
+      required_band,
+      others_exams,
     } = body;
 
     // Validate that at least one field is being updated
@@ -71,11 +71,12 @@ export async function PATCH(
       university,
       previous_or_current_study,
       degree_duration,
-      interview_required,
       minimum_percentage,
       degree_going_for,
       course_name,
       ielts_requirement,
+      required_band,
+      others_exams,
       remark1,
       remark2,
       special_requirements,
@@ -122,11 +123,11 @@ export async function PATCH(
       remarks,
       remark1,
       remark2,
-      interview_required,
       minimum_percentage: toNumeric(minimum_percentage) as any,
       degree_duration,
       english_proficiency_type,
-      minimum_ielts_score: toNumeric(minimum_ielts_score) as any,
+      required_band: toNumeric(required_band) as any,
+      others_exams,
     } as Partial<Program>;
 
     const result = await updateProgram(id, programData);
