@@ -298,6 +298,13 @@ export default function EnquirySystem() {
         program.previous_or_current_study || "",
         program.degree_going_for || "",
         program.ielts_requirement || "",
+        program.degree_duration || "",
+        program.interview_required || "",
+        program.english_proficiency_type || "",
+        program.prev_degree_required || "",
+        program.minimum_percentage || "",
+        program.minimum_ielts_score || "",
+        program.special_requirements || "",
       ]);
 
       autoTable(doc, {
@@ -308,6 +315,13 @@ export default function EnquirySystem() {
             "Previous / Current Study",
             "Degree Going For",
             "IELTS Requirment",
+            "Degree Duration",
+            "Interview Required",
+            "English Proficiency",
+            "Previous Degree Required",
+            "Minimum Percentage",
+            "Minimum IELTS Score",
+            "Special Requirements",
           ],
         ],
         body: tableData,
@@ -553,13 +567,13 @@ const ProgramsTable = ({ data }: any) => {
                 "Course Name",
                 "Previous Study",
                 "Degree Going For",
-                "IELTS Score",
                 "English Proficiency",
+                "IELTS Score",
                 "Previous Degree Required",
                 "Interview Required",
                 "Special Requirements",
                 "Remarks",
-                "degree_duration",
+                "degree duration",
                 "minimum %",
               ].map((head) => (
                 <th
@@ -587,11 +601,11 @@ const ProgramsTable = ({ data }: any) => {
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
-                  {item.minimum_ielts_score || "-"}
-                </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.english_proficiency_type || "-"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
+                  {item.minimum_ielts_score || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.prev_degree_required || "-"}
