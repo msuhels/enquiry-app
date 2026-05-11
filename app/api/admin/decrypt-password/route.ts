@@ -55,16 +55,31 @@ export async function POST(req: NextRequest) {
       tagLength: data.password_tag?.length,
       tagValue: data.password_tag,
       algo: data.password_algo,
+      allFields: {
+        password: !!data.password,
+        password_iv: !!data.password_iv,
+        password_tag: !!data.password_tag,
+        password_algo: !!data.password_algo
+      }
     });
 
     // Check if this looks like plaintext (very short, doesn't look like encrypted data)
-    // Real encrypted passwords should have IV and tag, and ciphertext should be longer
-    const isLikelyPlaintext = !data.password_iv || data.password?.length < 20;
+    // Real encrypted passwords should have IV and tag
+    // BOTH password_iv AND password_tag must be present for valid encryption
+    // Note: We don't check password length because ciphertext length varies based on plaintext length
+    const hasValidEncryption = data.password_iv && data.password_tag;
 
-    if (isLikelyPlaintext) {
-      console.log("DEBUG: Detected plaintext password - returning as-is");
-      // Return the plaintext password directly
-      return NextResponse.json({ password: data.password }, { status: 200 });
+    if (!hasValidEncryption) {
+      console.log("DEBUG: Invalid encryption - missing IV or tag. Details:", {
+        hasPasswordIv: !!data.password_iv,
+        hasPasswordTag: !!data.password_tag,
+        passwordLength: data.password?.length,
+        passwordValue: data.password ? data.password.substring(0, 30) + "..." : "null"
+      });
+      // Return an error instead of returning ciphertext as plaintext
+      return NextResponse.json({
+        error: "Password encryption data is incomplete. Please reset the password."
+      }, { status: 400 });
     }
 
     // Decrypt

@@ -10,85 +10,85 @@ import Breadcrumbs from "@/components/ui/breadCrumbs";
 type RatingValue = "Very Good" | "Good" | "Average" | "Poor";
 
 interface ParameterRating {
-    department:string;
+    department: string;
     parameter: string;
     rating: RatingValue | "";
     remark: string;
 }
 
-const departmentParameters: Record<string, {department:string,parameter:string}[]> = {
+const departmentParameters: Record<string, { department: string, parameter: string }[]> = {
     sales: [
-       { department:"sales",parameter:"Marketing Material Quality"},
-        {department:"sales",parameter:"Lead Response Time"},
-        {department:"sales",parameter:"Sales Assistance Support"},
-        {department:"sales",parameter:"Course Options Availability"},
-        {department:"sales",parameter:"Query Resolution Speed"},
-        {department:"sales",parameter:"Communication & Coordination"},
-        {department:"sales",parameter:"Product & Process Training"},
-        {department:"sales",parameter:"Overall Experience"},
+        { department: "sales", parameter: "Marketing Material Quality" },
+        { department: "sales", parameter: "Lead Response Time" },
+        { department: "sales", parameter: "Sales Assistance Support" },
+        { department: "sales", parameter: "Course Options Availability" },
+        { department: "sales", parameter: "Query Resolution Speed" },
+        { department: "sales", parameter: "Communication & Coordination" },
+        { department: "sales", parameter: "Product & Process Training" },
+        { department: "sales", parameter: "Overall Experience" },
     ],
     admission: [
-        {department:"admission",parameter:"Documentation Checking Accuracy"},
-        {department:"admission",parameter:"Document Correction Support"},
-        {department:"admission",parameter:"SOP Writing Quality"},
-        {department:"admission",parameter:"CV Editing & Profile Enhancement"},
-        {department:"admission",parameter:"Application Submission Timeliness"},
-        {department:"admission",parameter:"University Follow-up Efficiency"},
-        {department:"admission",parameter:"Offer / Rejection Updates Speed"},
-        {department:"admission",parameter:"Interview Preparation and dealines Support"},
-        {department:"admission",parameter:"Exam Guidance (if required)"},
-        {department:"admission",parameter:"Deadline Management (Opening/Closing)"},
-        {department:"admission",parameter:"Regular Updates & Communication"},
-        {department:"admission",parameter:"Issue Resolution / Escalation Handling"},
-        {department:"admission",parameter:"Overall Application Handling Experience"},
+        { department: "admission", parameter: "Documentation Checking Accuracy" },
+        { department: "admission", parameter: "Document Correction Support" },
+        { department: "admission", parameter: "SOP Writing Quality" },
+        { department: "admission", parameter: "CV Editing & Profile Enhancement" },
+        { department: "admission", parameter: "Application Submission Timeliness" },
+        { department: "admission", parameter: "University Follow-up Efficiency" },
+        { department: "admission", parameter: "Offer / Rejection Updates Speed" },
+        { department: "admission", parameter: "Interview Preparation and dealines Support" },
+        { department: "admission", parameter: "Exam Guidance (if required)" },
+        { department: "admission", parameter: "Deadline Management (Opening/Closing)" },
+        { department: "admission", parameter: "Regular Updates & Communication" },
+        { department: "admission", parameter: "Issue Resolution / Escalation Handling" },
+        { department: "admission", parameter: "Overall Application Handling Experience" },
     ],
     scholarship: [
-        {department:"scholarship",parameter:"Scholarship Information Clarity"},
-        {department:"scholarship",parameter:"Timely Sharing of Scholarship Options"},
-        {department:"scholarship",parameter:"Document Requirement Guidance"},
-        {department:"scholarship",parameter:"Documentation Checking Accuracy"},
-        {department:"scholarship",parameter:"Application Submission Timeliness"},
-        {department:"scholarship",parameter:"Follow-ups on Scholarship Status"},
-        {department:"scholarship",parameter:"Communication & Updates"},
-        {department:"scholarship",parameter:"Transparency in Chances / Outcomes"},
-        {department:"scholarship",parameter:"Overall Scholarship Support Experience"}
+        { department: "scholarship", parameter: "Scholarship Information Clarity" },
+        { department: "scholarship", parameter: "Timely Sharing of Scholarship Options" },
+        { department: "scholarship", parameter: "Document Requirement Guidance" },
+        { department: "scholarship", parameter: "Documentation Checking Accuracy" },
+        { department: "scholarship", parameter: "Application Submission Timeliness" },
+        { department: "scholarship", parameter: "Follow-ups on Scholarship Status" },
+        { department: "scholarship", parameter: "Communication & Updates" },
+        { department: "scholarship", parameter: "Transparency in Chances / Outcomes" },
+        { department: "scholarship", parameter: "Overall Scholarship Support Experience" }
     ],
     visa: [
-       {department:"visa",parameter:"Visa Process Explanation Clarity"},
-       {department:"visa",parameter:"Documentation Guidance"},
-       {department:"visa",parameter:"Documentation Checking Accuracy"},
-       {department:"visa",parameter:"Financial Documentation Support"},
-       {department:"visa",parameter:"Visa Letter Preparation"},
-       {department:"visa",parameter:"Appointment Booking Support"},
-       {department:"visa",parameter:"Interview Preparation (if applicable)"},
-       {department:"visa",parameter:"Timely Updates & Communication"},
-       {department:"visa",parameter:"Handling of Queries / Urgent Cases"},
-       {department:"visa",parameter:"Transparency in Chances / Risk"},
-       {department:"visa",parameter:"Rejection Handling & Re-application Support"},
-       {department:"visa",parameter:"Overall Visa Process Experience"}
+        { department: "visa", parameter: "Visa Process Explanation Clarity" },
+        { department: "visa", parameter: "Documentation Guidance" },
+        { department: "visa", parameter: "Documentation Checking Accuracy" },
+        { department: "visa", parameter: "Financial Documentation Support" },
+        { department: "visa", parameter: "Visa Letter Preparation" },
+        { department: "visa", parameter: "Appointment Booking Support" },
+        { department: "visa", parameter: "Interview Preparation (if applicable)" },
+        { department: "visa", parameter: "Timely Updates & Communication" },
+        { department: "visa", parameter: "Handling of Queries / Urgent Cases" },
+        { department: "visa", parameter: "Transparency in Chances / Risk" },
+        { department: "visa", parameter: "Rejection Handling & Re-application Support" },
+        { department: "visa", parameter: "Overall Visa Process Experience" }
 
     ],
-    overall:[
-        {department:"sales",parameter:" Marketing Material Quality"},
-        {department:"sales",parameter:"Lead Handling & Counseling"},
-        {department:"sales",parameter:"Objection Handling and Response Time"},
-        {department:"admission",parameter:"Documentation & SOP/CV Support"},
-        {department:"admission",parameter:"Application Submission Timeliness"},
-        {department:"admission",parameter:"University Follow-ups & Updates"},
-        {department:"scholarship",parameter:"Scholarship Guidance & Clarity"},
-        {department:"scholarship",parameter:"Scholarship Documentation Guidance"},
-        {department:"scholarship",parameter:"Application Support & Updates"},
-        {department:"visa",parameter:"Documentation & Financial Guidance"},
-        {department:"visa",parameter:"Interview / Appointment Support"},
-        {department:"visa",parameter:"Communication & Transparency"},
-        {department:"overall",parameter:"End-to-End Experience"}
+    overall: [
+        { department: "sales", parameter: " Marketing Material Quality" },
+        { department: "sales", parameter: "Lead Handling & Counseling" },
+        { department: "sales", parameter: "Objection Handling and Response Time" },
+        { department: "admission", parameter: "Documentation & SOP/CV Support" },
+        { department: "admission", parameter: "Application Submission Timeliness" },
+        { department: "admission", parameter: "University Follow-ups & Updates" },
+        { department: "scholarship", parameter: "Scholarship Guidance & Clarity" },
+        { department: "scholarship", parameter: "Scholarship Documentation Guidance" },
+        { department: "scholarship", parameter: "Application Support & Updates" },
+        { department: "visa", parameter: "Documentation & Financial Guidance" },
+        { department: "visa", parameter: "Interview / Appointment Support" },
+        { department: "visa", parameter: "Communication & Transparency" },
+        { department: "overall", parameter: "End-to-End Experience" }
 
     ]
 };
 
 const ratingOptions: RatingValue[] = ["Very Good", "Good", "Average", "Poor"];
 
-const improvementOptions: Record<string, string[]> =  {
+const improvementOptions: Record<string, string[]> = {
     "sales": [
         "Faster Response Required",
         "Better Training Needed",
@@ -97,15 +97,15 @@ const improvementOptions: Record<string, string[]> =  {
         "More Transparency"
     ],
     "admission": [
-       "Documentation Stage",
-        "SOP / CV Stage", 
+        "Documentation Stage",
+        "SOP / CV Stage",
         "Application Submission",
         "University Follow-ups",
         "Communication Delays",
         "Lack of Updates"
     ],
     "scholarship": [
-       "Understanding Eligibility",
+        "Understanding Eligibility",
         "Documentation Requirements",
         "Application Deadlines",
         "Lack of Updates",
@@ -113,13 +113,14 @@ const improvementOptions: Record<string, string[]> =  {
         "Student Expectations Mismatch"
     ],
     "visa": [
-       "Documentation Preparation",
+        "Documentation Preparation",
         "Financial Requirements",
         "Appointment Delays",
         "Interview Preparation",
         "Lack of Updates",
         "Student Fear / Confusion"
-    ]};
+    ]
+};
 
 const ratingColors: Record<RatingValue, string> = {
     "Very Good": "bg-green-500 hover:bg-green-600",
@@ -281,112 +282,110 @@ export default function NewFeedbackPage() {
 
                             {/* Rating Table Section */}
                             {department && ratings.length > 0 && (
-  <div className="overflow-hidden rounded-xl border border-gray-200">
-  
-  {/* Header */}
-  <div className="grid grid-cols-12 bg-[#3a3886] text-white text-sm font-semibold">
-    <div className="col-span-4 px-4 py-3">Parameter</div>
-    <div className="col-span-1 text-center py-3">Very Good</div>
-    <div className="col-span-1 text-center py-3">Good</div>
-    <div className="col-span-1 text-center py-3">Average</div>
-    <div className="col-span-1 text-center py-3">Poor</div>
-    <div className="col-span-4 px-4 py-3">Remarks</div>
-  </div>
+                                <div className="overflow-hidden rounded-xl border border-gray-200">
 
-  {/* Body */}
-  <div className="divide-y">
-   {department === "overall" ? (
-  // ✅ GROUPED VIEW (for overall)
-  Object.entries(groupedRatings).map(([dept, items]) => (
-    <div key={dept}>
+                                    {/* Header */}
+                                    <div className="grid grid-cols-12 bg-[#3a3886] text-white text-sm font-semibold">
+                                        <div className="col-span-4 px-4 py-3">Parameter</div>
+                                        <div className="col-span-1 text-center py-3">Very Good</div>
+                                        <div className="col-span-1 text-center py-3">Good</div>
+                                        <div className="col-span-1 text-center py-3">Average</div>
+                                        <div className="col-span-1 text-center py-3">Poor</div>
+                                        <div className="col-span-4 px-4 py-3">Remarks</div>
+                                    </div>
 
-      {/* Department Header */}
-      <div className="bg-gray-100 px-4 py-2 font-semibold text-[#3a3886] uppercase">
-        {dept}
-      </div>
+                                    {/* Body */}
+                                    <div className="divide-y">
+                                        {department === "overall" ? (
+                                            // ✅ GROUPED VIEW (for overall)
+                                            Object.entries(groupedRatings).map(([dept, items]) => (
+                                                <div key={dept}>
 
-      {items.map((item) => {
-        const realIndex = ratings.findIndex(
-          r => r.parameter === item.parameter && r.department === item.department
-        );
+                                                    {/* Department Header */}
+                                                    <div className="bg-gray-100 px-4 py-2 font-semibold text-[#3a3886] uppercase">
+                                                        {dept}
+                                                    </div>
 
-        return (
-          <div key={item.parameter} className="grid grid-cols-12 items-center bg-white hover:bg-gray-50">
+                                                    {items.map((item) => {
+                                                        const realIndex = ratings.findIndex(
+                                                            r => r.parameter === item.parameter && r.department === item.department
+                                                        );
 
-            {/* Parameter */}
-            <div className="col-span-4 px-4 py-3 text-sm font-medium text-gray-700">
-              {item.parameter}
-            </div>
+                                                        return (
+                                                            <div key={item.parameter} className="grid grid-cols-12 items-center bg-white hover:bg-gray-50">
 
-            {/* Ratings */}
-            {ratingOptions.map((option) => (
-              <div key={option} className="col-span-1 flex justify-center">
-                <input
-                  type="checkbox"
-                  checked={item.rating === option}
-                  onChange={() => handleRatingChange(realIndex, option)}
-                  className="h-5 w-5 cursor-pointer accent-[#3a3886]"
-                />
-              </div>
-            ))}
+                                                                {/* Parameter */}
+                                                                <div className="col-span-4 px-4 py-3 text-sm font-medium text-gray-700">
+                                                                    {item.parameter}
+                                                                </div>
 
-            {/* Remark */}
-            <div className="col-span-4 px-4 py-3">
-              <input
-                type="text"
-                value={item.remark}
-                onChange={(e) => handleRemarkChange(realIndex, e.target.value)}
-                placeholder="Add remark"
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-[#3a3886] focus:outline-none"
-              />
-            </div>
+                                                                {/* Ratings */}
+                                                                {ratingOptions.map((option) => (
+                                                                    <div key={option} className="col-span-1 flex justify-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={item.rating === option}
+                                                                            onChange={() => handleRatingChange(realIndex, option)}
+                                                                            className="h-5 w-5 cursor-pointer accent-[#3a3886]"
+                                                                        />
+                                                                    </div>
+                                                                ))}
 
-          </div>
-        );
-      })}
-    </div>
-  ))
-) : (
-  // ✅ NORMAL VIEW (existing one)
-  ratings.map((item, index) => (
-    <div key={item.parameter} className="grid grid-cols-12 items-center bg-white hover:bg-gray-50">
+                                                                {/* Remark */}
+                                                                <div className="col-span-4 px-4 py-3">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={item.remark}
+                                                                        onChange={(e) => handleRemarkChange(realIndex, e.target.value)}
+                                                                        placeholder="Add remark"
+                                                                        className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-[#3a3886] focus:outline-none"
+                                                                    />
+                                                                </div>
 
-      <div className="col-span-4 px-4 py-3 text-sm font-medium text-gray-700">
-        {item.parameter}
-      </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            // ✅ NORMAL VIEW (existing one)
+                                            ratings.map((item, index) => (
+                                                <div key={item.parameter} className="grid grid-cols-12 items-center bg-white hover:bg-gray-50">
 
-      {ratingOptions.map((option) => (
-        <div key={option} className="col-span-1 flex justify-center">
-          <input
-            type="checkbox"
-            checked={item.rating === option}
-            onChange={() => handleRatingChange(index, option)}
-            className="h-5 w-5 cursor-pointer accent-[#3a3886]"
-          />
-        </div>
-      ))}
+                                                    <div className="col-span-4 px-4 py-3 text-sm font-medium text-gray-700">
+                                                        {item.parameter}
+                                                    </div>
 
-      <div className="col-span-4 px-4 py-3">
-        <input
-          type="text"
-          value={item.remark}
-          onChange={(e) => handleRemarkChange(index, e.target.value)}
-          placeholder="Add remark"
-          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-[#3a3886] focus:outline-none"
-        />
-      </div>
+                                                    {ratingOptions.map((option) => (
+                                                        <div key={option} className="col-span-1 flex justify-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.rating === option}
+                                                                onChange={() => handleRatingChange(index, option)}
+                                                                className="h-5 w-5 cursor-pointer accent-[#3a3886]"
+                                                            />
+                                                        </div>
+                                                    ))}
 
-    </div>
-  ))
-)}
-  </div>
-</div>
+                                                    <div className="col-span-4 px-4 py-3">
+                                                        <input
+                                                            type="text"
+                                                            value={item.remark}
+                                                            onChange={(e) => handleRemarkChange(index, e.target.value)}
+                                                            placeholder="Add remark"
+                                                            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-[#3a3886] focus:outline-none"
+                                                        />
+                                                    </div>
+
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
                             )}
 
-                            {/* Overall Feedback Section */}
-                            {department == "overall" ? (<></>): (
-                                <>
-                                {department && ratings.length > 0 && (
+                            {/* Overall Feedback Section - For all departments including overall */}
+                            {department && ratings.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="border-b-2 border-gray-100 pb-4">
                                         <h2 className="text-2xl font-bold text-[#3a3886]">
@@ -406,61 +405,55 @@ export default function NewFeedbackPage() {
                                     />
                                 </div>
                             )}
-                                </>
-                                
-                            )}
-                            
+
 
                             {/* Key Improvement Area Section */}
 
-                            {department == "overall" ? (<></>): (
+                            {department == "overall" ? (<></>) : (
                                 <>
-                                {department && ratings.length > 0 && (
-                                <div className="space-y-4">
-                                    <div className="border-b-2 border-gray-100 pb-4">
-                                        <h2 className="text-2xl font-bold text-[#3a3886]">
-                                            Key Improvement Area
-                                        </h2>
-                                        <p className="mt-1 text-gray-500">
-                                            Select one area that needs improvement
-                                        </p>
-                                    </div>
+                                    {department && ratings.length > 0 && (
+                                        <div className="space-y-4">
+                                            <div className="border-b-2 border-gray-100 pb-4">
+                                                <h2 className="text-2xl font-bold text-[#3a3886]">
+                                                    Key Improvement Area
+                                                </h2>
+                                                <p className="mt-1 text-gray-500">
+                                                    Select one area that needs improvement
+                                                </p>
+                                            </div>
 
-                                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                      {improvementOptions[department]?.map((option) => (
-                                            <button
-                                                key={option}
-                                                type="button"
-                                                onClick={() => handleImprovementChange(option)}
-                                                className={`flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
-                                                    improvementArea === option
-                                                        ? "border-[#3a3886] bg-[#3a3886]/5 shadow-md"
-                                                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-                                                }`}
-                                            >
-                                                <div className={`flex h-6 w-6 items-center justify-center rounded-md border-2 transition-all ${
-                                                    improvementArea === option
-                                                        ? "border-[#3a3886] bg-[#3a3886]"
-                                                        : "border-gray-300"
-                                                }`}>
-                                                    {improvementArea === option && (
-                                                        <Check className="h-4 w-4 text-white" />
-                                                    )}
-                                                </div>
-                                                <span className={`text-sm font-medium ${
-                                                    improvementArea === option
-                                                        ? "text-[#3a3886]"
-                                                        : "text-gray-600"
-                                                }`}>
-                                                    {option}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                                {improvementOptions[department]?.map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        onClick={() => handleImprovementChange(option)}
+                                                        className={`flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${improvementArea === option
+                                                            ? "border-[#3a3886] bg-[#3a3886]/5 shadow-md"
+                                                            : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                                                            }`}
+                                                    >
+                                                        <div className={`flex h-6 w-6 items-center justify-center rounded-md border-2 transition-all ${improvementArea === option
+                                                            ? "border-[#3a3886] bg-[#3a3886]"
+                                                            : "border-gray-300"
+                                                            }`}>
+                                                            {improvementArea === option && (
+                                                                <Check className="h-4 w-4 text-white" />
+                                                            )}
+                                                        </div>
+                                                        <span className={`text-sm font-medium ${improvementArea === option
+                                                            ? "text-[#3a3886]"
+                                                            : "text-gray-600"
+                                                            }`}>
+                                                            {option}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
-                                
+
                             )}
                         </div>
                     </div>
