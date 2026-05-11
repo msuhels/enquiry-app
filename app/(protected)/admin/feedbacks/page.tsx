@@ -39,7 +39,7 @@ export default function FeedbacksPage() {
     }
 
     const offset = (page - 1) * itemsPerPage;
-    const apiUrl = `/api/admin/feedbacks?${queryParams.toString()}&page=${page}&limit=${itemsPerPage}`;
+    const apiUrl = `/api/admin/feedbacks/admin?${queryParams.toString()}&page=${page}&limit=${itemsPerPage}`;
 
     const { data, isLoading, error } = useFetch(apiUrl);
     const { data: analyticsData } = useFetch('/api/admin/feedbacks/analytics');

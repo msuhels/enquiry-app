@@ -233,8 +233,8 @@ export default function EscalationsPage() {
                     data={escalations}
                     sortKey={sortKey}
                     sortDir={sortDir}
-
-
+                    searchQuery={search}
+                    onSearchChange={handleSearchChange}
                     searchSelectFilters={[
                         {
                             key: "zone",

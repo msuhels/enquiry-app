@@ -20,14 +20,14 @@ export default function NewProgramPage() {
     degree_going_for: "",
     course_name: "",
     english_proficiency_type: "",
-    minimum_ielts_score: "",
+    required_band: "",
+    others_exams: "",
     minimum_percentage: "",
     degree_duration: "",
     ielts_requirement: "",
     special_requirements: "",
     prev_degree_required: "",
     remarks: "",
-    interview_required: "",
     remark1: "",
     remark2: "",
     remark1_na: false,
@@ -309,6 +309,25 @@ export default function NewProgramPage() {
                 onChange={handleDegreeGoingChange}
               />
 
+              
+                {formData.degree_going_for === "Bachelor" &&
+                  <SearchSelect
+                    label="Other Exams"
+                    name="others_exams"  
+                    value={formData.others_exams || ""}
+                    options={[
+                      { value: "PTE", label: "PTE" },
+                      { value: "Duolingo", label: "Duolingo" },
+                    ]}
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        others_exams: value,
+                      }))
+                    }
+                  />
+                }
+
               <SearchSelect
                 label="Degree Duration"
                 name="degree_duration"
@@ -321,6 +340,19 @@ export default function NewProgramPage() {
                     degree_duration: value,
                   }))
                 }
+              />
+
+              <FormInput  
+                label="Minimum Percentage"
+                name="minimum_percentage"
+                placeholder="Enter minimum percentage"
+                type="number"
+                value={formData.minimum_percentage || ""}
+                onChange={handleInputChange}
+                required
+                min={0}
+                max={100}
+                step={0.1}
               />
 
                <SearchSelect
@@ -344,69 +376,40 @@ export default function NewProgramPage() {
                 value={formData.english_proficiency_type || ""}
                 options={[
                   { value: "IELTS", label: "IELTS" },
-                  { value: "MOU", label: "MOU" },
+                  { value: "MOI", label: "MOI" },
                 ]}
                 onChange={(value) =>
                   setFormData((prev) => ({
                     ...prev,
                     english_proficiency_type: value,
-                    minimum_ielts_score:
-                      value === "IELTS" ? prev.minimum_ielts_score : "",
+                    required_band:
+                      value === "IELTS" ? prev.required_band : "",
                   }))
                 }
               />
               {formData.english_proficiency_type === "IELTS" && (
                 <div className="flex flex-col space-y-1 relative">
                   <label className="block text-xl font-semibold text-[#3a3886] mb-2">
-                    Minimum IELTS Score
+                   Required Band
                   </label>
                   <SearchSelect
                     label=""
-                    name="minimum_ielts_score"
+                    name="required_band"
                     width="full"
-                    value={formData.minimum_ielts_score}
+                    value={formData.required_band}
                     options={ieltsScoreOptions}
                     onChange={(val) =>
                       setFormData((prev) => ({
                         ...prev,
-                        minimum_ielts_score: val,
+                        required_band: val,
                       }))
                     }
                   />
                 </div>
               )}
 
-              <div className="w-[47rem]">
-                <SearchSelect
-                  label="Interview Required"
-                  name="interview_required"
-                  width="full"
-                  value={formData.interview_required || ""}
-                  options={[
-                    { value: "Yes", label: "Yes" },
-                    { value: "No", label: "No" },
-                  ]}
-                  onChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      interview_required: value,
-                    }))
-                  }
-                  required
-                />
-              </div>
+             
 
-              <div className="w-[47rem]">
-                <FormInput
-                  label="Minimum Percentage Required"
-                  name="minimum_percentage"
-                  type="number"
-                  value={formData.minimum_percentage || ""}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Enter minimum percentage"
-                />
-              </div>
 
               {renderFields(basicInfoFields.slice(2))}
             </div>

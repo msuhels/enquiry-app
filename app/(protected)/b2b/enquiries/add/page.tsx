@@ -78,25 +78,22 @@ export default function EnquirySystem() {
     { value: "30", label: "30%" },
   ];
 
-  const interviewRequiredOptions = [
-    { value: "", label: "Select Option" },
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
-  ];
+  // REMOVED: interviewRequiredOptions - Interview Required is no longer needed
 
   const [showAdvanceFilter, setShowAdvanceFilter] = useState(false);
   const [advanceFilters, setAdvanceFilters] = useState({
     minIeltsScore: "",
     degreeDuration: "",
     minimumPercentage: "",
-    interview_required: "",
+    // REMOVED: interview_required
     english_proficiency_type: "",
-    prev_degree_required: ""
+    prev_degree_required: "",
+    others_exams: ""
   });
 
   const englishProficiencyOptions = [
     { value: "", label: "Select English Proficiency" },
-    { value: "MOU", label: "MOU" },
+    { value: "MOI", label: "MOI" },  // FIXED: Changed from "MOU" to "MOI"
     { value: "IELTS", label: "IELTS" },
   ];
 
@@ -210,7 +207,7 @@ export default function EnquirySystem() {
       let filteredPrograms = result.data;
       if (advanceFilters.minIeltsScore) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.minimum_ielts_score && parseFloat(p.minimum_ielts_score) <= parseFloat(advanceFilters.minIeltsScore)
+          p.required_band && parseFloat(p.required_band) <= parseFloat(advanceFilters.minIeltsScore)
         );
       }
       if (advanceFilters.degreeDuration) {
@@ -223,11 +220,7 @@ export default function EnquirySystem() {
           p.minimum_percentage && parseFloat(p.minimum_percentage) <= parseFloat(advanceFilters.minimumPercentage)
         );
       }
-      if (advanceFilters.interview_required) {
-        filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.interview_required && p.interview_required.toLowerCase() === advanceFilters.interview_required.toLowerCase()
-        );
-      }
+      // REMOVED: interview_required filter
 
       if (advanceFilters.english_proficiency_type) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
@@ -238,6 +231,13 @@ export default function EnquirySystem() {
       if (advanceFilters.prev_degree_required) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
           p.prev_degree_required && p.prev_degree_required === advanceFilters.prev_degree_required
+        );
+      }
+
+      // Filter by others_exams when Bachelor degree is selected
+      if (advanceFilters.others_exams && degreeGoingFor === "Bachelor") {
+        filteredPrograms = filteredPrograms.filter((p: Program) =>
+          p.others_exams && p.others_exams === advanceFilters.others_exams
         );
       }
 
@@ -376,7 +376,7 @@ export default function EnquirySystem() {
                 onChange={setPreviousOrCurrentStudy}
                 options={previousOrCurrentStudyOptions}
               />
-               <button
+              <button
                 onClick={handleFindPrograms}
                 className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 disabled={loading || !previousOrCurrentStudy || !degreeGoingFor}
@@ -409,7 +409,7 @@ export default function EnquirySystem() {
 
 
             <div className="flex flex-col items-end gap-3">
-             
+
 
 
               {showAdvanceFilter && (<>
@@ -419,9 +419,10 @@ export default function EnquirySystem() {
                       minIeltsScore: "",
                       degreeDuration: "",
                       minimumPercentage: "",
-                      interview_required: "",
+                      // REMOVED: interview_required
                       english_proficiency_type: "",
-                      prev_degree_required: ""
+                      prev_degree_required: "",
+                      others_exams: ""
                     });
                   }}
                   className="px-9 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
@@ -448,14 +449,7 @@ export default function EnquirySystem() {
                     options={minimumPercentageOptions}
                   />
 
-                  <SearchSelect
-                    label="Interview Required"
-                    name="interviewRequired"
-                    value={advanceFilters.interview_required}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, interview_required: value })}
-                    options={interviewRequiredOptions}
-                  />
+                  {/* REMOVED: Interview Required SearchSelect */}
 
                   <SearchSelect
                     label="English Proficiency"
@@ -465,14 +459,14 @@ export default function EnquirySystem() {
                     onChange={(value: string) => setAdvanceFilters({
                       ...advanceFilters,
                       english_proficiency_type: value,
-                      minIeltsScore: value === "MOU" ? "" : advanceFilters.minIeltsScore
+                      minIeltsScore: value === "MOI" ? "" : advanceFilters.minIeltsScore  // FIXED: Changed from "MOU" to "MOI"
                     })}
                     options={englishProficiencyOptions}
                   />
 
                   {advanceFilters.english_proficiency_type === "IELTS" && (
                     <SearchSelect
-                      label="Minimum IELTS Score"
+                      label="Required Band"
                       name="minIeltsScore"
                       value={advanceFilters.minIeltsScore}
                       allowCreate={false}
@@ -489,6 +483,21 @@ export default function EnquirySystem() {
                     onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
                     options={prevDegreeRequiredOptions}
                   />
+
+                  {degreeGoingFor === "Bachelor" && (
+                    <SearchSelect
+                      label="Others Exams"
+                      name="others_exams"
+                      value={advanceFilters.others_exams}
+                      allowCreate={false}
+                      onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, others_exams: value })}
+                      options={[
+                        { value: "", label: "Select Exam" },
+                        { value: "PTE", label: "PTE" },
+                        { value: "Duolingo", label: "Duolingo" },
+                      ]}
+                    />
+                  )}
 
 
                 </div>
@@ -555,14 +564,14 @@ const ProgramsTable = ({ data }: any) => {
                 "Course Name",
                 "Previous Study",
                 "Degree Going For",
-                "IELTS Score",
+                "Required Band",
                 "English Proficiency",
                 "Previous Degree Required",
-                "Interview Required",
                 "Special Requirements",
                 "Remarks",
                 "degree duration",
                 "minimum %",
+                "Other Exams"
               ].map((head) => (
                 <th
                   key={head}
@@ -590,16 +599,13 @@ const ProgramsTable = ({ data }: any) => {
                   {item.degree_going_for || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
-                  {item.minimum_ielts_score || "-"}
+                  {item.required_band || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.english_proficiency_type || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.prev_degree_required || "-"}
-                </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
-                  {item.interview_required || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.special_requirements || "-"}
@@ -612,6 +618,9 @@ const ProgramsTable = ({ data }: any) => {
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.minimum_percentage || "-"}
+                </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.others_exams || "-"}
                 </td>
               </tr>
             ))}

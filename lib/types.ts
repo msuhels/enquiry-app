@@ -8,10 +8,10 @@ export interface Program {
   ielts_requirement?: string;
   english_proficiency_type?: string;
   prev_degree_required?: string;
-  minimum_ielts_score?: string;
+  required_band?: string;
+  others_exams?: string;
   minimum_percentage?: string;
   degree_duration?: string;
-  interview_required?: string;
   special_requirements?: string;
   remarks?: string;
   created_at: string;
@@ -44,7 +44,6 @@ export interface Enquiry {
   updated_at?: string;
   degree_going_for?: string;
   previous_or_current_study?: string;
-
   program_interest?: string;
   preferred_university?: string;
   preferred_country?: string;
@@ -62,7 +61,6 @@ export interface Enquiry {
   message?: string;
   status?: "pending" | "in_progress" | "completed" | "rejected";
   assigned_to_user_id?: string;
-
   academic_entries?: {
     error: string | null;
     data: AcademicEntry[];
@@ -92,9 +90,9 @@ export interface ProgramFormData {
   degree_going_for: string;
   course_name: string;
   ielts_requirement?: string;
-  interview_required?: string;
   english_proficiency_type?: string;
-  minimum_ielts_score?: string;
+  required_band?: string;
+  others_exams?: string;
   minimum_percentage?: string;
   degree_duration?: string;
   prev_degree_required?: string;

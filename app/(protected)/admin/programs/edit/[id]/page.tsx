@@ -27,13 +27,13 @@ export default function EditProgramPage() {
     ielts_requirement: "",
     minimum_percentage: "",
     degree_duration: "",
-    prev_degree_required:"",
+    prev_degree_required: "",
     english_proficiency_type: "",
-    minimum_ielts_score: "",
+    required_band: "",
+    others_exams: "",
     special_requirements: "",
-    interview_required: "",
     remarks: "",
-     remark1: "",
+    remark1: "",
     remark2: "",
     remark1_na: false,
     remark2_na: false,
@@ -107,7 +107,7 @@ export default function EditProgramPage() {
     },
   ];
 
-    const prevDegreeRequiredOptions = [
+  const prevDegreeRequiredOptions = [
     { value: "1 year", label: "1 year" },
     { value: "2 year", label: "2 year" },
     { value: "3 year", label: "3 year" },
@@ -173,7 +173,7 @@ export default function EditProgramPage() {
           "Not Applicable",
         remarks_na:
           result.data.remarks === "Not Applicable",
-          remark1_na:
+        remark1_na:
           result.data.remark1 === "Not Applicable",
         remark2_na:
           result.data.remark2 === "Not Applicable",
@@ -269,7 +269,7 @@ export default function EditProgramPage() {
           name={field.name}
           value={
             formData[
-              field.name as keyof ProgramFormData
+            field.name as keyof ProgramFormData
             ] as string
           }
           onChange={handleInputChange}
@@ -306,7 +306,7 @@ export default function EditProgramPage() {
       if (!result.success) {
         toast.error(
           result.error ||
-            "Failed to update program"
+          "Failed to update program"
         );
         return;
       }
@@ -386,6 +386,26 @@ export default function EditProgramPage() {
                 }
               />
 
+              {formData.degree_going_for === "Bachelor" &&
+                <SearchSelect
+                  label="Others Exams"
+                  name="others_exams"
+                  value={formData.others_exams || ""}
+                  options={[
+                    { value: "PTE", label: "PTE" },
+                    { value: "Duolingo", label: "Duolingo" },
+                  ]}
+                  onChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      others_exams: value,
+                    }))
+                  }
+                />
+              }
+
+
+
               <SearchSelect
                 label="Degree Duration"
                 name="degree_duration"
@@ -402,7 +422,7 @@ export default function EditProgramPage() {
                 }
               />
 
-                <SearchSelect
+              <SearchSelect
                 label="Previous Degree duration Required"
                 name="prev_degree_required"
                 width="full"
@@ -429,8 +449,8 @@ export default function EditProgramPage() {
                     label: "IELTS",
                   },
                   {
-                    value: "MOU",
-                    label: "MOU",
+                    value: "MOI",
+                    label: "MOI",
                   },
                 ]}
                 onChange={
@@ -440,47 +460,25 @@ export default function EditProgramPage() {
 
               {formData.english_proficiency_type ===
                 "IELTS" && (
-                <SearchSelect
-                  label="Minimum IELTS Score"
-                  name="minimum_ielts_score"
-                  width="full"
-                  value={
-                    formData.minimum_ielts_score
-                  }
-                  options={
-                    ieltsScoreOptions
-                  }
-                  onChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      minimum_ielts_score:
-                        value,
-                      ielts_requirement:
-                        value,
-                    }))
-                  }
-                />
-              )}
-
-                <div className="w-[47rem]">
-                              <SearchSelect
-                                label="Interview Required"
-                                name="interview_required"
-                                width="full"
-                                value={formData.interview_required || ""}
-                                options={[
-                                  { value: "Yes", label: "Yes" },
-                                  { value: "No", label: "No" },
-                                ]}
-                                onChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    interview_required: value,
-                                  }))
-                                }
-                                required
-                              />
-                            </div>
+                  <SearchSelect
+                    label="Required Band"
+                    name="required_band"
+                    width="full"
+                    value={
+                      formData.required_band
+                    }
+                    options={
+                      ieltsScoreOptions
+                    }
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        required_band: value,
+                        ielts_requirement: value,
+                      }))
+                    }
+                  />
+                )}
 
               <FormInput
                 label="Minimum Percentage Required"
