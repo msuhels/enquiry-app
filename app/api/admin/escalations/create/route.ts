@@ -19,7 +19,7 @@ async function sendEscalationEmail(
     zone: string,
     message: string,
     level: string,
-    userName: string
+    organizationName: string
 ) {
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
@@ -63,7 +63,7 @@ async function sendEscalationEmail(
                     </tr>
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Submitted By:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${userName}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${organizationName}</td>
                     </tr>
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Message:</strong></td>
@@ -109,11 +109,11 @@ export async function POST(request: Request) {
         // Get user details for email and notification
         const { data: userData } = await supabase
             .from("users")
-            .select("full_name")
+            .select("organization")
             .eq("id", user.id)
             .single();
 
-        const userName = userData?.full_name || "Unknown User";
+        const organizationName = userData?.organization || "Unknown User";
 
         // Insert escalation
         const { data: escalation, error: escalationError } = await supabase
@@ -139,8 +139,8 @@ export async function POST(request: Request) {
                 created_by: user.id,
                 notification_type: "escalation",
                 reference_id: escalation.id,
-                title: `${userName} has sent an escalation request`,
-                message: `New escalation from ${userName} - ${zone} zone, Level ${level}. Click here to view.`,
+                title: `${organizationName} has sent an escalation request`,
+                message: `New escalation from ${organizationName} - ${zone} zone, Level ${level}. Click here to view.`,
                 is_read: false,
             });
 
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
             const emails = levelEmail.split(",").map(e => e.trim());
             try {
                 await Promise.all(
-                    emails.map(email => sendEscalationEmail(email, zone, user_message, level, userName))
+                    emails.map(email => sendEscalationEmail(email, zone, user_message, level, organizationName))
                 );
             } catch (emailError) {
                 console.error("Error sending escalation email:", emailError);

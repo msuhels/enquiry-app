@@ -226,6 +226,7 @@ export default function NewUpdatePage() {
   };
 
   const UPDATE_TYPES = [
+    {value: "select any update", label: "Select update type"},
   { value: "Sales", label: "Sales" },
   { value: "Admission", label: "Admission" },
   { value: "Scholarship", label: "Scholarship" },

@@ -75,7 +75,6 @@ export default function ViewUpdatePage() {
           </div>
 
           <div className="p-6">
-            <h1>this is aditya</h1>
             <div
               className="ckeditorTextContent"
               dangerouslySetInnerHTML={{ __html: announcement.content }}

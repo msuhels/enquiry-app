@@ -49,7 +49,7 @@ export default function EscalationsPage() {
     const offset = (page - 1) * itemsPerPage;
 
     // Build API URL with filters
-    const apiUrl = `/api/admin/escalations/getallescalations?search=${encodeURIComponent(
+    const apiUrl = `/api/admin/escalations?search=${encodeURIComponent(
         debouncedSearch["search escalation users"] || ""
     )}&zone=${encodeURIComponent(debouncedSearch.zone || "")}&from_date=${encodeURIComponent(debouncedSearch.from_date || "")}&to_date=${encodeURIComponent(debouncedSearch.to_date || "")}&limit=${itemsPerPage}&offset=${offset}`;
 
