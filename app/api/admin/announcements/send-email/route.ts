@@ -18,7 +18,7 @@ const TEST_EMAILS: string[] = [
 ];
 
 // Set to true to use TEST_EMAILS instead of fetching all user emails
-const USE_TEST_EMAILS = true;
+const USE_TEST_EMAILS = false;
 // ============================================================
 
 async function getAllUserEmails(): Promise<string[]> {
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       console.log("Emails fetched from DB:", emails);
     } else {
       console.log("Fetching emails from database...");
-      emails = TEST_EMAILS;
+      emails =await getAllUserEmails();
        // Log the list of emails from DB
     }
     
