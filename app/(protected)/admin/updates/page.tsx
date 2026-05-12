@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import AdvancedDataTable from "@/components/table/globalTable";
 import { useFetch } from "@/hooks/api/useFetch";
 import "ckeditor5/ckeditor5.css";
+import { send } from "process";
+import { Loader2, Send } from "lucide-react";
 
 type Announcement = {
-  id: string;
+  id: string; 
   title: string;
   content: string;
   image_url?: string | null;
@@ -21,6 +23,7 @@ export default function UpdatesPage() {
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filter, setFilter] = useState("all");
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
   const [search, setSearch] = useState({
   search: "",
   update_type: "",
@@ -53,7 +56,38 @@ export default function UpdatesPage() {
       console.error("API error:", error);
     }
   }, [data, error]);
+  
 
+const sendAnnouncementEmail = async (announcementId: string) => {
+  setSendingEmailId(announcementId);
+  try {
+    const response = await fetch(
+      "/api/admin/announcements/send-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          announcementId,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Failed to send emails");
+    }
+
+    alert(`Email sent to ${result.sentCount} users`);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to send email");
+  }finally{
+    setSendingEmailId(null);
+  }
+};
   // Table columns
   const columns = [
     {
@@ -77,6 +111,27 @@ export default function UpdatesPage() {
         <span>{new Date(row.created_at).toLocaleDateString()}</span>
       ),
     },
+     {
+  key: "email",
+  label: "Send Email",
+  render: (row: Announcement) => {
+    const isSending = sendingEmailId === row.id;
+    return (
+      <button
+        onClick={() => sendAnnouncementEmail(row.id)}
+        disabled={isSending}
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+          isSending 
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+            : "bg-[#3a3886] text-white hover:bg-[#2d2b6b] shadow-md hover:shadow-lg"
+        }`}
+      >
+        {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        {isSending ? "Sending..." : "Send Email"}
+      </button>
+    );
+  },
+},
     {
       key: "actions",
       label: "action",
@@ -89,6 +144,7 @@ export default function UpdatesPage() {
         </button>
       ),
     },
+
   ];
 
   const UPDATE_TYPES = [

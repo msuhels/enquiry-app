@@ -149,32 +149,32 @@ export default function NewUpdatePage() {
   /**
    * Send emails
    */
-  const sendAnnouncementEmail = async (
-    announcementId: string
-  ) => {
-    const response = await fetch(
-      "/api/admin/announcements/send-email",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          announcementId,
-          title: announcementTitle.trim(),
-          content: editorData,
-        }),
-      }
-    );
+  // const sendAnnouncementEmail = async (
+  //   announcementId: string
+  // ) => {
+  //   const response = await fetch(
+  //     "/api/admin/announcements/send-email",
+  //     {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         announcementId,
+  //         title: announcementTitle.trim(),
+  //         content: editorData,
+  //       }),
+  //     }
+  //   );
 
-    const data = await response.json();
+  //   const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.message || "Failed to send emails");
-    }
+  //   if (!data.success) {
+  //     throw new Error(data.message || "Failed to send emails");
+  //   }
 
-    return data;
-  };
+  //   return data;
+  // };
 
   /**
    * Save only
@@ -200,30 +200,30 @@ export default function NewUpdatePage() {
   /**
    * Save and send email
    */
-  const handleSaveAndSend = async () => {
-    setIsSubmitting(true);
+  // const handleSaveAndSend = async () => {
+  //   setIsSubmitting(true);
 
-    try {
-      const announcement = await createAnnouncement();
+  //   try {
+  //     const announcement = await createAnnouncement();
 
-      if (!announcement) return;
+  //     if (!announcement) return;
 
-      const emailResult = await sendAnnouncementEmail(
-        announcement.id
-      );
+  //     const emailResult = await sendAnnouncementEmail(
+  //       announcement.id
+  //     );
 
-      toast.success(
-        `Announcement saved! Email sent to ${emailResult.sentCount} users.`
-      );
+  //     toast.success(
+  //       `Announcement saved! Email sent to ${emailResult.sentCount} users.`
+  //     );
 
-      router.push("/admin/updates");
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsSubmitting(false);
-      setShowEmailDialog(false);
-    }
-  };
+  //     router.push("/admin/updates");
+  //   } catch (error: any) {
+  //     toast.error(error.message);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //     setShowEmailDialog(false);
+  //   }
+  // };
 
   const UPDATE_TYPES = [
     {value: "select any update", label: "Select update type"},
@@ -239,7 +239,7 @@ export default function NewUpdatePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Modal */}
-      {showEmailDialog && (
+      {/* {showEmailDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -271,7 +271,7 @@ export default function NewUpdatePage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="px-4 py-8 sm:px-6 lg:px-8">
         <Breadcrumbs />
@@ -438,7 +438,7 @@ export default function NewUpdatePage() {
           </Link>
 
           <button
-            onClick={() => setShowEmailDialog(true)}
+            onClick={handleSaveOnly}
             disabled={isSubmitting}
             className="flex items-center gap-2 rounded-xl bg-[#3a3886] px-6 py-3 text-white hover:bg-[#2d2b6b] disabled:opacity-50"
           >
