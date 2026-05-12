@@ -27,6 +27,13 @@ export default function EnquirySystem() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
+   const {data: filterSettings} = useFetch("/api/admin/settings");
+  
+    const isFilterEnabled = (key: String)=> {
+      return filterSettings?.data?.[key] !== true;
+    }
+  
+  
   // IELTS Score options - add more values as needed
   const ieltsScoreOptions = [
     { value: "", label: "Select IELTS Score" },
@@ -431,6 +438,7 @@ export default function EnquirySystem() {
                 </button>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
 
+                  {isFilterEnabled("degree_duration") && (
                   <SearchSelect
                     label="Degree Duration"
                     name="degreeDuration"
@@ -439,7 +447,8 @@ export default function EnquirySystem() {
                     onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, degreeDuration: value })}
                     options={degreeDurationOptions}
                   />
-
+                  )}
+                  {isFilterEnabled("minimum_percentage") && (
                   <SearchSelect
                     label="Minimum Percentage"
                     name="minimumPercentage"
@@ -448,9 +457,11 @@ export default function EnquirySystem() {
                     onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minimumPercentage: value })}
                     options={minimumPercentageOptions}
                   />
+                  )}
 
                   {/* REMOVED: Interview Required SearchSelect */}
 
+                  {isFilterEnabled("english_profficiency") && (
                   <SearchSelect
                     label="English Proficiency"
                     name="english_proficiency_type"
@@ -463,8 +474,9 @@ export default function EnquirySystem() {
                     })}
                     options={englishProficiencyOptions}
                   />
+                  )}
 
-                  {advanceFilters.english_proficiency_type === "IELTS" && (
+                  {advanceFilters.english_proficiency_type === "IELTS" && isFilterEnabled("required_band") && (
                     <SearchSelect
                       label="Required Band"
                       name="minIeltsScore"
@@ -475,6 +487,7 @@ export default function EnquirySystem() {
                     />
                   )}
 
+                  {isFilterEnabled("prev_degree_duration") && (
                   <SearchSelect
                     label="Previous Degree Duration Required"
                     name="prev_degree_required"
@@ -483,8 +496,9 @@ export default function EnquirySystem() {
                     onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
                     options={prevDegreeRequiredOptions}
                   />
+                  )}
 
-                  {degreeGoingFor === "Bachelor" && (
+                  {degreeGoingFor === "Bachelor" && isFilterEnabled("others_exams") && (
                     <SearchSelect
                       label="Others Exams"
                       name="others_exams"
