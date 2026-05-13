@@ -40,6 +40,7 @@ export default function ProgramsPage() {
     { key: "prev_degree_duration", value: false },
     { key: "degree_duration", value: false },
     { key: "others_exams", value: false },
+    { key: "course_name", value: false },
   ]);
 
   const offset = (page - 1) * itemsPerPage;

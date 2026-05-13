@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       "previous_or_current_study"
     );
     const degreeGoingFor = searchParams.get("degree_going_for");
+    const courseName = searchParams.get("course_name");
 
     let query = supabase.from("programs").select("*");
 
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
 
     if (degreeGoingFor) {
       query = query.eq("degree_going_for", degreeGoingFor);
+    }
+
+    if (courseName) {
+      query = query.ilike("course_name", `%${courseName}%`);
     }
 
     const { data, error } = await query;
