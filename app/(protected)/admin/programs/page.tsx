@@ -33,9 +33,9 @@ export default function ProgramsPage() {
   const [courseOptions, setCourseOptions] = useState([]);
   const [fieldsSwitches, setFieldsSwitches] = useState([
     { key: "is_special_requirements_enabled", value: false },
-    { key: "is_remarks_enabled", value: false },
-    { key: "remark1", value: false },
-    { key: "remark2", value: false },
+    { key: "remark_1", value: false },
+    { key: "remark_2", value: false },
+    { key: "remark_3", value: false },
     { key: "english_profficiency", value: false },
     { key: "required_band", value: false },
     { key: "minimum_percentage", value: false },
