@@ -264,6 +264,7 @@ export default function NewProgramPage() {
     { value: "3 Years Hons", label: "3 Years Hons" },
     { value: "4 Years", label: "4 Years" },
     { value: "12 Years Studies", label: "12 Years Studies" },
+    { value: "13 Years Studies", label: "13 Years Studies" },
   ]
 
 
@@ -311,8 +312,10 @@ export default function NewProgramPage() {
                     name="others_exams"  
                     value={formData.others_exams || ""}
                     options={[
-                      { value: "PTE", label: "PTE" },
-                      { value: "Duolingo", label: "Duolingo" },
+                      { value: "", label: "Select Exam" },
+                      { value: "CENT - S", label: "CENT - S" },
+                      { value: "SAT or CENT - S", label: "SAT or CENT - S" },
+                      { value: "SAT", label: "SAT" },
                     ]}
                     onChange={(value) =>
                       setFormData((prev) => ({

@@ -34,11 +34,12 @@ export default function ProgramsPage() {
   const [fieldsSwitches, setFieldsSwitches] = useState([
     { key: "is_special_requirements_enabled", value: false },
     { key: "is_remarks_enabled", value: false },
+    { key: "remark1", value: false },
+    { key: "remark2", value: false },
     { key: "english_profficiency", value: false },
     { key: "required_band", value: false },
     { key: "minimum_percentage", value: false },
     { key: "prev_degree_duration", value: false },
-    { key: "degree_duration", value: false },
     { key: "others_exams", value: false },
     { key: "course_name", value: false },
   ]);

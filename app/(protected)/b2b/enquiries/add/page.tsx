@@ -103,7 +103,6 @@ export default function EnquirySystem() {
     { value: "3 years", label: "3 Years" },
     { value: "3 Years Hons", label: "3 Years Hons" },
     { value: "4 Years", label: "4 Years" },
-    { value: "12 Years Studies", label: "12 Years Studies" },
   ]
 
   const isCentered = !hasSearched;
@@ -118,16 +117,42 @@ export default function EnquirySystem() {
   const { data: options } = useFetch("/api/admin/getUniqueUniAndCourse", {}, false);
 
   useEffect(() => {
-    if (previousOrCurrentStudyData?.success) {
-      const options = previousOrCurrentStudyData?.data.map(
-        (option: { id: string; name: string }) => ({
-          value: option.name,
-          label: option.name,
-        })
-      );
-      setPreviousOrCurrentStudyOptions(options);
-    }
-  }, [previousOrCurrentStudyData]);
+    const fetchFilteredOptions = async () => {
+      if (!degreeGoingFor) {
+        // If no degree selected, use default options
+        if (previousOrCurrentStudyData?.success) {
+          const options = previousOrCurrentStudyData?.data.map(
+            (option: { id: string; name: string }) => ({
+              value: option.name,
+              label: option.name,
+            })
+          );
+          setPreviousOrCurrentStudyOptions(options);
+        }
+        return;
+      }
+
+      // Fetch filtered options based on degreeGoingFor
+      try {
+        const response = await fetch(
+          `/api/admin/getUniquePreviousCurrentStudy?degree_going_for=${encodeURIComponent(degreeGoingFor)}`
+        );
+        const result = await response.json();
+        if (result.success) {
+          setPreviousOrCurrentStudyOptions(
+            result.previousCurrentStudy.map((item: string) => ({
+              value: item,
+              label: item,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching filtered options:", error);
+      }
+    };
+
+    fetchFilteredOptions();
+  }, [degreeGoingFor, previousOrCurrentStudyData]);
 
   useEffect(() => {
     if (degreeGoingForData?.success) {
@@ -211,12 +236,14 @@ export default function EnquirySystem() {
       let filteredPrograms = result.data;
       if (advanceFilters.required_band) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.required_band && parseFloat(p.required_band) <= parseFloat(advanceFilters.required_band)
+          // p.required_band && parseFloat(p.required_band) <= parseFloat(advanceFilters.required_band)
+          p.required_band?.toLowerCase().includes(advanceFilters.required_band?.toLowerCase())
         );
       }
       if (advanceFilters.degreeDuration) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.degree_duration && parseFloat(p.degree_duration) <= parseFloat(advanceFilters.degreeDuration)
+          // p.degree_duration && parseFloat(p.degree_duration) <= parseFloat(advanceFilters.degreeDuration)
+          p.degree_duration?.toLowerCase().includes(advanceFilters.degreeDuration?.toLowerCase())
         );
       }
       if (advanceFilters.minimumPercentage) {
@@ -227,21 +254,27 @@ export default function EnquirySystem() {
 
       if (advanceFilters.english_proficiency_type) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.english_proficiency_type && p.english_proficiency_type === advanceFilters.english_proficiency_type
+          // p.english_proficiency_type && p.english_proficiency_type === advanceFilters.english_proficiency_type
+          p.english_proficiency_type?.toLowerCase().includes(advanceFilters.english_proficiency_type?.toLowerCase())
+
         );
       }
 
       if (advanceFilters.prev_degree_required) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
           p.prev_degree_required &&
-          p.prev_degree_required.toLowerCase().includes(advanceFilters.prev_degree_required.toLowerCase())
+          // p.prev_degree_required.toLowerCase().includes(advanceFilters.prev_degree_required.toLowerCase())
+          p.prev_degree_required?.toLowerCase().includes(advanceFilters.prev_degree_required?.toLowerCase())
+
         );
       }
 
       // Filter by others_exams when Bachelor degree is selected
       if (advanceFilters.others_exams && degreeGoingFor === "Bachelor") {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.others_exams && p.others_exams === advanceFilters.others_exams
+          // p.others_exams && p.others_exams === advanceFilters.others_exams
+          p.others_exams?.toLowerCase().includes(advanceFilters.others_exams?.toLowerCase())
+
         );
       }
 
@@ -384,7 +417,10 @@ export default function EnquirySystem() {
                 width="90%"
                 value={degreeGoingFor}
                 allowCreate={false}
-                onChange={setDegreeGoingFor}
+                onChange={(value) => {
+                  setDegreeGoingFor(value);
+                  setPreviousOrCurrentStudy("");
+                }}
                 options={degreeGoingForOptions}
               />
 
@@ -451,8 +487,8 @@ export default function EnquirySystem() {
                 </button>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
 
-                      {isFilterEnabled("course_name") && (
-                         <SearchSelect
+                  {isFilterEnabled("course_name") && (
+                    <SearchSelect
                       label="Course Name"
                       name="course_name"
                       width="90%"
@@ -461,7 +497,7 @@ export default function EnquirySystem() {
                       onChange={setCourseName}
                       options={courseOptions}
                     />
-                      )} 
+                  )}
 
 
                   {isFilterEnabled("minimum_percentage") && (
@@ -474,7 +510,7 @@ export default function EnquirySystem() {
                       options={minimumPercentageOptions}
                     />)}
 
-                    
+
 
                   {isFilterEnabled("english_profficiency") && (
                     <SearchSelect
@@ -503,16 +539,25 @@ export default function EnquirySystem() {
                     />
                   )}
 
-                  {isFilterEnabled("prev_degree_duration") && (
-                    <SearchSelect
-                      label="Previous Degree Duration Required"
-                      name="prev_degree_required"
-                      value={advanceFilters.prev_degree_required}
-                      allowCreate={false}
-                      onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
-                      options={prevDegreeRequiredOptions}
-                    />
-                  )}
+                 {degreeGoingFor === "Bachelor" ? (
+                      <SearchSelect
+                        label="Previous Degree Duration Required"
+                        name="prev_degree_required"
+                        value={advanceFilters.prev_degree_required}
+                        allowCreate={false}
+                        onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
+                        options={[{ value: "12 Years Studies", label: "12 Years Studies" }, {value:"13 Years Studies", label: "13 Years Studies" }]}
+                      />
+                    ) : (
+                      <SearchSelect
+                        label="Previous Degree Duration Required"
+                        name="prev_degree_required"
+                        value={advanceFilters.prev_degree_required}
+                        allowCreate={false}
+                        onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
+                        options={prevDegreeRequiredOptions}
+                      />
+                    )}
 
                   {degreeGoingFor === "Bachelor" && isFilterEnabled("others_exams") && (
                     <SearchSelect
@@ -523,12 +568,12 @@ export default function EnquirySystem() {
                       onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, others_exams: value })}
                       options={[
                         { value: "", label: "Select Exam" },
-                        { value: "PTE", label: "PTE" },
-                        { value: "Duolingo", label: "Duolingo" },
+                        { value: "CENT - S", label: "CENT - S" },
+                        { value: "SAT or CENT - S", label: "SAT or CENT - S" },
+                        { value: "SAT", label: "SAT" },
                       ]}
                     />
                   )}
-
 
 
                 </div>
@@ -562,7 +607,7 @@ export default function EnquirySystem() {
                   <span>download</span>
                 </button>
               </div>
-              <ProgramsTable data={programs} />
+              <ProgramsTable data={programs} filterSettings={filterSettings} />
             </div>
           ) : hasSearched && !loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
@@ -583,26 +628,28 @@ export default function EnquirySystem() {
   );
 }
 
-const ProgramsTable = ({ data }: any) => {
+const ProgramsTable = ({ data, filterSettings }: any) => {
   return (
     <div className="bg-white w-full rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-[#3a3886] to-[#2d2b6b]">
             <tr>
-              {[
-                "University",
-                "Course Name",
-                "Previous Study",
-                "Degree Going For",
-                "English Proficiency",
-                "Required Band",
-                "Previous Degree Required",
-                "Special Requirements",
-                "Remarks",
-                "degree duration",
-                "minimum %",
-                "Other Exams"
+             {[
+              "University",
+              "Course Name",
+              "Previous Study",
+              "Degree Going For",
+              "English Proficiency",
+              "Required Band",
+              "Previous Degree Required",
+              ...(filterSettings?.data?.is_special_requirements_enabled !== true ? ["Special Requirements"] : []),
+              ...(filterSettings?.data?.is_remarks_enabled !== true ? ["Remarks1"] : []),
+              ...(filterSettings?.data?.remark1 !== true ? ["Remarks2"] : []),
+              ...(filterSettings?.data?.remark2 !== true ? ["Remarks3"] : []),
+              "degree duration",
+              "minimum %",
+              "Other Exams"
               ].map((head) => (
                 <th
                   key={head}
@@ -638,12 +685,29 @@ const ProgramsTable = ({ data }: any) => {
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.prev_degree_required || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
-                  {item.special_requirements || "-"}
-                </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
-                  {item.remarks || "-"}
-                </td>
+                {filterSettings?.data?.is_special_requirements_enabled !== true && (
+                      <td className="px-6 py-4 text-xl text-gray-700">
+                        {item.special_requirements || "-"}
+                      </td>
+                    )}
+                   
+                    {filterSettings?.data?.is_remarks_enabled !== true && (
+                      <td className="px-6 py-4 text-xl text-gray-700">
+                        {item.remarks || "-"}
+                      </td>
+                    )}
+
+                     {filterSettings?.data?.remark1 !== true && (
+                      <td className="px-6 py-4 text-xl text-gray-700">
+                        {item.remark1 || "-"}
+                      </td>
+                    )}
+
+                    {filterSettings?.data?.remark2 !== true && (
+                      <td className="px-6 py-4 text-xl text-gray-700">
+                        {item.remark2 || "-"}
+                      </td>
+                    )}
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_duration || "-"}
                 </td>
