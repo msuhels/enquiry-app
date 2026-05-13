@@ -569,6 +569,7 @@ export default function EnquirySystem() {
                       options={[
                         { value: "", label: "Select Exam" },
                         { value: "CENT - S", label: "CENT - S" },
+                        { value: "SAT or English TOLC HUM", label: "SAT or English TOLC HUM" },
                         { value: "SAT or CENT - S", label: "SAT or CENT - S" },
                         { value: "SAT", label: "SAT" },
                       ]}
