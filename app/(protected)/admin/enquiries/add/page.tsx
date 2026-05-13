@@ -27,10 +27,12 @@ export default function EnquirySystem() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [programs, setPrograms] = useState([]);
+  const [courseName, setCourseName] = useState("");
+  const [courseOptions, setCourseOptions] = useState([]);
 
-  const {data: filterSettings} = useFetch("/api/admin/settings");
+  const { data: filterSettings } = useFetch("/api/admin/settings");
 
-  const isFilterEnabled = (key: String)=> {
+  const isFilterEnabled = (key: String) => {
     return filterSettings?.data?.[key] !== true;
   }
 
@@ -98,7 +100,7 @@ export default function EnquirySystem() {
   ];
 
   const prevDegreeRequiredOptions = [
-    {value : "3 years", label : "3 Years"},
+    { value: "3 years", label: "3 Years" },
     { value: "3 Years Hons", label: "3 Years Hons" },
     { value: "4 Years", label: "4 Years" },
     { value: "12 Years Studies", label: "12 Years Studies" },
@@ -113,6 +115,7 @@ export default function EnquirySystem() {
   const { post } = usePost();
 
   const { data: degreeGoingForData } = useFetch(`/api/admin/degree-going-for`);
+  const { data: options } = useFetch("/api/admin/getUniqueUniAndCourse", {}, false);
 
   useEffect(() => {
     if (previousOrCurrentStudyData?.success) {
@@ -138,13 +141,19 @@ export default function EnquirySystem() {
     }
   }, [degreeGoingForData]);
 
+  useEffect(() => {
+    if (options?.success) {
+      setCourseOptions(options.courses.map((c: string) => ({ value: c, label: c })));
+    }
+  }, [options]);
+
   // Only clear programs when both search fields are cleared (not during partial changes)
   useEffect(() => {
-    if (!previousOrCurrentStudy && !degreeGoingFor && hasSearched) {
+    if (!previousOrCurrentStudy && !degreeGoingFor && !courseName && hasSearched) {
       setHasSearched(false);
       setPrograms([]);
     }
-  }, [previousOrCurrentStudy, degreeGoingFor, hasSearched]);
+  }, [previousOrCurrentStudy, degreeGoingFor, courseName, hasSearched]);
 
   const handleFindPrograms = async () => {
     // Validate user data before proceeding
@@ -184,6 +193,9 @@ export default function EnquirySystem() {
       if (degreeGoingFor) {
         params.append("degree_going_for", degreeGoingFor);
       }
+      if (courseName) {
+        params.append("course_name", courseName);
+      }
 
       const response = await fetch(
         `/api/admin/programs/suggestions?${params.toString()}`
@@ -221,7 +233,8 @@ export default function EnquirySystem() {
 
       if (advanceFilters.prev_degree_required) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.prev_degree_required && p.prev_degree_required === advanceFilters.prev_degree_required
+          p.prev_degree_required &&
+          p.prev_degree_required.toLowerCase().includes(advanceFilters.prev_degree_required.toLowerCase())
         );
       }
 
@@ -256,6 +269,9 @@ export default function EnquirySystem() {
       }
       if (degreeGoingFor) {
         params.append("degree_going_for", degreeGoingFor);
+      }
+      if (courseName) {
+        params.append("course_name", courseName);
       }
 
       const response = await fetch(
@@ -427,49 +443,54 @@ export default function EnquirySystem() {
                       prev_degree_required: "",
                       others_exams: ""
                     });
+                    setCourseName("");
                   }}
                   className="px-9 py-2 h-[38px] mt-auto text-white bg-[#F97316] rounded-lg hover:bg-[#ea6a0f] transition-all duration-200 text-sm font-medium"
                 >
                   Clear
                 </button>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-                  
-                  {isFilterEnabled("degree_duration") && (
-                    <SearchSelect
-                    label="Degree Duration"
-                    name="degreeDuration"
-                    value={advanceFilters.degreeDuration}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, degreeDuration: value })}
-                    options={degreeDurationOptions}
-                  />
-                  )}
+
+                      {isFilterEnabled("course_name") && (
+                         <SearchSelect
+                      label="Course Name"
+                      name="course_name"
+                      width="90%"
+                      value={courseName}
+                      allowCreate={false}
+                      onChange={setCourseName}
+                      options={courseOptions}
+                    />
+                      )} 
+
 
                   {isFilterEnabled("minimum_percentage") && (
-                  <SearchSelect
-                    label="Minimum Percentage"
-                    name="minimumPercentage"
-                    value={advanceFilters.minimumPercentage}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minimumPercentage: value })}
-                    options={minimumPercentageOptions}
-                  /> )}
+                    <SearchSelect
+                      label="Minimum Percentage"
+                      name="minimumPercentage"
+                      value={advanceFilters.minimumPercentage}
+                      allowCreate={false}
+                      onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, minimumPercentage: value })}
+                      options={minimumPercentageOptions}
+                    />)}
+
+                    
 
                   {isFilterEnabled("english_profficiency") && (
                     <SearchSelect
-                    label="English Proficiency"
-                    name="english_proficiency_type"
-                    value={advanceFilters.english_proficiency_type}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({
-                      ...advanceFilters,
-                      english_proficiency_type: value,
-                      required_band: value === "MOI" ? "" : advanceFilters.required_band
-                    })}
-                    options={englishProficiencyOptions}
-                  />
+                      label="English Proficiency"
+                      name="english_proficiency_type"
+                      value={advanceFilters.english_proficiency_type}
+                      allowCreate={false}
+                      onChange={(value: string) => setAdvanceFilters({
+                        ...advanceFilters,
+                        english_proficiency_type: value,
+                        required_band: value === "MOI" ? "" : advanceFilters.required_band
+                      })}
+                      options={englishProficiencyOptions}
+                    />
                   )}
-                  
+
 
                   {advanceFilters.english_proficiency_type === "IELTS" && isFilterEnabled("required_band") && (
                     <SearchSelect
@@ -484,15 +505,15 @@ export default function EnquirySystem() {
 
                   {isFilterEnabled("prev_degree_duration") && (
                     <SearchSelect
-                    label="Previous Degree Duration Required"
-                    name="prev_degree_required"
-                    value={advanceFilters.prev_degree_required}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
-                    options={prevDegreeRequiredOptions}
-                  />
+                      label="Previous Degree Duration Required"
+                      name="prev_degree_required"
+                      value={advanceFilters.prev_degree_required}
+                      allowCreate={false}
+                      onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, prev_degree_required: value })}
+                      options={prevDegreeRequiredOptions}
+                    />
                   )}
-                  
+
                   {degreeGoingFor === "Bachelor" && isFilterEnabled("others_exams") && (
                     <SearchSelect
                       label="Others Exams"
@@ -507,8 +528,8 @@ export default function EnquirySystem() {
                       ]}
                     />
                   )}
-                 
-                  
+
+
 
                 </div>
               </>)}
