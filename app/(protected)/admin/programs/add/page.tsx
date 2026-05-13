@@ -82,7 +82,8 @@ export default function NewProgramPage() {
           : name.includes("score") ||
               name.includes("ranking") ||
               name.includes("required") ||
-              name.includes("fees")
+              name.includes("fees") &&
+              name !== "required_band" 
             ? parseFloat(value)
             : value,
     }));
@@ -237,13 +238,12 @@ export default function NewProgramPage() {
   };
 
   const ieltsScoreOptions = [
-    { value: "5.0", label: "5.0" },
-    { value: "5.5", label: "5.5" },
-    { value: "6.0", label: "6.0" },
-    { value: "6.5", label: "6.5" },
-    { value: "7.0", label: "7.0" },
-    { value: "7.5", label: "7.5" },
-    { value: "8.0", label: "8.0" },
+    { value: "A1 Level", label: "A1 Level" },
+    { value: "A2 Level", label: "A2 Level" },
+    { value: "B1 Level", label: "B1 Level" },
+    { value: "B2 Level", label: "B2 Level" },
+    { value: "C1 Level", label: "C1 Level" },
+    { value: "C2 Level", label: "C2 Level" },
   ];
 
   const degreeDurationOptions = [
@@ -260,17 +260,12 @@ export default function NewProgramPage() {
   ];
 
   const prevDegreeRequiredOptions = [
-   { value: "1 year", label: "1 year" },
-    { value: "2 year", label: "2 year" },
-    { value: "3 year", label: "3 year" },
-    { value: "4 year", label: "4 year" },
-    { value: "5 year", label: "5 year" },
-    { value: "6 year", label: "6 year" },
-    { value: "7 year", label: "7 year" },
-    { value: "8 year", label: "8 year" },
-    { value: "9 year", label: "9 year" },
-    { value: "10 year", label: "10 year" },
+    {value : "3 years", label : "3 Years"},
+    { value: "3 Years Hons", label: "3 Years Hons" },
+    { value: "4 Years", label: "4 Years" },
+    { value: "12 Years Studies", label: "12 Years Studies" },
   ]
+
 
   return (
     <div className="min-h-screen bg-gray-50">

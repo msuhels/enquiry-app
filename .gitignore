@@ -48,3 +48,4 @@ next-env.d.ts
 github-deploy-key
 build_output.txt
 doc.doc
+plans/bulk-upload-analysis.md

@@ -27,9 +27,17 @@ interface ProgramFormData {
   previous_or_current_study: string;
   degree_going_for: string;
   course_name: string;
+  english_proficiency_type?: string;
+  required_band?: string;
+  others_exams?: string;
+  minimum_percentage?: string;
+  degree_duration?: string;
   ielts_requirement?: string;
   special_requirements?: string;
   remarks?: string;
+  remark1?: string;
+  remark2?: string;
+  prev_degree_required?: string;
 }
 
 interface UploadResult {
@@ -91,11 +99,19 @@ const mapDataToPrograms = (data: any[]): ProgramFormData[] => {
       row["Previous / Current Study"] || row["previous_or_current_study"] || "",
     degree_going_for: row["Degree Going For"] || row["degree_going_for"] || "",
     course_name: row["Course Name"] || row["course_name"] || "",
+    english_proficiency_type: row["English Proficiency"] || row["english_proficiency_type"] || undefined,
+    required_band: row["Required Band"] || row["required_band"] || undefined,
+    others_exams: row["Other Exams"] || row["others_exams"] || row["Other Exams Required 1"] || undefined,
+    minimum_percentage: row["Minimum Percentage"] || row["minimum_percentage"] || undefined,
+    degree_duration: row["Degree Duration"] || row["degree_duration"] || undefined,
     ielts_requirement:
       row["IELTS Requirment"] || row["ielts_requirement"] || undefined,
     special_requirements:
       row["Special Requirments"] || row["special_requirements"] || undefined,
     remarks: row["Remarks"] || row["remarks"] || undefined,
+    remark1: row["Remark 1"] || row["remark1"] || undefined,
+    remark2: row["Remark 2"] || row["remark2"] || undefined,
+    prev_degree_required: row["Previous Degree Required"] || row["prev_degree_required"] || undefined,
   }));
 };
 
@@ -247,25 +263,41 @@ export default function BulkUploadPage() {
 
   const downloadTemplate = () => {
     const headers = [
-      "S. No.",
+     "S. No.",
       "University",
       "Previous / Current Study",
       "Degree Going For",
-      "Courses Name",
+      "Course Name",
+      "English Proficiency",
+      "Required Band",
+      "Other Exams",
+      "Minimum Percentage",
+      "Degree Duration",
       "IELTS Requirment",
       "Special Requirments",
+      "Previous Degree Required",
       "Remarks",
+      "Remark 1",
+      "Remark 2",
     ];
 
     const sampleData = [
-      "1",
+     "1",
       "University of Milan",
       "Bcom",
       "Master",
       "Management of Innovation and Entrepreneurship",
+      "IELTS",
+      "B2 Level",
+      "PTE",
+      "60",
+      "2 years",
       "Above 5.5",
-      "no",
-      "best in class",
+      "No",
+      "3 years",
+      "this is remark 1",
+      "this is actually comes in place of remark 2",
+      "this is comes in place of remark 3",
     ];
 
     const csvContent = [headers.join(","), sampleData.join(",")].join("\n");
@@ -573,46 +605,106 @@ export default function BulkUploadPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
-                      S. No.
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      S.No
                     </th>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                       University
                     </th>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
-                      Previous / Current Study
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Previous/Current Study
                     </th>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                       Degree Going For
                     </th>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
-                      Courses Name
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Course Name
                     </th>
-                    <th className="px-3 py-3 text-left text-lg  font-medium text-gray-500 uppercase tracking-wider">
-                      IELTS Requirment
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      English Proficiency
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Required Band
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Other Exams
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Min Percentage
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Degree Duration
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      IELTS Requirement
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Special Requirements
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Prev Degree Required
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Remarks
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Remark 1
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Remark 2
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((program, idx) => (
-                    <tr key={startIndex + idx} className="hover:bg-gray-50">
-                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
-                        {startIndex + idx + 1}
+                  {currentItems.map((program, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {startIndex + index + 1}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-lg font-medium text-gray-900">
+                      <td className="px-4 py-3 text-sm text-gray-900">
                         {program.university || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-900">
                         {program.previous_or_current_study || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-900">
                         {program.degree_going_for || "-"}
                       </td>
-                      <td className="px-3 py-4 text-lg text-gray-900">
+                      <td className="px-4 py-3 text-sm text-gray-900">
                         {program.course_name || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-lg text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.english_proficiency_type || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.required_band || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.others_exams || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.minimum_percentage || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.degree_duration || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
                         {program.ielts_requirement || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.special_requirements || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.prev_degree_required || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.remarks || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.remark1 || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {program.remark2 || "-"}
                       </td>
                     </tr>
                   ))}

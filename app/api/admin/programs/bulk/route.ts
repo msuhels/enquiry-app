@@ -6,19 +6,35 @@ interface BulkProgramInput {
   previous_or_current_study?: string;
   degree_going_for?: string;
   course_name?: string;
+  english_proficiency_type?: string;
+  required_band?: string;
+  others_exams?: string;
+  minimum_percentage?: number;
+  degree_duration?: string;
   ielts_requirement?: string;
   special_requirements?: string;
   remarks?: string;
+  remark1?: string;
+  remark2?: string;
+  prev_degree_required?: string;
 }
 
 interface ProcessedProgram {
-  university?: string;
+ university?: string;
   previous_or_current_study?: string;
   degree_going_for?: string;
   course_name?: string;
+  english_proficiency_type?: string;
+  required_band?: string;
+  others_exams?: string;
+  minimum_percentage?: number | null;
+  degree_duration?: string;
   ielts_requirement?: string;
   special_requirements?: string | null;
   remarks?: string | null;
+  remark1?: string | null;
+  remark2?: string | null;
+  prev_degree_required?: string;
   created_at: string;
   updated_at: string;
 }
@@ -170,19 +186,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    
+
     // Step 5: Process all programs and store TEXT values directly
     const programsToInsert: ProcessedProgram[] = [];
     const failedRecords: FailedRecord[] = [];
     const timestamp = new Date().toISOString();
 
+
+
+
     body.forEach((record: BulkProgramInput, index: number) => {
       try {
         const processedProgram: ProcessedProgram = {
-          university: record.university,
-          course_name: record.course_name,
-          ielts_requirement: record.ielts_requirement,
-          special_requirements: record.special_requirements || null,
-          remarks: record.remarks || null,
+          university: record.university || "",
+          course_name: record.course_name || "",
+          english_proficiency_type: record.english_proficiency_type || "",
+          required_band: record.required_band || "",
+          others_exams: record.others_exams || "",
+          minimum_percentage: record.minimum_percentage,  // Convert to number
+          degree_duration:record.degree_duration || "", 
+          ielts_requirement: record.ielts_requirement || "",
+          special_requirements: record.special_requirements || "",
+          remarks: record.remarks || "",
+          remark1: record.remark1 || "",
+          remark2: record.remark2 || "",
+          prev_degree_required: record.prev_degree_required || "",
           created_at: timestamp,
           updated_at: timestamp,
         };
