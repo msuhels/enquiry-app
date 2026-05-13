@@ -220,10 +220,11 @@ export default function EnquirySystem() {
       }
 
       if (advanceFilters.prev_degree_required) {
-        filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.prev_degree_required && p.prev_degree_required === advanceFilters.prev_degree_required
-        );
-      }
+  filteredPrograms = filteredPrograms.filter((p: Program) =>
+    p.prev_degree_required && 
+    p.prev_degree_required.toLowerCase().includes(advanceFilters.prev_degree_required.toLowerCase())
+  );
+} 
 
       // Filter by others_exams when Bachelor degree is selected
       if (advanceFilters.others_exams && degreeGoingFor === "Bachelor") {
@@ -434,16 +435,6 @@ export default function EnquirySystem() {
                 </button>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-4 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
                   
-                  {isFilterEnabled("degree_duration") && (
-                    <SearchSelect
-                    label="Degree Duration"
-                    name="degreeDuration"
-                    value={advanceFilters.degreeDuration}
-                    allowCreate={false}
-                    onChange={(value: string) => setAdvanceFilters({ ...advanceFilters, degreeDuration: value })}
-                    options={degreeDurationOptions}
-                  />
-                  )}
 
                   {isFilterEnabled("minimum_percentage") && (
                   <SearchSelect
