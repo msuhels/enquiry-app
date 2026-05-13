@@ -49,7 +49,6 @@ async function sendAnnouncementEmail(to: string[], title: string, content: strin
 
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM,
-      to: to.join(","),
       bcc: to,
       subject: `New Announcement: ${title}`,
       html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">

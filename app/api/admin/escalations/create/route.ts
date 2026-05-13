@@ -9,10 +9,51 @@ import nodemailer from "nodemailer";
 // ESCALATION_LEVEL_3_EMAIL=email3@example.com
 // ESCALATION_LEVEL_4_EMAIL=email4@example.com
 
+
+const escalationEmails: Record<string, Record<string, string>> = {
+    central: {
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "5": "director.escalation@alzatooverseas.com",
+    },
+    east: {
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "5": "director.escalation@alzatooverseas.com",
+    },
+    west: {
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "5": "director.escalation@alzatooverseas.com",
+    },
+    north: {
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "3": "ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "5": "director.escalation@alzatooverseas.com",
+    },
+    south: {
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "3": "ro4@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "5": "director.escalation@alzatooverseas.com",
+    },
+};
+
+
 function getZoneLevelEmail(zone: string, level: string): string | null {
-    const envKey = `ZONE_${zone.toUpperCase()}_ESCALATION_LEVEL_${level}_EMAIL`;
-    return process.env[envKey] || null;
+    return escalationEmails[zone]?.[level] || null;
 }
+
+
 
 async function sendEscalationEmail(
     to: string,
@@ -36,9 +77,10 @@ async function sendEscalationEmail(
 
     const levelLabels: Record<string, string> = {
         "1": "Level 1",
-        "2": "Level 2",
-        "3": "Level 3",
-        "4": "Level 4",
+        "2": "Level 1",
+        "3": "Level 2",
+        "4": "Level 3",
+        "5": "Level 4",
     };
 
     const info = await transporter.sendMail({
@@ -152,11 +194,8 @@ export async function POST(request: Request) {
         // Send email based on level
         const levelEmail = getZoneLevelEmail(zone, level);
         if (levelEmail) {
-            const emails = levelEmail.split(",").map(e => e.trim());
             try {
-                await Promise.all(
-                    emails.map(email => sendEscalationEmail(email, zone, user_message, level, organizationName))
-                );
+                 await sendEscalationEmail(levelEmail, zone, user_message, level, organizationName);
             } catch (emailError) {
                 console.error("Error sending escalation email:", emailError);
             }
