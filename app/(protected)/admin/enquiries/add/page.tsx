@@ -645,9 +645,9 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
               "Required Band",
               "Previous Degree Required",
               ...(filterSettings?.data?.is_special_requirements_enabled !== true ? ["Special Requirements"] : []),
-              ...(filterSettings?.data?.is_remarks_enabled !== true ? ["Remarks1"] : []),
-              ...(filterSettings?.data?.remark1 !== true ? ["Remarks2"] : []),
-              ...(filterSettings?.data?.remark2 !== true ? ["Remarks3"] : []),
+              ...(filterSettings?.data?.remark_1 !== true ? ["Remarks1"] : []),
+              ...(filterSettings?.data?.remark_2 !== true ? ["Remarks2"] : []),
+              ...(filterSettings?.data?.remark_3 !== true ? ["Remarks3"] : []),
               "degree duration",
               "minimum %",
               "Other Exams"
@@ -692,13 +692,13 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                       </td>
                     )}
                    
-                    {filterSettings?.data?.is_remarks_enabled !== true && (
+                    {filterSettings?.data?.remark_1 !== true && (
                       <td className="px-6 py-4 text-xl text-gray-700">
                         {item.remarks || "-"}
                       </td>
                     )}
 
-                     {filterSettings?.data?.remark1 !== true && (
+                     {filterSettings?.data?.remark_2 !== true && (
                       <td className="px-6 py-4 text-xl text-gray-700">
                         {item.remark1 || "-"}
                       </td>
