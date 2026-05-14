@@ -683,6 +683,10 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_going_for || "-"}
                 </td>
+                <td className="px-6 py-4 text-xl text-gray-700">
+                  {item.english_proficiency_type || "-"}
+                </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
                   {item.required_band || "-"}
                 </td>
@@ -707,7 +711,7 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                       </td>
                     )}
 
-                    {filterSettings?.data?.remark2 !== true && (
+                    {filterSettings?.data?.remark_3 !== true && (
                       <td className="px-6 py-4 text-xl text-gray-700">
                         {item.remark2 || "-"}
                       </td>
