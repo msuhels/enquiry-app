@@ -327,7 +327,7 @@ export default function NewProgramPage() {
                   />
                 }
 
-              <SearchSelect
+              {/* <SearchSelect
                 label="Degree Duration"
                 name="degree_duration"
                 width="full"
@@ -339,7 +339,7 @@ export default function NewProgramPage() {
                     degree_duration: value,
                   }))
                 }
-              />
+              /> */}
 
               <FormInput  
                 label="Minimum Percentage"

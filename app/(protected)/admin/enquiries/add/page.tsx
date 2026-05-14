@@ -47,20 +47,20 @@ export default function EnquirySystem() {
     { value: "C2 Level", label: "C2 Level" },
   ];
 
-  // Degree Duration options (1-10 years)
-  const degreeDurationOptions = [
-    { value: "", label: "Select Duration" },
-    { value: "1", label: "1 Year" },
-    { value: "2", label: "2 Years" },
-    { value: "3", label: "3 Years" },
-    { value: "4", label: "4 Years" },
-    { value: "5", label: "5 Years" },
-    { value: "6", label: "6 Years" },
-    { value: "7", label: "7 Years" },
-    { value: "8", label: "8 Years" },
-    { value: "9", label: "9 Years" },
-    { value: "10", label: "10 Years" },
-  ];
+  // Degree Duration options are disable and not used(1-10 years)
+  // const degreeDurationOptions = [
+  //   { value: "", label: "Select Duration" },
+  //   { value: "1", label: "1 Year" },
+  //   { value: "2", label: "2 Years" },
+  //   { value: "3", label: "3 Years" },
+  //   { value: "4", label: "4 Years" },
+  //   { value: "5", label: "5 Years" },
+  //   { value: "6", label: "6 Years" },
+  //   { value: "7", label: "7 Years" },
+  //   { value: "8", label: "8 Years" },
+  //   { value: "9", label: "9 Years" },
+  //   { value: "10", label: "10 Years" },
+  // ];
 
   // Minimum Percentage options
   const minimumPercentageOptions = [
@@ -104,6 +104,25 @@ export default function EnquirySystem() {
     { value: "3 Years Hons", label: "3 Years Hons" },
     { value: "4 Years", label: "4 Years" },
   ]
+
+const getInclusiveDurationValues = (selectedDuration: string): { exact?: string[], partial?: string[] } => {
+  const durationMap: { [key: string]: { exact?: string[], partial?: string[] } } = {
+    "4 Years": { partial: ["3 years", "3 years hons", "4 years"] },
+    "3 Years Hons": { partial: ["3 years", "3 years hons"] },
+    "3 years": { exact: ["3 years"] },
+  };
+  
+  return durationMap[selectedDuration] || { exact: [selectedDuration] };
+};
+
+const getInclusiveEnglishProficiencyValues = (selectedType: string): string[] => {
+  const proficiencyMap: { [key: string]: string[] } = {
+    "IELTS": ["ielts", "moi"],
+    "MOI": ["moi"],
+  };
+  
+  return proficiencyMap[selectedType] || [selectedType];
+};
 
   const isCentered = !hasSearched;
 
@@ -248,11 +267,35 @@ export default function EnquirySystem() {
       // Apply client-side filtering for advance filters
       let filteredPrograms = result.data;
       if (advanceFilters.required_band) {
-        filteredPrograms = filteredPrograms.filter((p: Program) =>
-          // p.required_band && parseFloat(p.required_band) <= parseFloat(advanceFilters.required_band)
-          p.required_band?.toLowerCase().includes(advanceFilters.required_band?.toLowerCase())
-        );
+  const selectedBand = advanceFilters.required_band.toLowerCase();
+  
+  if (advanceFilters.english_proficiency_type === "IELTS") {
+    // When IELTS with required band is selected:
+    // Search for results with that specific band AND also MOI (empty/null required_band)
+    filteredPrograms = filteredPrograms.filter((p: Program) => {
+      const dbRequiredBand = p.required_band?.toLowerCase() || "";
+      const dbEnglishProficiency = p.english_proficiency_type?.toLowerCase() || "";
+      
+      // If English proficiency is IELTS, match the exact required band
+      if (dbEnglishProficiency === "ielts") {
+        return dbRequiredBand === selectedBand;
       }
+      
+      // If English proficiency is MOI (which has no required band), include it
+      // This is because IELTS is higher than MOI, so IELTS with B2 should also show MOI programs
+      if (dbEnglishProficiency === "moi") {
+        return dbRequiredBand === "" || dbRequiredBand === selectedBand;
+      }
+      
+      return false;
+    });
+  } else {
+    // Regular required band filtering for other cases
+    filteredPrograms = filteredPrograms.filter((p: Program) =>
+      p.required_band?.toLowerCase().includes(advanceFilters.required_band?.toLowerCase())
+    );
+  }
+}
       if (advanceFilters.degreeDuration) {
         filteredPrograms = filteredPrograms.filter((p: Program) =>
           // p.degree_duration && parseFloat(p.degree_duration) <= parseFloat(advanceFilters.degreeDuration)
@@ -266,21 +309,55 @@ export default function EnquirySystem() {
       }
 
       if (advanceFilters.english_proficiency_type) {
-        filteredPrograms = filteredPrograms.filter((p: Program) =>
-          // p.english_proficiency_type && p.english_proficiency_type === advanceFilters.english_proficiency_type
-          p.english_proficiency_type?.toLowerCase().includes(advanceFilters.english_proficiency_type?.toLowerCase())
+  const selectedType = advanceFilters.english_proficiency_type;
+  
+  if (selectedType === "IELTS") {
+    // When IELTS is selected, search for both IELTS and MOI
+    const inclusiveValues = getInclusiveEnglishProficiencyValues(selectedType);
+    
+    filteredPrograms = filteredPrograms.filter((p: Program) =>
+      p.english_proficiency_type && inclusiveValues.some(val => 
+        p.english_proficiency_type?.toLowerCase().includes(val.toLowerCase())
+      )
+    );
+  } else {
+    // When MOI is selected, search only for MOI
+    filteredPrograms = filteredPrograms.filter((p: Program) =>
+      p.english_proficiency_type?.toLowerCase().includes(advanceFilters.english_proficiency_type?.toLowerCase())
+    );
+  }
+}
 
-        );
+   if (advanceFilters.prev_degree_required) {
+  const selectedDuration = advanceFilters.prev_degree_required;
+  
+  if (degreeGoingFor === "Master") {
+    // For Master degree, use inclusive search logic
+    const inclusiveValues = getInclusiveDurationValues(selectedDuration);
+    
+    filteredPrograms = filteredPrograms.filter((p: Program) => {
+      if (!p.prev_degree_required) return false;
+      const dbValue = p.prev_degree_required.toLowerCase();
+      
+      // If exact match is required (for "3 Years" case)
+      if (inclusiveValues.exact) {
+        return inclusiveValues.exact.some(val => dbValue === val);
       }
-
-      if (advanceFilters.prev_degree_required) {
-        filteredPrograms = filteredPrograms.filter((p: Program) =>
-          p.prev_degree_required &&
-          // p.prev_degree_required.toLowerCase().includes(advanceFilters.prev_degree_required.toLowerCase())
-          p.prev_degree_required?.toLowerCase().includes(advanceFilters.prev_degree_required?.toLowerCase())
-
-        );
+      
+      // If partial match is allowed (for "4 Years" and "3 Years Hons" cases)
+      if (inclusiveValues.partial) {
+        return inclusiveValues.partial.some(val => dbValue.includes(val));
       }
+      
+      return false;
+    });
+  } else {
+    // Regular filtering for other degrees
+    filteredPrograms = filteredPrograms.filter((p: Program) =>
+      p.prev_degree_required?.toLowerCase().includes(advanceFilters.prev_degree_required?.toLowerCase())
+    );
+  }
+}
 
       // Filter by others_exams when Bachelor degree is selected
       if (advanceFilters.others_exams && degreeGoingFor === "Bachelor") {
@@ -664,7 +741,7 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
               {[
                 "University",
                 "Course Name",
-                "Previous Study",
+                "Previous/Current Study",
                 "Degree Going For",
                 "English Proficiency",
                 "Required Band",
@@ -673,7 +750,7 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 ...(filterSettings?.data?.remark_1 !== true ? ["Remarks1"] : []),
                 ...(filterSettings?.data?.remark_2 !== true ? ["Remarks2"] : []),
                 ...(filterSettings?.data?.remark_3 !== true ? ["Remarks3"] : []),
-                "degree duration",
+                // "degree duration",
                 "minimum %",
                 "Other Exams"
               ].map((head) => (
@@ -693,55 +770,55 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#3a3886]">
                   {item.university || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-900">
+                <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#3a3886]">
                   {item.course_name || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#3a3886]">
                   {item.previous_or_current_study || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.english_proficiency_type || "-"}
                 </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
+                <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#F97316]">
                   {item.required_band || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.prev_degree_required || "-"}
                 </td>
                 {filterSettings?.data?.is_special_requirements_enabled !== true && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                     {item.special_requirements || "-"}
                   </td>
                 )}
 
                 {filterSettings?.data?.remark_1 !== true && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                     {item.remarks || "-"}
                   </td>
                 )}
 
                 {filterSettings?.data?.remark_2 !== true && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                     {item.remark1 || "-"}
                   </td>
                 )}
 
                 {filterSettings?.data?.remark_3 !== true && (
-                  <td className="px-6 py-4 text-xl text-gray-700">
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                     {item.remark2 || "-"}
                   </td>
                 )}
-                <td className="px-6 py-4 text-xl text-gray-700">
+                {/* <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.degree_duration || "-"}
-                </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                </td> */}
+                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.minimum_percentage || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
+                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.others_exams || "-"}
                 </td>
               </tr>

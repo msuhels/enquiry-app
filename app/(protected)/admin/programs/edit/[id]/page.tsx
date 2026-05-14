@@ -403,7 +403,7 @@ export default function EditProgramPage() {
 
 
 
-              <SearchSelect
+              {/* <SearchSelect
                 label="Degree Duration"
                 name="degree_duration"
                 width="full"
@@ -417,7 +417,7 @@ export default function EditProgramPage() {
                     degree_duration: value,
                   }))
                 }
-              />
+              /> */}
 
               <SearchSelect
                 label="Previous Degree duration Required"
