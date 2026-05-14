@@ -14,6 +14,8 @@ export interface Program {
   degree_duration?: string;
   special_requirements?: string;
   remarks?: string;
+  remark1?: string;
+  remark2?: string;
   created_at: string;
   updated_at: string;
 }

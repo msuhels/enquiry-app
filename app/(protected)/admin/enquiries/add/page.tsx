@@ -338,14 +338,17 @@ export default function EnquirySystem() {
         program.course_name || "",
         program.previous_or_current_study || "",
         program.degree_going_for || "",
+        program.english_proficiency_type || "",
         program.required_band || "",
         program.others_exams || "",
-        program.ielts_requirement || "",
+        // program.ielts_requirement || "",
         program.degree_duration || "",
-        program.english_proficiency_type || "",
         program.prev_degree_required || "",
         program.minimum_percentage || "",
         program.special_requirements || "",
+        program.remarks || "",
+        program.remark1 || "",
+        program.remark2 || "",
       ]);
 
       autoTable(doc, {
@@ -355,14 +358,17 @@ export default function EnquirySystem() {
             "Program Name",
             "Previous / Current Study",
             "Degree Going For",
-            "IELTS Requirment",
-            "Others exams",
-            "Degree Duration",
             "English Proficiency",
             "Required band",
+            // "IELTS Requirment",
+            "Others exams",
+            "Degree Duration",
             "Previous Degree Required",
             "Minimum Percentage",
             "Special Requirements",
+            "Remarks",
+            "Remark 1",
+            "Remark 2",
           ],
         ],
         body: tableData,
@@ -676,9 +682,6 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 </td>
                 <td className="px-6 py-4 text-xl text-gray-700">
                   {item.degree_going_for || "-"}
-                </td>
-                <td className="px-6 py-4 text-xl text-gray-700">
-                  {item.english_proficiency_type || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#F97316]">
                   {item.required_band || "-"}
