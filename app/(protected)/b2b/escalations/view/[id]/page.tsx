@@ -16,6 +16,58 @@ type Escalation = {
     created_at: string;
 };
 
+// Function to get zone-specific label for a level (same as add page)
+const getLevelLabel = (zone: string, value: string) => {
+    const zoneLabels: Record<string, Record<string, string>> = {
+        central: {
+            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+        },
+        east: {
+            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+        },
+        west: {
+            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+        },
+        north: {
+            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+            "3": "Level 2 - Admission to Visa-Mr. Amit Upadhyay",
+            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+        },
+        south: {
+            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+            "3": "Level 2 - Admission to Visa-Ms. Nargis",
+            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+        },
+    };
+
+    return zoneLabels[zone]?.[value] || `Level ${value}`;
+};
+
+// Zone display names
+const zoneDisplayNames: Record<string, string> = {
+    central: "Central",
+    east: "East",
+    west: "West",
+    north: "North",
+    south: "South",
+};
+
 export default function ViewEscalationPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -52,6 +104,10 @@ export default function ViewEscalationPage() {
             </div>
         );
 
+    // Get formatted level label based on zone and level
+    const levelLabel = getLevelLabel(escalation.zone?.toLowerCase(), escalation.level);
+    const zoneDisplay = zoneDisplayNames[escalation.zone?.toLowerCase()] || escalation.zone;
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="p-8">
@@ -73,7 +129,7 @@ export default function ViewEscalationPage() {
                                     })}
                                 </p>
                             </div>
-                            
+
                         </div>
                     </div>
 
@@ -82,7 +138,9 @@ export default function ViewEscalationPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Zone
                             </label>
-                            <p className="text-gray-900">{escalation.zone}</p>
+                            <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                                {zoneDisplay}
+                            </p>
                         </div>
 
                         <div>
@@ -98,11 +156,11 @@ export default function ViewEscalationPage() {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                level
+                                Level
                             </label>
                             <div className="bg-gray-50 p-4 rounded-lg">
                                 <p className="text-gray-900">
-                                    {escalation.level}
+                                    {levelLabel}
                                 </p>
                             </div>
                         </div>

@@ -43,6 +43,27 @@ const escalationpage = () => {
     { value: "south", label: "South" },
   ];
 
+  // Zone display names
+  const zoneDisplayNames: Record<string, string> = {
+    central: "Central",
+    east: "East",
+    west: "West",
+    north: "North",
+    south: "South",
+  };
+
+  // Get simple level display (Level 1, Level 2, etc.)
+  const getSimpleLevel = (level: string) => {
+    const levelMap: Record<string, string> = {
+      "1": "Level 1",
+      "2": "Level 1",
+      "3": "Level 2",
+      "4": "Level 3",
+      "5": "Level 4",
+    };
+    return levelMap[level] || `Level ${level}`;
+  };
+
   // Analytics data
   const [zoneAnalytics, setZoneAnalytics] = useState<Array<{ zone: string; count: number }>>([]);
   const [levelAnalytics, setLevelAnalytics] = useState<Array<{ level: string; count: number }>>([]);
@@ -88,7 +109,7 @@ const escalationpage = () => {
       label: "Zone",
       render: (row: Escalation) => (
         <div>
-          <div className="text-xl font-medium text-gray-900">{row.zone}</div>
+          <div className="text-xl font-medium text-gray-900">{zoneDisplayNames[row.zone?.toLowerCase()] || row.zone}</div>
         </div>
       ),
     },
@@ -115,7 +136,7 @@ const escalationpage = () => {
             title={row?.level as string}
             className="text-xl text-gray-500 w-72 truncate"
           >
-            {row.level}
+            {getSimpleLevel(row.level)}
           </div>
         </div>
       ),
@@ -144,27 +165,27 @@ const escalationpage = () => {
         </div>
       ),
     },
-     {
+    {
       key: "status",
       label: "Status",
-         render: (row: Escalation) => {
+      render: (row: Escalation) => {
         const status = row.status || "open";
         const isOpen = status === "open";
         return (
-            <div className="flex items-center gap-2">
-                <span className={`
+          <div className="flex items-center gap-2">
+            <span className={`
                     inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium capitalize border
-                    ${isOpen 
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        :"bg-amber-50 text-amber-700 border-amber-200" 
-                    }
+                    ${isOpen
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-amber-50 text-amber-700 border-amber-200"
+              }
                 `}>
-                    <span className={`w-2 h-2 rounded-full ${isOpen ? "bg-emerald-500" : "bg-amber-500 "}`}></span>
-                    {status}
-                </span>
-            </div>
+              <span className={`w-2 h-2 rounded-full ${isOpen ? "bg-emerald-500" : "bg-amber-500 "}`}></span>
+              {status}
+            </span>
+          </div>
         );
-    },
+      },
 
     },
     {
@@ -187,7 +208,7 @@ const escalationpage = () => {
     },
     {
       title: "Levels",
-      data: levelAnalytics.map(l => ({ label: `Level ${l.level}`, value: l.count })),
+      data: levelAnalytics.map(l => ({ label: ` ${l.level}`, value: l.count })),
       total: analyticsSummary.totalEscalations,
     },
   ];
