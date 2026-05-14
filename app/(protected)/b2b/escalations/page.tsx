@@ -46,6 +46,27 @@ export default function EscalationsPage() {
         { value: "south", label: "South" },
     ];
 
+    // Zone display names
+    const zoneDisplayNames: Record<string, string> = {
+        central: "Central",
+        east: "East",
+        west: "West",
+        north: "North",
+        south: "South",
+    };
+
+    // Get simple level display (Level 1, Level 2, etc.)
+    const getSimpleLevel = (level: string) => {
+        const levelMap: Record<string, string> = {
+            "1": "Level 1",
+            "2": "Level 1",
+            "3": "Level 2",
+            "4": "Level 3",
+            "5": "Level 4",
+        };
+        return levelMap[level] || `Level ${level}`;
+    };
+
     const offset = (page - 1) * itemsPerPage;
 
     // Build API URL with filters
@@ -71,16 +92,16 @@ export default function EscalationsPage() {
 
     const handleStatusChange = async (id: string) => {
         const currentStatus = escalations.find(e => e.id === id)?.status || "open";
-    const newStatus = currentStatus === "open" ? "closed" : "open";
-    
-    setLoadingStates(prev => ({ ...prev, [id]: true }));
+        const newStatus = currentStatus === "open" ? "closed" : "open";
+
+        setLoadingStates(prev => ({ ...prev, [id]: true }));
         try {
             const response = await fetch(`/api/admin/escalations/updateescalation/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id, status:newStatus }),
+                body: JSON.stringify({ id, status: newStatus }),
             });
-            
+
             if (response.ok) {
                 // Refresh the data
                 await mutate(apiUrl);
@@ -88,26 +109,26 @@ export default function EscalationsPage() {
             toast.success("Status updated successfully");
         } catch (error) {
             console.error("Error updating status:", error);
-        }finally{
-           setLoadingStates(prev => ({ ...prev, [id]: false }));
+        } finally {
+            setLoadingStates(prev => ({ ...prev, [id]: false }));
             setEscalations((prev) =>
-            prev.map((e) =>
-                e.id === id ? { ...e, status: newStatus } : e
-            )
-        );
+                prev.map((e) =>
+                    e.id === id ? { ...e, status: newStatus } : e
+                )
+            );
         }
     };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-        case "open":
-             return "bg-emerald-100 text-emerald-800 border-emerald-200";
-        case "closed":
-            return "bg-amber-100 text-amber-800 border-amber-200";
-        default:
-            return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-};
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "open":
+                return "bg-emerald-100 text-emerald-800 border-emerald-200";
+            case "closed":
+                return "bg-amber-100 text-amber-800 border-amber-200";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
 
     // Table columns
     const columns = [
@@ -116,7 +137,7 @@ export default function EscalationsPage() {
             label: "Zone",
             render: (row: Escalation) => (
                 <div>
-                    <div className="text-xl font-medium text-gray-900">{row.zone}</div>
+                    <div className="text-xl font-medium text-gray-900">{zoneDisplayNames[row.zone?.toLowerCase()] || row.zone}</div>
                 </div>
             ),
         },
@@ -143,7 +164,7 @@ export default function EscalationsPage() {
                         title={row?.level as string}
                         className="text-xl text-gray-500 w-72 truncate"
                     >
-                        {row.level}
+                        {getSimpleLevel(row.level)}
                     </div>
                 </div>
             ),
@@ -162,7 +183,7 @@ export default function EscalationsPage() {
                 </div>
             ),
         },
-       
+
         {
             key: "created_at",
             label: "Created At",
@@ -174,39 +195,39 @@ export default function EscalationsPage() {
         },
 
         {
-    key: "status",
-    label: "Status",
-    render: (row: Escalation) => {
-        const status = row.status || "open";
-        return (
-            <div className="flex flex-col gap-1">
-                <button
-                    disabled={loadingStates[row.id]}
-                    onClick={() => handleStatusChange(row.id)}
-                    className={`
+            key: "status",
+            label: "Status",
+            render: (row: Escalation) => {
+                const status = row.status || "open";
+                return (
+                    <div className="flex flex-col gap-1">
+                        <button
+                            disabled={loadingStates[row.id]}
+                            onClick={() => handleStatusChange(row.id)}
+                            className={`
                         flex items-center justify-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm capitalize
                         transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
                         ${getStatusColor(status)}
                         ${loadingStates[row.id] ? 'opacity-70' : 'hover:scale-105 hover:shadow-md'}
                     `}
-                >
-                    {loadingStates[row.id] ? (
-                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    ) : (
-                        <span className={`w-2 h-2 rounded-full ${status === "open" ? "bg-emerald-500" : "bg-amber-500"}`}></span>
-                    )}
-                    {status}
-                </button>
-                <span className="text-[10px] text-center">
-                    Click to {status === "open" ? "close" : "open"}
-                </span>
-            </div>
-        );
-    },
-},
+                        >
+                            {loadingStates[row.id] ? (
+                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <span className={`w-2 h-2 rounded-full ${status === "open" ? "bg-emerald-500" : "bg-amber-500"}`}></span>
+                            )}
+                            {status}
+                        </button>
+                        <span className="text-[10px] text-center">
+                            Click to {status === "open" ? "close" : "open"}
+                        </span>
+                    </div>
+                );
+            },
+        },
 
 
         {

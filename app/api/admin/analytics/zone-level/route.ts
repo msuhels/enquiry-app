@@ -4,8 +4,17 @@ import { createServiceRoleClient } from "@/lib/supabase/adapters/service-role";
 // Fixed zones order
 const ZONES = ["north", "south", "east", "west", "central"];
 
-// Fixed levels order
-const LEVELS = ["1", "2", "3", "4"];
+// Map raw level values to display labels
+const LEVEL_MAP: Record<string, string> = {
+    "1": "Level 1",
+    "2": "Level 1",
+    "3": "Level 2",
+    "4": "Level 3",
+    "5": "Level 4",
+};
+
+// Fixed display levels order
+const LEVELS = ["Level 1", "Level 2", "Level 3", "Level 4"];
 
 // GET: Fetch analytics for zones and levels
 export async function GET() {
@@ -52,18 +61,19 @@ export async function GET() {
             count: zoneCounts[zone] || 0,
         }));
 
-        // Process level analytics - initialize with levels 1-4
+        // Process level analytics - initialize with display levels
         const levelCounts: Record<string, number> = {};
         LEVELS.forEach(level => {
             levelCounts[level] = 0;
         });
 
-        // Count enquiries per level
+        // Count escalations per level (map raw values to display labels)
         if (enquiryData) {
             enquiryData.forEach((item) => {
-                const level = String(item.level);
-                if (level && LEVELS.includes(level)) {
-                    levelCounts[level] = (levelCounts[level] || 0) + 1;
+                const rawLevel = String(item.level);
+                const displayLevel = LEVEL_MAP[rawLevel] || `Level ${rawLevel}`;
+                if (displayLevel && LEVELS.includes(displayLevel)) {
+                    levelCounts[displayLevel] = (levelCounts[displayLevel] || 0) + 1;
                 }
             });
         }
@@ -96,7 +106,7 @@ export async function GET() {
             message: error instanceof Error ? error.message : "Unknown error",
             data: {
                 zones: ZONES.map(z => ({ zone: z, count: 0 })),
-                levels: LEVELS.map(l => ({ level: `Level ${l}`, count: 0 })),
+                levels: LEVELS.map(l => ({ level: l, count: 0 })),
                 summary: { totalEscalations: 0, totalEnquiries: 0 },
             },
         });
