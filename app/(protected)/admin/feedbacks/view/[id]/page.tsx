@@ -91,7 +91,7 @@ export default function ViewFeedbackPage() {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="p-8">
-                <Breadcrumbs />
+                <Breadcrumbs hideIndices={[3]} />
 
                 <div className="bg-white shadow rounded-lg mt-4">
                     <div className="p-6 border-b border-gray-200">

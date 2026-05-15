@@ -13,7 +13,12 @@ interface BreadcrumbsProps {
   disabledItemIndex?: number;
 }
 
-export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
+interface BreadcrumbsProps {
+  disabledItemIndex?: number;
+  hideIndices?: number[];  // Add this line
+}
+
+export default function Breadcrumbs({ disabledItemIndex , hideIndices = [] }: BreadcrumbsProps) {
   const pathname = usePathname();
 
   // Route label mapping for better readability
@@ -31,13 +36,16 @@ export default function Breadcrumbs({ disabledItemIndex }: BreadcrumbsProps) {
     const breadcrumbs: BreadcrumbItem[] = [];
     let currentPath = '';
 
-    segments.forEach((segment) => {
+    segments.forEach((segment , index) => {
+      if (hideIndices.includes(index)) return;
       currentPath += `/${segment}`;
       const label =
         routeLabels[segment] ||
         segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
       breadcrumbs.push({ label, href: currentPath });
     });
+
+
 
     return breadcrumbs;
   };
