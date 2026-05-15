@@ -11,10 +11,11 @@ const LEVEL_MAP: Record<string, string> = {
     "3": "Level 2",
     "4": "Level 3",
     "5": "Level 4",
+    "6": "Sales and Marketing",
 };
 
 // Fixed display levels order
-const LEVELS = ["Level 1", "Level 2", "Level 3", "Level 4"];
+const LEVELS = ["Level 1", "Level 2", "Level 3", "Level 4", "Sales and Marketing"];
 
 // GET: Fetch analytics for zones and levels
 export async function GET() {

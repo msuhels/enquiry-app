@@ -32,55 +32,61 @@ export default function NewEscalationPage() {
         { value: "3", label: "Level 3" },
         { value: "4", label: "Level 4" },
         { value: "5", label: "Level 5" },
+        { value: "6", label: "Sales and Marketing" },
     ];
 
 
     // Function to get zone-specific label for a level
-const getLevelLabel = (value: string) => {
-    const zoneLabels: Record<string, Record<string, string>> = {
-        central: {
-            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
-            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
-            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
-            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
-        },
-        east: {
-            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
-            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
-            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
-            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
-        },
-        west: {
-            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
-            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
-            "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
-            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
-        },
-        north: {
-            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
-            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
-            "3": "Level 2 - Admission to Visa-Mr. Amit Upadhyay",
-            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
-        },
-        south: {
-            "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
-            "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
-            "3": "Level 2 - Admission to Visa-Ms. Nargis",
-            "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
-        },
+    const getLevelLabel = (value: string) => {
+        const zoneLabels: Record<string, Record<string, string>> = {
+            central: {
+                "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+                "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+                "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+                "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+                "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+                "6": "Sales and Marketing - Mr. Amit Upadhyay"
+            },
+            east: {
+                "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+                "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+                "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+                "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+                "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+                "6": "Sales and Marketing - Mr. Amit Upadhyay"
+            },
+            west: {
+                "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+                "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+                "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
+                "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+                "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+                "6": "Sales and Marketing - Mr. Amit Upadhyay"
+            },
+            north: {
+                "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+                "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+                "3": "Level 2 - Admission to Visa-Mr. Amit Upadhyay",
+                "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+                "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+                "6": "Sales and Marketing - Mr. Amit Upadhyay"
+            },
+            south: {
+                "1": "Level 1 - Admission to Pre enrolment-Ms. Anamika Tiwari",
+                "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
+                "3": "Level 2 - Admission to Visa-Ms. Nargis",
+                "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
+                "5": "Level 4 - Final Escalation for entire process- Director Office Sales and Marketing- Mr. Amit Upadhyay",
+                "6": "Sales and Marketing - Mr. Amit Upadhyay"
+            },
+        };
+
+        // Default labels when no zone is selected
+
+
+
+        return zoneLabels[zone]?.[value] || "";
     };
-
-    // Default labels when no zone is selected
-   
-
-   
-    return zoneLabels[zone]?.[value] || "";
-};
 
 
     const handleSubmit = async () => {
@@ -167,9 +173,9 @@ const getLevelLabel = (value: string) => {
                         </div>
 
                         {/* Level */}
-                       <div>
+                        <div>
                             <label className="mb-2 block text-lg font-semibold text-gray-700">
-                                {zone ? `${zone.charAt(0).toUpperCase() + zone.slice(1)} ` : ""}Level <span className="text-red-500">*</span>
+                                {zone ? `${zone.charAt(0).toUpperCase() + zone.slice(1)} ` : ""}{level === "6" ? "Option" : "Level"} <span className="text-red-500">*</span>
                             </label>
 
                             <select
@@ -178,7 +184,7 @@ const getLevelLabel = (value: string) => {
                                 disabled={!zone}
                                 className={`w-full rounded-xl border px-4 py-3 text-lg focus:border-[#3a3886] focus:outline-none focus:ring-2 focus:ring-[#3a3886]/20 ${!zone ? "bg-gray-100 cursor-not-allowed" : ""}`}>
                                 <option value="" disabled={!zone}>
-                                   {zone ? "Select Level" : "Select Zone First"}
+                                    {zone ? (level === "6" ? "Select Option" : "Select Level") : "Select Zone First"}
                                 </option>
                                 {zone && levelOptions.map((option) => (
                                     <option key={option.value} value={option.value}>

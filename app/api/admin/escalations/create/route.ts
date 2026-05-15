@@ -12,39 +12,44 @@ import nodemailer from "nodemailer";
 
 const escalationEmails: Record<string, Record<string, string>> = {
     central: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com,aamir.k@ibrinfotech.com",
-        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
-        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
-        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com",
         "5": "director.escalation@alzatooverseas.com",
+        "6": "ro@alzatooverseas.com"
     },
     east: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
-        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
-        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
-        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com",
         "5": "director.escalation@alzatooverseas.com",
+        "6": "ro@alzatooverseas.com"
     },
     west: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
-        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
-        "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
-        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com",
+        "3": "application18@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com",
         "5": "director.escalation@alzatooverseas.com",
+        "6": "ro@alzatooverseas.com"
     },
     north: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
-        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com",
         "3": "ro@alzatooverseas.com",
-        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com",
         "5": "director.escalation@alzatooverseas.com",
+        "6": "ro@alzatooverseas.com"
     },
     south: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
-        "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com",
+        "2": "italy.app1@alzatooverseas.com",
         "3": "ro4@alzatooverseas.com",
-        "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
+        "4": "italy.ops@alzatooverseas.com",
         "5": "director.escalation@alzatooverseas.com",
+        "6": "ro@alzatooverseas.com"
     },
 };
 
@@ -81,6 +86,7 @@ async function sendEscalationEmail(
         "3": "Level 2",
         "4": "Level 3",
         "5": "Level 4",
+        "6": "Sales and Marketing",
     };
 
     const info = await transporter.sendMail({
@@ -195,7 +201,7 @@ export async function POST(request: Request) {
         const levelEmail = getZoneLevelEmail(zone, level);
         if (levelEmail) {
             try {
-                 await sendEscalationEmail(levelEmail, zone, user_message, level, organizationName);
+                await sendEscalationEmail(levelEmail, zone, user_message, level, organizationName);
             } catch (emailError) {
                 console.error("Error sending escalation email:", emailError);
             }
