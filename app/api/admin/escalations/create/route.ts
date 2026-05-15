@@ -12,7 +12,7 @@ import nodemailer from "nodemailer";
 
 const escalationEmails: Record<string, Record<string, string>> = {
     central: {
-        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com",
+        "1": "italy.app20@alzatooverseas.com,ro@alzatooverseas.com,aamir.k@ibrinfotech.com",
         "2": "italy.app1@alzatooverseas.com,ro@alzatooverseas.com",
         "3": "application18@alzatooverseas.com,ro@alzatooverseas.com",
         "4": "italy.ops@alzatooverseas.com,ro@alzatooverseas.com",
