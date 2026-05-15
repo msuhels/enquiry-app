@@ -80,7 +80,7 @@ async function sendAnnouncementEmail(
 
       // IMPORTANT
       // Some providers reject emails with only BCC
-      to: "ed@alzatooverseas.com",
+      to: process.env.SMTP_FROM,
 
       bcc: recipients,
 

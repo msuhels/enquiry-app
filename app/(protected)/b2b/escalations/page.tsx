@@ -63,6 +63,7 @@ export default function EscalationsPage() {
             "3": "Level 2",
             "4": "Level 3",
             "5": "Level 4",
+            "6": "Sales and Marketing",
         };
         return levelMap[level] || `Level ${level}`;
     };

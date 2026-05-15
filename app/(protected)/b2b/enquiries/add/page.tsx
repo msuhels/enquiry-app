@@ -697,7 +697,7 @@ const getInclusiveEnglishProficiencyValues = (selectedType: string): string[] =>
           {programs.length > 0 ? (
             <div>
               <div className="w-full flex items-center justify-end">
-                <button
+                {/* <button
                   onClick={handleDownloadPrograms}
                   className="bg-gradient-to-r from-[#F97316] to-[#ea6a0f] text-xl text-white hover:from-[#ea6a0f] hover:to-[#d85e0a] px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   disabled={
@@ -708,7 +708,7 @@ const getInclusiveEnglishProficiencyValues = (selectedType: string): string[] =>
                     <Download className="w-5 h-5" />
                   </span>
                   <span>download</span>
-                </button>
+                </button> */}
               </div>
               <ProgramsTable data={programs} filterSettings={filterSettings} />
             </div>
