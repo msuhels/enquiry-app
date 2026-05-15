@@ -24,7 +24,7 @@ const getLevelLabel = (zone: string, value: string) => {
             "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
             "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
             "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales",
+            "5": "Level 4 - Final Escalation for entire process- Director Office",
             "6": "Sales and Marketing-Mr. Amit Upadhyay"
         },
         east: {
@@ -32,7 +32,7 @@ const getLevelLabel = (zone: string, value: string) => {
             "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
             "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
             "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales",
+            "5": "Level 4 - Final Escalation for entire process- Director Office",
             "6": "Sales and Marketing-Mr. Amit Upadhyay"
         },
         west: {
@@ -40,7 +40,7 @@ const getLevelLabel = (zone: string, value: string) => {
             "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
             "3": "Level 2 - Admission to Visa-Mr. Nikita Rahangdale",
             "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales",
+            "5": "Level 4 - Final Escalation for entire process- Director Office",
             "6": "Sales and Marketing-Mr. Amit Upadhyay"
         },
         north: {
@@ -48,7 +48,7 @@ const getLevelLabel = (zone: string, value: string) => {
             "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
             "3": "Level 2 - Admission to Visa-Mr. Amit Upadhyay",
             "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales",
+            "5": "Level 4 - Final Escalation for entire process- Director Office",
             "6": "Sales and Marketing-Mr. Amit Upadhyay"
         },
         south: {
@@ -56,7 +56,7 @@ const getLevelLabel = (zone: string, value: string) => {
             "2": "Level 1 - Visa Applications-Ms. Shivangi Patwa",
             "3": "Level 2 - Admission to Visa-Ms. Nargis",
             "4": "Level 3 - Admission to Visa-Mr. Ravi Upadhyay",
-            "5": "Level 4 - Final Escalation for entire process- Director Office Sales",
+            "5": "Level 4 - Final Escalation for entire process- Director Office",
             "6": "Sales and Marketing-Mr. Amit Upadhyay"
         },
     };
