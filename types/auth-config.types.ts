@@ -101,9 +101,26 @@ export interface AuthForgotPasswordConfig {
   title?: AuthTextConfig;
   description?: AuthTextConfig;
   email?: AuthFieldConfig;
+  // OTP option for password reset
+  useOTP?: {
+    show?: boolean;
+    text?: {
+      buttonText?: string;
+      linkText?: string;
+      linkDescription?: string;
+    };
+  };
   submitButton?: AuthFeatureConfig;
   loginLink?: AuthFeatureConfig;
-  successDisplay?: AuthFeatureConfig;
+  successDisplay?: {
+    show?: boolean;
+    text?: {
+      title?: string;
+      description?: string;
+      helperText?: string;
+      otpHelperText?: string;
+    };
+  };
   errorDisplay?: AuthFeatureConfig;
   styles?: AuthStyleConfig;
 }

@@ -6,6 +6,7 @@ export { useForgotPassword, type UseForgotPasswordReturn } from "./useForgotPass
 export { useForgotPasswordForm, type UseForgotPasswordFormReturn } from "./useForgotPasswordForm";
 export { useUpdatePassword, type UseUpdatePasswordReturn } from "./useUpdatePassword";
 export { useUpdatePasswordForm, type UseUpdatePasswordFormReturn } from "./useUpdatePasswordForm";
+export { usePasswordResetOTP, type UsePasswordResetOTPReturn } from "./usePasswordResetOTP";
 export { useProfile, type UseProfileReturn } from "./useProfile";
 export { useProfileForm, type UseProfileFormReturn } from "./useProfileForm";
 export { useInitializeIp } from "./useInitializeIp"; 

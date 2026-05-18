@@ -49,7 +49,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
     },
     redirectAfterLogin: "/dashboard",
   },
-  
+
   signUp: {
     title: {
       text: "Sign up",
@@ -120,14 +120,14 @@ export const defaultAuthConfig: AuthModuleConfig = {
     },
     redirectAfterSignUp: "/auth/sign-up-success",
   },
-  
+
   forgotPassword: {
     title: {
       text: "Reset Your Password",
       show: true,
     },
     description: {
-      text: "Type in your email and we'll send you a link to reset your password",
+      text: "Type in your email and we'll send you a link or OTP to reset your password",
       show: true,
     },
     email: {
@@ -135,6 +135,15 @@ export const defaultAuthConfig: AuthModuleConfig = {
       required: true,
       placeholder: "m@example.com",
       label: "Email",
+    },
+    // OTP options
+    useOTP: {
+      show: true,
+      text: {
+        buttonText: "Send OTP",
+        linkText: "Use OTP instead",
+        linkDescription: "Receive a 6-digit code instead of email link",
+      },
     },
     submitButton: {
       show: true,
@@ -161,7 +170,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
       show: true,
     },
   },
-  
+
   updatePassword: {
     title: {
       text: "Reset Your Password",
@@ -203,7 +212,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
     },
     redirectAfterUpdate: "/dashboard",
   },
-  
+
   profileInfo: {
     title: {
       text: "Profile Information",
@@ -248,7 +257,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
       },
     },
   },
-  
+
   profileForm: {
     title: {
       text: "Edit Profile",
@@ -298,7 +307,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
       show: true,
     },
   },
-  
+
   profileActions: {
     title: {
       text: "Account Actions",
@@ -322,7 +331,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
       },
     },
   },
-  
+
   globalStyles: {
     container: "flex flex-col gap-6",
     card: "",
@@ -340,7 +349,7 @@ export const defaultAuthConfig: AuthModuleConfig = {
     progressBar: "w-full bg-muted rounded-full h-2",
     badge: "",
   },
-  
+
   theme: {
     primary: "hsl(var(--primary))",
     secondary: "hsl(var(--secondary))",
@@ -359,7 +368,7 @@ export function mergeAuthConfig(userConfig: Partial<AuthModuleConfig> = {}): Aut
 // Deep merge utility function
 function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
   const result = { ...target };
-  
+
   for (const key in source) {
     if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
       result[key as keyof T] = deepMerge((result[key as keyof T] || {}) as T[keyof T], source[key] as any);
@@ -367,7 +376,7 @@ function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>)
       result[key] = source[key] as any;
     }
   }
-  
+
   return result;
 }
 

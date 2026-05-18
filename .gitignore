@@ -47,5 +47,9 @@ next-env.d.ts
 # key files
 github-deploy-key
 build_output.txt
+
+
+#doc for refrence on local
 doc.doc
 plans/bulk-upload-analysis.md
+passwordreset.doc
