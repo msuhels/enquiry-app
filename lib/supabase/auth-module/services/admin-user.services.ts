@@ -372,6 +372,44 @@ export async function updateUser(id: string, updates: any) {
   }
 }
 
+// Server action to update user password (forgot password flow)
+export async function updateUserPassword(
+  userId: string,
+  newPassword: string
+): Promise<UserServiceResult<{ success: boolean }>> {
+  try {
+    const supabaseAdmin = createServiceRoleClient();
+
+    // Encrypt the new password
+    const enc = encryptPlaintext(newPassword);
+
+    // Update the custom users table with encrypted password
+    const { error } = await supabaseAdmin
+      .from("users")
+      .update({
+        password: enc.ciphertext,
+        password_iv: enc.iv,
+        password_tag: enc.tag,
+        password_algo: enc.algo,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Failed to update encrypted password in users table:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data: { success: true } };
+  } catch (error) {
+    console.error("Error in updateUserPassword:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
+
 export async function toggleUserStatus(
   userId: string,
   newStatus: "active" | "inactive"
