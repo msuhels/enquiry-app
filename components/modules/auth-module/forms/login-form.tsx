@@ -211,6 +211,17 @@ export function LoginForm({ className, config, ...props }: LoginFormProps) {
                   </div>
                 )}
 
+
+                  {loginConfig.forgotPasswordLink?.show && (
+                    <div className="flex justify-end">
+                      <Link
+                        href="/auth/forgot-password"
+                        className="text-sm text-[#3A3886] hover:underline"
+                      >
+                        {loginConfig.forgotPasswordLink?.text?.linkText || "Forgot password?"}
+                      </Link>
+                    </div>
+                  )}
               {loginConfig.submitButton?.show && (
                 <Button
                   type="submit"

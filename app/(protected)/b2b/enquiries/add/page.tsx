@@ -740,19 +740,19 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
             <tr>
               {[
                 "University",
-                "Course Name",
+                ...(filterSettings?.data?.course_name !== true ? ["Course Name"] : []),
                 "Previous/Current Study",
                 "Degree Going For",
-                "English Proficiency",
-                "Required Band",
-                "Previous Degree Required",
+                ...(filterSettings?.data?.english_profficiency !== true ? ["English Proficiency"] : []),
+                ...(filterSettings?.data?.required_band !== true ? ["Required Band"] : []),
+                ...(filterSettings?.data?.prev_degree_duration !== true ? ["Previous Degree Required"] : []),
                 ...(filterSettings?.data?.is_special_requirements_enabled !== true ? ["Special Requirements"] : []),
                 ...(filterSettings?.data?.remark_1 !== true ? ["Remarks1"] : []),
                 ...(filterSettings?.data?.remark_2 !== true ? ["Remarks2"] : []),
                 ...(filterSettings?.data?.remark_3 !== true ? ["Remarks3"] : []),
                 // "degree duration",
-                "minimum %",
-                "Other Exams"
+                ...(filterSettings?.data?.minimum_percentage !== true ? ["Minimum Percentage"] : []),
+                ...(filterSettings?.data?.others_exams !== true ? ["Other Exams"] : []),
               ].map((head) => (
                 <th
                   key={head}
@@ -770,25 +770,33 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 <td className="px-6 py-4 whitespace-nowrap text-xl font-medium text-[#3a3886]">
                   {item.university || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#3a3886]">
+               {filterSettings?.data?.course_name !== true && (
+                 <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#3a3886]">
                   {item.course_name || "-"}
                 </td>
+               )}
                 <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#3a3886]">
                   {item.previous_or_current_study || "-"}
                 </td>
                 <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.degree_going_for || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
+                {filterSettings?.data?.english_profficiency !== true && (
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.english_proficiency_type || "-"}
                 </td>
+                )}
 
-                <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#F97316]">
+               {filterSettings?.data?.required_band !== true && (
+                  <td className="px-6 py-4 whitespace-pre-line text-xl font-medium text-[#F97316]">
                   {item.required_band || "-"}
                 </td>
-                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
+                )}
+                 {filterSettings?.data?.prev_degree_duration !== true && (
+                  <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.prev_degree_required || "-"}
                 </td>
+                )}
                 {filterSettings?.data?.is_special_requirements_enabled !== true && (
                   <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                     {item.special_requirements || "-"}
@@ -815,12 +823,16 @@ const ProgramsTable = ({ data, filterSettings }: any) => {
                 {/* <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.degree_duration || "-"}
                 </td> */}
-                <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
+                {filterSettings?.data?.minimum_percentage !== true && (
+                 <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.minimum_percentage || "-"}
                 </td>
+                )}
+                {filterSettings?.data?.others_exams !== true && (
                 <td className="px-6 py-4 text-xl whitespace-pre-line font-medium text-[#3a3886]">
                   {item.others_exams || "-"}
                 </td>
+                )}
               </tr>
             ))}
           </tbody>

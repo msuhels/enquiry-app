@@ -370,10 +370,11 @@ export class AuthHandlers {
     setSuccess(false);
 
     try {
-      const { error } = await this.supabase.auth.resetPasswordForEmail(
+    
+      const { data: resetData, error } = await this.supabase.auth.resetPasswordForEmail(
         data.email,
         {
-          redirectTo: `${window.location.origin}/auth/update-password`,
+          redirectTo: `${window.location.origin}/auth/reset-password`,
         }
       );
 
@@ -418,11 +419,17 @@ export class AuthHandlers {
     setError(null);
 
     try {
-      const { error } = await this.supabase.auth.updateUser({
+      console.log("🔐 [UPDATE PASSWORD] Attempting to update password...");
+
+      const { data: updateData, error } = await this.supabase.auth.updateUser({
         password: data.password,
       });
 
+      console.log("✅ [UPDATE PASSWORD] Supabase response:", updateData);
+      console.log("❌ [UPDATE PASSWORD] Supabase error:", error);
+
       if (error) {
+        console.error("💥 [UPDATE PASSWORD] Error from Supabase:", error.message);
         setError(error.message);
         return {
           success: false,
@@ -430,10 +437,12 @@ export class AuthHandlers {
         };
       }
 
+      console.log("✅ [UPDATE PASSWORD] Password updated successfully for:", updateData?.user?.email);
       return {
         success: true,
       };
     } catch (error) {
+      console.error("💥 [UPDATE PASSWORD] Unexpected error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "An unexpected error occurred";
       setError(errorMessage);
@@ -441,6 +450,110 @@ export class AuthHandlers {
         success: false,
         error: errorMessage,
       };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // OTP-based password reset methods
+
+  async sendPasswordResetOTP(email: string): Promise<AuthResult> {
+    const { setLoading, setError, setSuccess } = useUserStore.getState();
+
+    if (!email) {
+      return { success: false, error: "Email is required" };
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      console.log("📱 [OTP RESET] Sending OTP to:", email);
+
+      // Send OTP using signInWithOtp - this sends a 6-digit code
+      const { data, error } = await this.supabase.auth.signInWithOtp({
+        email,
+        options: {
+          // OTP type for password reset - use recovery type
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/reset-password` : undefined,
+        },
+      });
+
+      console.log("✅ [OTP RESET] Supabase response:", data);
+      console.log("❌ [OTP RESET] Supabase error:", error);
+
+      if (error) {
+        console.error("💥 [OTP RESET] Error from Supabase:", error.message);
+        setError(error.message);
+        return { success: false, error: error.message };
+      }
+
+      setSuccess(true);
+      console.log("✅ [OTP RESET] OTP sent successfully!");
+      return { success: true };
+    } catch (error) {
+      console.error("💥 [OTP RESET] Unexpected error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async verifyPasswordResetOTP(email: string, otp: string, newPassword: string): Promise<AuthResult> {
+    const { setLoading, setError } = useUserStore.getState();
+
+    if (!email || !otp || !newPassword) {
+      return { success: false, error: "Email, OTP, and new password are required" };
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log("🔐 [OTP VERIFY] Verifying OTP for:", email);
+
+      // First, verify the OTP
+      const { data: verifyData, error: verifyError } = await this.supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: "recovery", // Using recovery type for password reset OTP
+      });
+
+      console.log("✅ [OTP VERIFY] Verify response:", verifyData);
+      console.log("❌ [OTP VERIFY] Verify error:", verifyError);
+
+      if (verifyError) {
+        console.error("💥 [OTP VERIFY] OTP verification failed:", verifyError.message);
+        setError(verifyError.message);
+        return { success: false, error: verifyError.message };
+      }
+
+      // OTP verified, now update the password
+      console.log("🔐 [OTP VERIFY] OTP verified, now updating password...");
+
+      const { data: updateData, error: updateError } = await this.supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      console.log("✅ [OTP VERIFY] Password update response:", updateData);
+      console.log("❌ [OTP VERIFY] Password update error:", updateError);
+
+      if (updateError) {
+        console.error("💥 [OTP VERIFY] Password update failed:", updateError.message);
+        setError(updateError.message);
+        return { success: false, error: updateError.message };
+      }
+
+      console.log("✅ [OTP VERIFY] Password updated successfully!");
+      return { success: true };
+    } catch (error) {
+      console.error("💥 [OTP VERIFY] Unexpected error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
