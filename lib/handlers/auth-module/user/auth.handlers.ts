@@ -18,10 +18,13 @@ import {
   updateLastLogin,
   updateUserProfile,
 } from "@/lib/supabase/auth-module/services/user.services";
+import { updateUserPassword } from "@/lib/supabase/auth-module/services/admin-user.services";
 
+// Using unknown to allow flexibility since user can be Supabase User or custom UserProfile
 export interface AuthResult {
   success: boolean;
   error?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user?: any;
   validationErrors?: Record<string, string>;
 }
@@ -202,7 +205,13 @@ export class AuthHandlers {
         setUser(data.user);
 
         const accessToken = data.session?.access_token;
-        const ip = await fetch("https://ipapi.co/json/").then((res) => res.json());
+
+        let ip = null;
+        try {
+          ip = await fetch("https://ipapi.co/json/").then((res) => res.json());
+        } catch (ipError) {
+          console.warn("Failed to fetch IP address:", ipError);
+        }
 
         try {
           const response = await fetch("/api/admin/record-login", {
@@ -268,7 +277,7 @@ export class AuthHandlers {
         email: credentials.email,
         password: credentials.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
         },
       });
 
@@ -370,11 +379,11 @@ export class AuthHandlers {
     setSuccess(false);
 
     try {
-    
+
       const { data: resetData, error } = await this.supabase.auth.resetPasswordForEmail(
         data.email,
         {
-          redirectTo: `${window.location.origin}/auth/reset-password`,
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/reset-password` : undefined,
         }
       );
 
@@ -519,11 +528,8 @@ export class AuthHandlers {
       const { data: verifyData, error: verifyError } = await this.supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: "recovery", // Using recovery type for password reset OTP
+        type: "recovery",
       });
-
-      console.log("✅ [OTP VERIFY] Verify response:", verifyData);
-      console.log("❌ [OTP VERIFY] Verify error:", verifyError);
 
       if (verifyError) {
         console.error("💥 [OTP VERIFY] OTP verification failed:", verifyError.message);
@@ -538,14 +544,31 @@ export class AuthHandlers {
         password: newPassword,
       });
 
-      console.log("✅ [OTP VERIFY] Password update response:", updateData);
-      console.log("❌ [OTP VERIFY] Password update error:", updateError);
-
       if (updateError) {
         console.error("💥 [OTP VERIFY] Password update failed:", updateError.message);
         setError(updateError.message);
         return { success: false, error: updateError.message };
       }
+
+      // ============================================================
+      // Encrypt and save password to custom users table (via server action)
+      // ============================================================
+      try {
+        const userId = verifyData.user?.id || updateData.user?.id;
+
+        if (userId) {
+          // Call server action to update password in users table
+          const result = await updateUserPassword(userId, newPassword);
+          if (!result.success) {
+            console.error("Failed to update encrypted password in users table:", result.error);
+            // Don't fail the password reset if this fails - the main auth is successful
+          }
+        }
+      } catch (encryptError) {
+        console.error("Failed to update encrypted password in users table:", encryptError);
+        // Don't fail the password reset if this fails - the main auth is successful
+      }
+      // ============================================================
 
       console.log("✅ [OTP VERIFY] Password updated successfully!");
       return { success: true };
@@ -558,6 +581,7 @@ export class AuthHandlers {
       setLoading(false);
     }
   }
+
 
   async updateProfile(data: ProfileFormData): Promise<AuthResult> {
     const { setLoading, setError } = useUserStore.getState();
