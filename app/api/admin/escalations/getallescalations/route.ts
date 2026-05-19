@@ -7,6 +7,8 @@ export async function GET(request: Request) {
 
     const search = searchParams.get("search") || "";
     const zone = searchParams.get("zone") || "";
+    const fromDate = searchParams.get("from_date") || "";
+    const toDate = searchParams.get("to_date") || "";
     const limit = Number(searchParams.get("limit")) || 10;
     const offset = Number(searchParams.get("offset")) || 0;
     const sort = searchParams.get("sort") || "created_at:desc";
@@ -60,6 +62,18 @@ export async function GET(request: Request) {
       query = query.eq("zone", zone);
     }
 
+    /**
+     * Date Range Filter
+     */
+    if (fromDate) {
+      // Start from the beginning of the from date
+      query = query.gte("created_at", fromDate + "T00:00:00");
+    }
+    if (toDate) {
+      // End at the end of the to date
+      query = query.lte("created_at", toDate + "T23:59:59");
+    }
+
     const {
       data: escalations,
       error,
@@ -107,6 +121,8 @@ export async function GET(request: Request) {
       filters: {
         search,
         zone,
+        fromDate,
+        toDate,
         sort,
       },
     });
