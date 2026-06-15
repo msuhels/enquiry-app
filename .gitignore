@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*.local
+.env
 .env.supabase
 supabase_enquiry_app_backup_2025_11_04.sql
 
@@ -52,4 +53,3 @@ build_output.txt
 doc.doc
 plans/bulk-upload-analysis.md
 passwordreset.doc
-config.bat
