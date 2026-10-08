@@ -1,4 +1,7 @@
 "use client";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/adapters/client";
+import { INACTIVE_ACCOUNT_MESSAGE } from "@/lib/auth-messages";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/auth-modules";
@@ -28,6 +31,12 @@ export default function AdminLayout({
   useEffect(() => {
     const fetchUser = async () => {
       const res = await fetch("/api/admin/users/getAuthUser");
+      if (res.status === 403) {
+        await createClient().auth.signOut();
+        toast.error(INACTIVE_ACCOUNT_MESSAGE);
+        router.replace("/auth/login");
+        return null;
+      }
       const data = await res.json();
       return data;
     };

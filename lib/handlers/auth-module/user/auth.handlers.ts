@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/adapters/client";
+import { INACTIVE_ACCOUNT_MESSAGE } from "@/lib/auth-messages";
 import {
   loginSchema,
   signUpSchema,
@@ -194,10 +195,14 @@ export class AuthHandlers {
       });
 
       if (error) {
-        setError(error.message);
+        const isBanned =
+          (error as { code?: string }).code === "user_banned" ||
+          /banned/i.test(error.message);
+        const message = isBanned ? INACTIVE_ACCOUNT_MESSAGE : error.message;
+        setError(message);
         return {
           success: false,
-          error: error.message,
+          error: message,
         };
       }
 

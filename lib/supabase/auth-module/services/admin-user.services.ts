@@ -412,15 +412,17 @@ export async function updateUserPassword(
 
 export async function toggleUserStatus(
   userId: string,
-  newStatus: "active" | "inactive"
+  newStatus: boolean | "active" | "inactive"
 ): Promise<UserServiceResult<UserProfile>> {
   try {
     const supabase = createServiceRoleClient();
+    // The UI sends a boolean (true = active); also accept the legacy string form
+    const isActive = newStatus === true || newStatus === "active";
 
     // 1️⃣ Update the user's status in the custom table
     const { data, error } = await supabase
       .from("users")
-      .update({ is_active: newStatus, updated_at: new Date().toISOString() })
+      .update({ is_active: isActive, updated_at: new Date().toISOString() })
       .eq("id", userId)
       .select()
       .single();
@@ -430,11 +432,10 @@ export async function toggleUserStatus(
       return { success: false, error: error.message };
     }
 
-    const authStatus = newStatus === "inactive";
     const { error: authError } = await supabase.auth.admin.updateUserById(
       userId,
       {
-        banned_until: authStatus ? "2999-12-31T23:59:59Z" : null,
+        ban_duration: isActive ? "none" : "876000h",
       }
     );
 

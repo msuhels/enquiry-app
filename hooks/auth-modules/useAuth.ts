@@ -7,6 +7,7 @@ import { authHandlers } from "@/lib/handlers/auth-module/user";
 import { useUserStore } from "@/lib/stores/auth-module";
 import type { LoginFormData } from "@/lib/schema/auth-module";
 import { createClient } from "@/lib/supabase/adapters/client";
+import { INACTIVE_ACCOUNT_MESSAGE } from "@/lib/auth-messages";
 
 export interface UseAuthReturn {
   // State from Zustand store
@@ -83,9 +84,12 @@ export function useAuth(): UseAuthReturn {
         } else {
           console.log({ result });
            toast.dismiss(loginToast)
-          toast.error("Login failed. Please check your credentials.", {
-            id: loginToast,
-          });
+          toast.error(
+            result.error === INACTIVE_ACCOUNT_MESSAGE
+              ? INACTIVE_ACCOUNT_MESSAGE
+              : "Login failed. Please check your credentials.",
+            { id: loginToast }
+          );
           return false;
         }
       } catch (error) {
